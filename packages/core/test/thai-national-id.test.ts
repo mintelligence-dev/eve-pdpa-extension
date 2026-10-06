@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { thaiNationalIdDetector } from '../src/detectors/thai-national-id.js'
+import { createEngine } from '../src/engine.js'
 import { normalise } from '../src/normalise.js'
 import type { DetectContext } from '../src/types.js'
 import { checkDigit, makeThaiId } from './helpers/make-thai-id.js'
@@ -85,5 +86,30 @@ describe('reuse', () => {
     const second = detect(text)
     expect(second).toEqual(first)
     expect(second).toHaveLength(2)
+  })
+})
+
+describe('spaced ids — found by the benchmark, 6 Oct', () => {
+  const engine = createEngine([thaiNationalIdDetector])
+  const find = (s: string) =>
+    engine.runSync(normalise(s), { sessionId: 's', boundary: 'inbound' }).candidates
+
+  it('finds an id written with spaces in the printed grouping', () => {
+    expect(find('เลขบัตร 3 1005 00123 45 8')).toMatchObject([
+      { entity: 'TH_NATIONAL_ID', confidence: 0.99 },
+    ])
+  })
+
+  it('finds it in Thai digits too', () => {
+    expect(find('เลขบัตร ๓ ๑๐๐๕ ๐๐๑๒๓ ๔๕ ๘')).toHaveLength(1)
+  })
+
+  it('does not join two numbers separated by a space into an id', () => {
+    // 0812345678 then 123: thirteen digits, but not in the card's grouping.
+    expect(find('โทร 0812345678 123 ครั้ง')).toEqual([])
+  })
+
+  it('does not take thirteen digits out of a longer run', () => {
+    expect(find('เลขอ้างอิง 31005001234580')).toEqual([])
   })
 })

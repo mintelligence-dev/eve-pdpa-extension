@@ -26,6 +26,24 @@ export function contextWindow(text: string, start: number, end: number): string 
   return (text.slice(from, start) + text.slice(end, to)).toLowerCase()
 }
 
+/**
+ * A message this short is an answer, not a new subject: the cue it answers can
+ * sit in the other side's last message. Longer, and the customer has moved on
+ * — "order 8829301847, also what was your account number again" should not
+ * borrow a cue from a question two topics back. D10.11.
+ */
+const ANSWER_LENGTH = 80
+
+/** True when the other side's last message carries one of the cues and this message reads as its answer. */
+export function previousHasCue(
+  text: string,
+  previous: string | undefined,
+  words: readonly string[],
+): boolean {
+  if (previous === undefined || text.length > ANSWER_LENGTH) return false
+  return containsAny(previous, words)
+}
+
 export function containsAny(window: string, words: readonly string[]): boolean {
   return words.some((w) => window.includes(w))
 }

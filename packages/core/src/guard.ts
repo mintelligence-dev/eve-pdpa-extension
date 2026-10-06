@@ -105,6 +105,19 @@ function checkRef(ref: unknown): string | undefined {
   return ref
 }
 
+/** Cue words sit near the end of a question; the tail is all a detector needs. */
+const MAX_CONTEXT_LENGTH = 500
+
+/**
+ * Lowercased once here so detectors compare English cues without folding it
+ * again. A wrong type is a caller bug and fails loudly, as `ref` does.
+ */
+function checkContext(context: unknown): string | undefined {
+  if (context === undefined || context === null) return undefined
+  if (typeof context !== 'string') throw new TypeError('context must be a string')
+  return context.slice(-MAX_CONTEXT_LENGTH).toLowerCase()
+}
+
 function nowIso(): string {
   return new Date().toISOString()
 }
@@ -276,13 +289,15 @@ export function createGuard(options: GuardOptions): Guard {
     const sessionId = opts?.sessionId ?? 'anonymous'
     const boundary: Boundary = opts?.boundary ?? 'inbound'
     const ref = checkRef(opts?.ref)
+    const previous = checkContext(opts?.context)
 
     const norm = normalise(text)
 
     // Detectors read the folded text; everything after this point works on the
     // ORIGINAL. Rewriting the folded copy would hand the customer back a
     // message with their Thai numerals silently turned into ASCII.
-    const ctx: DetectContext = { sessionId, boundary }
+    const ctx: DetectContext =
+      previous === undefined ? { sessionId, boundary } : { sessionId, boundary, previous }
     const detected = (yield { op: 'detect', input: norm, ctx }) as EngineResult
 
     // Translating after the merge is safe: the map only ever moves offsets
@@ -458,6 +473,7 @@ export function createGuard(options: GuardOptions): Guard {
         sessionId,
         ...(ref === undefined ? {} : { ref }),
         boundary,
+        ...(previous === undefined ? {} : { contextUsed: true as const }),
         policy: { hash: policy.hash, entitySet: policy.entitySet },
         engine: {
           version: VERSION,

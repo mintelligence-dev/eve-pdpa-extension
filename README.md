@@ -22,6 +22,7 @@ const guard = createGuard({
 const inbound = await guard.process('เบอร์ ๐๙๑-๘๘๘-๗๗๗๗ ค่ะ', {
   sessionId: 'conv_8f2a',     // id ห้องแชทที่ระบบสร้างเอง ไม่ใช่ LINE userId
   ref: 'msg_10293',           // id ข้อความในระบบของแอป ไว้ตามจาก audit กลับมา
+  context: lastShopMessage,   // ข้อความล่าสุดของร้าน — ลูกค้าตอบแค่ "123-4-56789-0" หลังร้านถามเลขบัญชี ก็ยังจับได้
 })
 inbound.text                  // 'เบอร์ [tok:dcpttqrpmdvprnqp] ค่ะ'
 

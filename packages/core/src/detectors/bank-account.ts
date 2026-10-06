@@ -1,6 +1,6 @@
-import type { Candidate, Detector, NormalisedText } from '../types.js'
+import type { Candidate, DetectContext, Detector, NormalisedText } from '../types.js'
 import { isAsciiDigit, isIsolated } from './boundary.js'
-import { containsAny, contextWindow } from './context.js'
+import { containsAny, contextWindow, previousHasCue } from './context.js'
 
 /**
  * The weakest claim in the set, and the only one that will not be made on the
@@ -23,8 +23,13 @@ const ACCOUNT_CUES = [
   'บัญชี',
   'ธนาคาร',
   'เลขที่บช',
+  'บช.',
   'โอนเงิน',
-  'โอนมาที่',
+  // Any direction of a transfer. Listed on 6 Oct, before the benchmark ran, from
+  // phrasings that were missed in hand-written examples.
+  'โอนมา',
+  'โอนเข้า',
+  'โอนไป',
   'account',
   'acct',
   'transfer',
@@ -38,6 +43,7 @@ const ACCOUNT_CUES = [
   'ทหารไทย',
   'scb',
   'kbank',
+  'k-bank',
   'ktb',
   'ttb',
   'gsb',
@@ -55,8 +61,11 @@ export const bankAccountDetector: Detector = {
   id: 'bank-account',
   entities: ['BANK_ACCOUNT'],
 
-  detect(input: NormalisedText): Candidate[] {
+  detect(input: NormalisedText, ctx?: DetectContext): Candidate[] {
     const found: Candidate[] = []
+    // "your account number?" then "123-4-56789-0 ชื่อ สมชาย" — the cue is in
+    // the question. Benchmark, 6 Oct: most remaining misses were this. D10.11.
+    const answered = previousHasCue(input.text, ctx?.previous, ACCOUNT_CUES)
 
     for (const m of input.text.matchAll(ACCOUNT_RUN)) {
       const raw = m[0]
@@ -68,7 +77,7 @@ export const bankAccountDetector: Detector = {
       const digits = raw.replace(/[ -]/g, '')
       if (digits.length < 10 || digits.length > 12) continue
 
-      if (!containsAny(contextWindow(input.text, start, end), ACCOUNT_CUES)) continue
+      if (!answered && !containsAny(contextWindow(input.text, start, end), ACCOUNT_CUES)) continue
 
       found.push({
         entity: 'BANK_ACCOUNT',

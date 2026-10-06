@@ -1,6 +1,6 @@
-import type { Candidate, Detector, NormalisedText } from '../types.js'
+import type { Candidate, DetectContext, Detector, NormalisedText } from '../types.js'
 import { isAsciiDigit, isIsolated } from './boundary.js'
-import { containsAny, contextWindow } from './context.js'
+import { containsAny, contextWindow, previousHasCue } from './context.js'
 
 /**
  * A Thai number in national form, or in +66 international form.
@@ -62,6 +62,10 @@ function baseConfidence(national: string): number | null {
   return null
 }
 
+// Letters do not count, on purpose. "TH0956318274" is a tracking number and is
+// caught as a phone number (benchmark, 6 Oct) — but if glued letters ended the
+// run, anyone could hide a real number by typing "x0918887777". A false
+// positive costs readability; a false negative costs the number.
 function belongsToRun(ch: string): boolean {
   return isAsciiDigit(ch) || ch === '+'
 }
@@ -70,8 +74,13 @@ export const phoneDetector: Detector = {
   id: 'phone',
   entities: ['PHONE'],
 
-  detect(input: NormalisedText): Candidate[] {
+  detect(input: NormalisedText, ctx?: DetectContext): Candidate[] {
     const found: Candidate[] = []
+    // The question decides between the two ten-digit readings when the answer
+    // is only the number (D10.11): asked for an account, stand down; asked for
+    // a phone, count the question as the cue.
+    const askedPhone = previousHasCue(input.text, ctx?.previous, PHONE_CUES)
+    const askedAccount = !askedPhone && previousHasCue(input.text, ctx?.previous, ACCOUNT_CUES)
 
     for (const m of input.text.matchAll(PHONE_RUN)) {
       const raw = m[0]
@@ -84,8 +93,8 @@ export const phoneDetector: Detector = {
       if (confidence === null) continue
 
       const window = contextWindow(input.text, start, end)
-      const phoneCue = containsAny(window, PHONE_CUES)
-      if (!phoneCue && containsAny(window, ACCOUNT_CUES)) continue
+      const phoneCue = containsAny(window, PHONE_CUES) || askedPhone
+      if (!phoneCue && (askedAccount || containsAny(window, ACCOUNT_CUES))) continue
 
       found.push({
         entity: 'PHONE',

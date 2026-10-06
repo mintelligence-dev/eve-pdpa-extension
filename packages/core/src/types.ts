@@ -53,6 +53,11 @@ export interface Candidate {
 export interface DetectContext {
   readonly sessionId: string
   readonly boundary: Boundary
+  /**
+   * The other side's last message, lowercased, when the caller passed one as
+   * `context`. Read for cue words only. D10.11.
+   */
+  readonly previous?: string
 }
 
 export interface Detector {
@@ -139,6 +144,8 @@ export interface AuditEvent {
    */
   readonly ref?: string
   readonly boundary: Boundary
+  /** The caller passed `context`. Its text is not recorded. D10.11. */
+  readonly contextUsed?: true
   readonly policy: { readonly hash: string; readonly entitySet: string }
   readonly engine: {
     readonly version: string
@@ -371,6 +378,14 @@ export interface ProcessOptions {
   readonly boundary?: Boundary
   /** Copied into the scan event, e.g. the app's message id. D10.9. */
   readonly ref?: string
+  /**
+   * The other side's last message — for a customer's message, what the shop or
+   * the model last said. Detectors that rely on cue words read it, so a reply
+   * that is only "123-4-56789-0" after "your account number?" is still found.
+   * Never scanned for values, never rewritten, never written to the audit log.
+   * The guarded copy is enough: cue words are not personal data. D10.11.
+   */
+  readonly context?: string
 }
 
 export interface Guard {
