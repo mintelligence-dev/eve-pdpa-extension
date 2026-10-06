@@ -1,13 +1,6 @@
 import { sha256 } from '../crypto/sha256.js'
 import { encodeLetters, tokenId } from '../random.js'
-import type {
-  EntityRule,
-  EntityType,
-  RandomSource,
-  ResolveReason,
-  TokenRecord,
-  TokenStore,
-} from '../types.js'
+import type { EntityRule, EntityType, RandomSource, ResolveReason, TokenRecord } from '../types.js'
 
 /** D6: long enough for an OTP flow. */
 export const DEFAULT_TTL_SEC = 300
@@ -57,15 +50,26 @@ export function judge(
   return null
 }
 
+/**
+ * A token store call the tokeniser needs made. Yielded rather than made
+ * directly, so one copy of the logic serves a sync store (processSync) and an
+ * async one (process): the guard's driver performs the call, synchronously or
+ * with await, and sends the result back in. A store that throws or rejects is
+ * thrown back in at the same point.
+ */
+export type StoreStep =
+  | { readonly op: 'get'; readonly id: string }
+  | { readonly op: 'set'; readonly id: string; readonly rec: TokenRecord }
+
 export interface Tokeniser {
-  /** Returns the token id for this value, reusing one already issued in the session. */
+  /** Yields the store calls it needs; returns the token id, reusing one already issued in the session. */
   issue(
     sessionId: string,
     entity: EntityType,
     canonical: string,
     rule: EntityRule,
     display: string | undefined,
-  ): string
+  ): Generator<StoreStep, string, unknown>
   forgetSession(sessionId: string): void
 }
 
@@ -84,17 +88,17 @@ export interface Tokeniser {
  * The reuse index is keyed by a digest, not the value, so this map holds no
  * second plaintext copy of anything the store already has.
  */
-export function createTokeniser(store: TokenStore, random: RandomSource): Tokeniser {
+export function createTokeniser(random: RandomSource): Tokeniser {
   const reuse = new Map<string, Map<string, string>>()
   let entries = 0
 
   // Sessions that never call endSession would otherwise grow the index forever.
   // Past the limit, drop every entry whose token the store no longer holds live.
-  function prune(): void {
+  function* prune(): Generator<StoreStep, void, unknown> {
     const now = Date.now()
     for (const [sessionId, session] of reuse) {
       for (const [key, id] of session) {
-        const rec = store.get(id) as TokenRecord | undefined
+        const rec = (yield { op: 'get', id }) as TokenRecord | undefined
         if (rec === undefined || rec.expiresAt <= now) {
           session.delete(key)
           entries--
@@ -105,13 +109,17 @@ export function createTokeniser(store: TokenStore, random: RandomSource): Tokeni
   }
 
   return {
-    issue(sessionId, entity, canonical, rule, display) {
+    // Under process(), two messages in one session can interleave at a yield,
+    // so the same value arriving twice at once may get two tokens. Both are
+    // valid and both resolve; reuse is a convenience for the model, not a
+    // guarantee the store depends on.
+    *issue(sessionId, entity, canonical, rule, display) {
       const key = encodeLetters(sha256(encoder.encode(`${entity}\u0000${canonical}`)))
       let session = reuse.get(sessionId)
 
       const existing = session?.get(key)
       if (existing !== undefined) {
-        const rec = store.get(existing) as TokenRecord | undefined
+        const rec = (yield { op: 'get', id: existing }) as TokenRecord | undefined
         if (rec !== undefined && rec.sessionId === sessionId && rec.expiresAt > Date.now()) {
           return existing
         }
@@ -123,14 +131,15 @@ export function createTokeniser(store: TokenStore, random: RandomSource): Tokeni
       const ttl = rule.ttlSec ?? DEFAULT_TTL_SEC
       // Throws when the store cannot take it. The guard turns that into a
       // blocked message (D4 level 2); nothing is indexed for a token never stored.
-      store.set(id, {
+      const rec: TokenRecord = {
         value: canonical,
         entity,
         sessionId,
         purposes: rule.allowedPurposes ?? [],
         expiresAt: Date.now() + ttl * 1000,
         ...(display === undefined ? {} : { display }),
-      })
+      }
+      yield { op: 'set', id, rec }
 
       if (session === undefined) {
         session = new Map()
@@ -138,7 +147,7 @@ export function createTokeniser(store: TokenStore, random: RandomSource): Tokeni
       }
       session.set(key, id)
       entries++
-      if (entries > REUSE_INDEX_LIMIT) prune()
+      if (entries > REUSE_INDEX_LIMIT) yield* prune()
       return id
     },
 

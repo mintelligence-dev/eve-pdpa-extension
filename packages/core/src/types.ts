@@ -376,6 +376,11 @@ export interface ProcessOptions {
 export interface Guard {
   processSync(text: string, opts?: ProcessOptions): ProcessResult
   /**
+   * processSync, awaited. Runs async detectors too, and works with an async
+   * token store (Redis, KV). Use this one in an async handler. D10.2.
+   */
+  process(text: string, opts?: ProcessOptions): Promise<ProcessResult>
+  /**
    * Exchanges a token for its real value, if the purpose is allowed. D6.
    *
    * Access control is holding this guard object — the model only ever sees the

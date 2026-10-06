@@ -133,6 +133,8 @@ export async function run() {
     checkResolve(g3, r3.text)
   }
 
+  if (hasCsprng) await checkProcessAsync(tokenisePolicy)
+
   const hmac = await checkHash()
 
   return `smoke ok (csprng: ${hasCsprng ? 'host' : 'injected'}, hmac: ${hmac})`
@@ -157,6 +159,41 @@ function checkResolve(guard, text) {
   guard.endSession('anonymous')
   if (guard.resolveSync(token, { purpose: 'otp_send' }).ok)
     throw new Error('endSession left the token')
+}
+
+/**
+ * guard.process() against an async token store — the shape a Redis or KV store
+ * has. Promise scheduling is exactly what differs between runtimes, so the
+ * async path is proved on each one, not only on Node.
+ */
+async function checkProcessAsync(policy) {
+  const inner = core.createMemoryTokenStore()
+  const store = {
+    sync: false,
+    set: async (id, rec) => inner.set(id, rec),
+    get: async (id) => inner.get(id),
+    delete: async (id) => inner.delete(id),
+    clearSession: async (sid) => inner.clearSession(sid),
+  }
+  const guard = core.createGuard({ policy, tokenStore: store })
+
+  let refused = false
+  try {
+    guard.processSync(`เลขบัตร ${FAKE_ID}`)
+  } catch (e) {
+    refused = e?.code === 'ERR_PDPA_ASYNC_STORE'
+  }
+  if (!refused) throw new Error('processSync accepted an async token store')
+
+  const r = await guard.process(`เลขบัตร ${FAKE_ID}`, { sessionId: 'conv_a' })
+  const token = /\[tok:[bcdfghjkmnpqrstv]{16}\]/.exec(r.text)?.[0]
+  if (token === undefined || r.text.includes(FAKE_ID)) throw new Error('process did not tokenise')
+  const back = await guard.resolve(token, { purpose: 'otp_send', sessionId: 'conv_a' })
+  if (!back.ok || back.value !== FAKE_ID) throw new Error('async token did not resolve')
+  const out = await guard.process(`ยืนยัน ${token}`, { sessionId: 'conv_a', boundary: 'outbound' })
+  if (out.text.includes('tok:') || out.text.includes(FAKE_ID)) {
+    throw new Error('outbound reply was not rendered')
+  }
 }
 
 /**

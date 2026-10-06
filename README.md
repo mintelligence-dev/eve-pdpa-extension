@@ -18,8 +18,8 @@ const guard = createGuard({
   onAudit: (event) => auditLog.write(event),
 })
 
-// ข้อความจากลูกค้า → AI
-const inbound = guard.processSync('เบอร์ ๐๙๑-๘๘๘-๗๗๗๗ ค่ะ', {
+// ข้อความจากลูกค้า → AI  (processSync ก็ได้ ถ้าที่เก็บ token เป็น sync)
+const inbound = await guard.process('เบอร์ ๐๙๑-๘๘๘-๗๗๗๗ ค่ะ', {
   sessionId: 'conv_8f2a',     // id ห้องแชทที่ระบบสร้างเอง ไม่ใช่ LINE userId
   ref: 'msg_10293',           // id ข้อความในระบบของแอป ไว้ตามจาก audit กลับมา
 })
@@ -30,7 +30,7 @@ const r = await guard.resolve('[tok:dcpttqrpmdvprnqp]', { purpose: 'otp_send', s
 r.ok && r.value               // '0918887777'
 
 // คำตอบของ AI → ลูกค้า
-guard.processSync(reply, { sessionId: 'conv_8f2a', boundary: 'outbound' }).text
+(await guard.process(reply, { sessionId: 'conv_8f2a', boundary: 'outbound' })).text
 // 'ส่ง OTP ไปที่ xxx-xxx-๗๗๗๗ แล้วค่ะ'
 ```
 
@@ -54,7 +54,7 @@ guard.processSync(reply, { sessionId: 'conv_8f2a', boundary: 'outbound' }).text
 
 > **token เก็บในหน่วยความจำของ process เดียวเป็นค่าเริ่มต้น** — ถ้าระบบรันหลาย process หรือหลาย pod
 > ต้องเสียบ `tokenStore` ที่ใช้ร่วมกัน ไม่อย่างนั้นการแลก token จะได้ `not_found` · ที่เก็บแบบ async
-> (เช่น Redis) ต้องรอ `guard.process()` ที่ยังไม่มีใน 0.1
+> (เช่น Redis) ใช้กับ `await guard.process()` · `processSync` รับเฉพาะที่เก็บแบบ sync
 
 > **ค่าที่ผ่าน action `hash` ยังนับเป็นข้อมูลส่วนบุคคล ตราบใดที่ key ยังอยู่** — เบอร์มือถือไทยมีราว 10⁸ ค่า
 > ใครได้ `hmacKey` ไปจะ hash ได้ครบทุกเบอร์ในไม่กี่นาที · `hash` คือการแฝงข้อมูล (pseudonymisation)
