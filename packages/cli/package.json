@@ -1,0 +1,34 @@
+{
+  "name": "@thai-pdpa-guard/cli",
+  "version": "0.0.0",
+  "description": "Scan JSONL, CSV and LINE Official Account exports for Thai personal data.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "thai-pdpa-guard": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "dependencies": {
+    "@thai-pdpa-guard/core": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "tsdown": "0.23.0",
+    "typescript": "5.9.3",
+    "@types/node": "24.10.1"
+  }
+}

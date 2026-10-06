@@ -239,6 +239,22 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/cli:
+    dependencies:
+      '@thai-pdpa-guard/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@types/node':
+        specifier: 24.10.1
+        version: 24.10.1
+      tsdown:
+        specifier: 0.23.0
+        version: 0.23.0(@arethetypeswrong/core@0.18.5)(publint@0.3.24)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   packages/core:
     devDependencies:
       tsdown:
