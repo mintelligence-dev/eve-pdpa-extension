@@ -13,3 +13,6 @@ scripts/demo/out/
 
 # Internal design notes and translations of internal pages — kept local
 docs/
+
+# Generated benchmark data and report (bench/generate.mjs, bench/evaluate.mjs)
+bench/out/
