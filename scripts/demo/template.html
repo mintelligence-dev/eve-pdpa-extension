@@ -1,0 +1,1038 @@
+<title>thai-pdpa-guard Live Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a presenter's lab bench — one step per screen, controls on the left, live results on the right, stepped like slides. */
+:root {
+  --bg: #F3F2EC;
+  --surface: #FCFBF7;
+  --sunken: #E9E7DF;
+  --ink: #14213D;
+  --text: #1E2633;
+  --muted: #586274;
+  --line: #D9D5C9;
+  --accent: #0F766E;
+  --accent-ink: #F2FBF9;
+  --accent-soft: #D8EEE9;
+  --code-bg: #14213D;
+  --code-fg: #E3EAF3;
+  --code-dim: #93A4BD;
+  --code-str: #6EE7D5;
+  --ok-bg: #D8EEE9; --ok-fg: #0B5751;
+  --warn-bg: #FBE7CF; --warn-fg: #7A3F06;
+  --bad-bg: #F9DEE2; --bad-fg: #8A1C30;
+  --id-bg: #E9E1FA; --id-fg: #4A2A99;
+  --phone-bg: #D6EEE8; --phone-fg: #0B5751;
+  --email-bg: #DDE8FA; --email-fg: #1D4A93;
+  --bank-bg: #FBE7CF; --bank-fg: #7A3F06;
+  --card-bg: #F9DEE2; --card-fg: #8A1C30;
+  --line-bg: #DFF0D6; --line-fg: #2D6619;
+  --kept-bg: #E9E7DF; --kept-fg: #3D4655;
+
+  --font-sans: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  --step-0: 0.875rem;
+  --step-1: 1rem;
+  --step-2: 1.125rem;
+  --step-3: 1.5rem;
+  --step-4: 2.25rem;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1626; --surface: #152035; --sunken: #1B2740; --ink: #EEF2F8; --text: #D7DEE9; --muted: #9AA6B9; --line: #2A3755;
+    --accent: #5EEAD4; --accent-ink: #062823; --accent-soft: #123B37;
+    --code-bg: #0A1120; --code-fg: #DCE5F0; --code-dim: #8597B1; --code-str: #6EE7D5;
+    --ok-bg: #123B37; --ok-fg: #8BF0DE; --warn-bg: #3E2A12; --warn-fg: #F6C68A; --bad-bg: #42202A; --bad-fg: #F6A9B6;
+    --id-bg: #2D2550; --id-fg: #CDBDFB; --phone-bg: #123B37; --phone-fg: #8BF0DE; --email-bg: #1C2F52; --email-fg: #A9C6F6;
+    --bank-bg: #3E2A12; --bank-fg: #F6C68A; --card-bg: #42202A; --card-fg: #F6A9B6; --line-bg: #1E3A18; --line-fg: #B3E59A;
+    --kept-bg: #22304A; --kept-fg: #C2CCDA;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1626; --surface: #152035; --sunken: #1B2740; --ink: #EEF2F8; --text: #D7DEE9; --muted: #9AA6B9; --line: #2A3755;
+  --accent: #5EEAD4; --accent-ink: #062823; --accent-soft: #123B37;
+  --code-bg: #0A1120; --code-fg: #DCE5F0; --code-dim: #8597B1; --code-str: #6EE7D5;
+  --ok-bg: #123B37; --ok-fg: #8BF0DE; --warn-bg: #3E2A12; --warn-fg: #F6C68A; --bad-bg: #42202A; --bad-fg: #F6A9B6;
+  --id-bg: #2D2550; --id-fg: #CDBDFB; --phone-bg: #123B37; --phone-fg: #8BF0DE; --email-bg: #1C2F52; --email-fg: #A9C6F6;
+  --bank-bg: #3E2A12; --bank-fg: #F6C68A; --card-bg: #42202A; --card-fg: #F6A9B6; --line-bg: #1E3A18; --line-fg: #B3E59A;
+  --kept-bg: #22304A; --kept-fg: #C2CCDA;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--step-1);
+  line-height: 1.6;
+  padding-inline: clamp(16px, 3vw, 40px);
+  padding-block: 0 40px;
+}
+h1, h2, h3 { color: var(--ink); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+
+/* ---------- top bar ---------- */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  padding-block: 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.brand b { font-size: var(--step-2); color: var(--ink); letter-spacing: 0.01em; }
+.brand span { font-size: var(--step-0); color: var(--muted); }
+.steps { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; justify-content: center; }
+.steps button {
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+  border-radius: 999px; padding: 4px 12px; font-size: var(--step-0); cursor: pointer;
+}
+.steps button[aria-current="step"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.nav { display: flex; gap: 8px; align-items: center; }
+.nav .count { font-size: var(--step-0); color: var(--muted); font-variant-numeric: tabular-nums; min-width: 3.5em; text-align: center; }
+
+.btn {
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 600;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.small { padding: 4px 10px; font-size: var(--step-0); }
+.btn[disabled] { opacity: 0.5; cursor: default; }
+
+/* ---------- a step ---------- */
+.step { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; padding-block: 28px 0; }
+@media (max-width: 960px) { .step { grid-template-columns: minmax(0, 1fr); } }
+.head { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
+.eyebrow { font-size: var(--step-0); font-weight: 600; color: var(--accent); letter-spacing: 0.04em; }
+.head h2 { font-size: var(--step-4); line-height: 1.2; font-weight: 700; }
+.head p { color: var(--muted); font-size: var(--step-2); }
+
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.panel h3 { font-size: var(--step-0); font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
+.label { font-size: var(--step-0); font-weight: 600; color: var(--muted); }
+textarea, input[type="text"], select {
+  width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+}
+textarea { resize: vertical; min-height: 6.5em; line-height: 1.6; }
+textarea.code { font-family: var(--font-mono); font-size: var(--step-0); min-height: 18em; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--sunken); color: var(--text); border-radius: 999px; padding: 3px 12px; font-size: var(--step-0); cursor: pointer; }
+.chip:hover { border-color: var(--accent); }
+.hint { font-size: var(--step-0); color: var(--muted); }
+.policy { font-family: var(--font-mono); font-size: var(--step-0); background: var(--sunken); border-radius: 8px; padding: 8px 12px; overflow-x: auto; white-space: pre; }
+.check { display: flex; gap: 8px; align-items: center; font-size: var(--step-0); }
+
+/* ---------- text with marks ---------- */
+.text { font-size: var(--step-2); line-height: 2.1; word-break: break-word; white-space: pre-wrap; }
+.hl { border-radius: 6px; padding: 2px 6px; font-weight: 600; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.hl .tag { font-size: 0.68em; font-weight: 600; margin-inline-start: 6px; padding: 0 5px; border-radius: 4px; border: 1px solid currentColor; opacity: 0.85; vertical-align: 0.15em; white-space: nowrap; }
+.e-id { background: var(--id-bg); color: var(--id-fg); }
+.e-phone { background: var(--phone-bg); color: var(--phone-fg); }
+.e-email { background: var(--email-bg); color: var(--email-fg); }
+.e-bank { background: var(--bank-bg); color: var(--bank-fg); }
+.e-card { background: var(--card-bg); color: var(--card-fg); }
+.e-line { background: var(--line-bg); color: var(--line-fg); }
+.kept { background: var(--kept-bg); color: var(--kept-fg); }
+.inv { font-family: var(--font-mono); font-size: 0.6em; font-weight: 500; background: var(--warn-bg); color: var(--warn-fg); border-radius: 4px; padding: 1px 4px; margin-inline: 2px; vertical-align: 0.2em; }
+
+/* ---------- pills, tables, code ---------- */
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 2px 10px; font-size: var(--step-0); font-weight: 600; white-space: nowrap; }
+.pill.ok { background: var(--ok-bg); color: var(--ok-fg); }
+.pill.warn { background: var(--warn-bg); color: var(--warn-fg); }
+.pill.bad { background: var(--bad-bg); color: var(--bad-fg); }
+.pill.neutral { background: var(--kept-bg); color: var(--kept-fg); }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: var(--step-0); }
+th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.mono, td .mono { font-family: var(--font-mono); }
+td .text { font-size: var(--step-1); line-height: 1.9; }
+.num { font-variant-numeric: tabular-nums; }
+pre.json {
+  margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius);
+  padding: 14px 16px; font-family: var(--font-mono); font-size: var(--step-0); line-height: 1.55;
+  overflow-x: auto; max-height: 30em;
+}
+.k { color: var(--code-dim); } .s { color: var(--code-str); }
+.empty { color: var(--muted); font-size: var(--step-0); padding: 6px 0; }
+
+/* confidence meter: the bar is the value, the tick is the 0.95 threshold */
+.meter { position: relative; height: 8px; background: var(--sunken); border-radius: 4px; min-width: 120px; }
+.meter i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--accent); }
+.meter i.low { background: var(--muted); }
+.meter b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); left: 95%; }
+
+.cand { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.cand:last-child { border-bottom: none; }
+.cand .why { grid-column: 2 / -1; margin: 0; font-size: var(--step-0); color: var(--text); }
+.panel > .why { font-size: var(--step-0); color: var(--text); }
+.logrow { border-top: 1px solid var(--line); padding: 8px 0; }
+.logrow summary { cursor: pointer; font-size: var(--step-0); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.logrow summary .mono { word-break: break-all; }
+.logrow pre.json { margin-top: 8px; }
+.steps-list { margin: 0; padding-inline-start: 1.4em; display: flex; flex-direction: column; gap: 4px; font-size: var(--step-0); }
+.cand .meta { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: var(--step-0); color: var(--muted); }
+
+.blocked { display: flex; flex-direction: column; gap: 8px; background: var(--bad-bg); color: var(--bad-fg); border-radius: var(--radius); padding: 14px 16px; }
+.blocked b { font-size: var(--step-2); }
+.notice { background: var(--accent-soft); color: var(--text); border-radius: var(--radius); padding: 12px 14px; font-size: var(--step-0); }
+.error { background: var(--bad-bg); color: var(--bad-fg); border-radius: var(--radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.error code { font-weight: 500; }
+.stage { display: grid; grid-template-columns: 2em minmax(0, 1fr); gap: 4px 12px; }
+.stage .n { font-family: var(--font-mono); font-weight: 500; color: var(--accent); font-size: var(--step-2); }
+.stage .body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.footnote { grid-column: 1 / -1; color: var(--muted); font-size: var(--step-0); border-top: 1px solid var(--line); padding-block: 14px 0; }
+@media (prefers-reduced-motion: no-preference) { .flash { animation: flash 0.5s ease-out; } @keyframes flash { from { background: var(--accent-soft); } } }
+</style>
+
+<header class="bar">
+  <div class="brand"><b>thai-pdpa-guard</b><span id="libinfo">กำลังโหลด library…</span></div>
+  <nav class="steps" id="steps" aria-label="ขั้นตอนของ demo"></nav>
+  <div class="nav">
+    <button class="btn small" id="prev" type="button" aria-label="ก่อนหน้า">←</button>
+    <span class="count" id="count">1 / 8</span>
+    <button class="btn small" id="next" type="button" aria-label="ถัดไป">→</button>
+  </div>
+</header>
+<main id="stage"></main>
+
+<script>
+(function () {
+/*__PDPA_LIBRARY__*/
+})();
+</script>
+
+<script>
+(function () {
+  'use strict'
+  const P = window.PDPA
+  const EXAMPLE_POLICY = /*__EXAMPLE_POLICY__*/''
+  const KEY = 'a3f1c9e07b2d4f6a8c1e3b5d7f9a0c2e4b6d8f1a3c5e7b9d0f2a4c6e8b1d3f5a'
+
+  // ---------- tiny DOM helpers (text only ever goes in as textContent) ----------
+  function h(tag, attrs, ...kids) {
+    const n = document.createElement(tag)
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === undefined || v === null || v === false) continue
+      if (k === 'class') n.className = v
+      else if (k === 'text') n.textContent = v
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v)
+      else if (k === 'value') n.value = v
+      else n.setAttribute(k, v === true ? '' : v)
+    }
+    for (const kid of kids.flat()) {
+      if (kid === undefined || kid === null || kid === false) continue
+      n.append(kid instanceof Node ? kid : document.createTextNode(String(kid)))
+    }
+    return n
+  }
+  const clear = (n) => { while (n.firstChild) n.removeChild(n.firstChild); return n }
+  function flash(n) { n.classList.remove('flash'); void n.offsetWidth; n.classList.add('flash') }
+  function debounce(fn, ms) { let t; return () => { clearTimeout(t); t = setTimeout(fn, ms) } }
+
+  const ENTITY = {
+    TH_NATIONAL_ID: { label: 'เลขบัตรประชาชน', cls: 'e-id' },
+    PHONE: { label: 'เบอร์โทร', cls: 'e-phone' },
+    EMAIL: { label: 'อีเมล', cls: 'e-email' },
+    BANK_ACCOUNT: { label: 'เลขบัญชี', cls: 'e-bank' },
+    CREDIT_CARD: { label: 'บัตรเครดิต', cls: 'e-card' },
+    LINE_USER_ID: { label: 'LINE ID', cls: 'e-line' },
+  }
+  const INVISIBLE = {
+    '​': 'ZWSP', '‌': 'ZWNJ', '‍': 'ZWJ', '‎': 'LRM', '‏': 'RLM',
+    '⁠': 'WJ', '﻿': 'BOM', '­': 'SHY', ' ': 'NBSP',
+  }
+
+  function appendVisible(parent, s) {
+    let buf = ''
+    for (const ch of s) {
+      if (INVISIBLE[ch]) {
+        if (buf) { parent.append(buf); buf = '' }
+        parent.append(h('span', { class: 'inv', title: 'อักขระที่มองไม่เห็น' }, INVISIBLE[ch]))
+      } else buf += ch
+    }
+    if (buf) parent.append(buf)
+  }
+
+  /** Text with highlighted spans. marks: [{start, end, cls, tag}] on `text`'s own offsets. */
+  function marked(text, marks) {
+    const box = h('div', { class: 'text' })
+    let at = 0
+    for (const m of [...marks].sort((a, b) => a.start - b.start)) {
+      if (m.start < at) continue
+      appendVisible(box, text.slice(at, m.start))
+      const mk = h('mark', { class: 'hl ' + m.cls })
+      appendVisible(mk, text.slice(m.start, m.end))
+      if (m.tag) mk.append(h('span', { class: 'tag' }, m.tag))
+      box.append(mk)
+      at = m.end
+    }
+    appendVisible(box, text.slice(at))
+    return box
+  }
+
+  /**
+   * Splits the guard's output back into unchanged and replaced stretches, using the
+   * findings' offsets into the original. Returns null if it cannot line them up,
+   * and the caller falls back to plain text.
+   */
+  function splitOutput(original, out, findings) {
+    const fs = [...findings].sort((a, b) => a.start - b.start)
+    const parts = []
+    let pos = 0
+    let prev = 0
+    for (let i = 0; i < fs.length; i++) {
+      const f = fs[i]
+      const same = original.slice(prev, f.start)
+      if (out.slice(pos, pos + same.length) !== same) return null
+      if (same) parts.push({ same })
+      pos += same.length
+      const nextStart = i + 1 < fs.length ? fs[i + 1].start : original.length
+      const after = original.slice(f.end, nextStart)
+      let end
+      if (i === fs.length - 1) end = out.length - after.length
+      else if (after === '') end = pos
+      else end = out.indexOf(after, pos)
+      if (end < pos) return null
+      parts.push({ rep: out.slice(pos, end), f, was: original.slice(f.start, f.end) })
+      pos = end
+      prev = f.end
+    }
+    const tail = original.slice(prev)
+    if (out.slice(pos) !== tail) return null
+    if (tail) parts.push({ same: tail })
+    return parts
+  }
+
+  /** What the AI sees, with each replacement marked by entity. */
+  function aiView(original, result) {
+    if (result.outcome === 'blocked') {
+      return h('div', { class: 'blocked', role: 'status' },
+        h('b', {}, 'ไม่ส่งข้อความให้ AI'),
+        h('span', {}, 'text: "" · blockedBy: ' + (result.blockedBy || []).join(', ')),
+      )
+    }
+    const parts = splitOutput(original, result.text, result.findings)
+    if (parts === null) return marked(result.text, [])
+    const box = h('div', { class: 'text' })
+    for (const p of parts) {
+      if ('same' in p) { appendVisible(box, p.same); continue }
+      const meta = ENTITY[p.f.entity]
+      const untouched = p.rep === p.was
+      const tag = p.f.allowlisted ? 'ปล่อยผ่าน · allowlist' : untouched ? 'flag · ไม่ได้แก้' : meta.label
+      const mk = h('mark', { class: 'hl ' + (untouched ? 'kept' : meta.cls) })
+      appendVisible(mk, p.rep)
+      mk.append(h('span', { class: 'tag' }, tag))
+      box.append(mk)
+    }
+    return box
+  }
+
+  function json(obj) {
+    const pre = h('pre', { class: 'json' })
+    pre.textContent = JSON.stringify(obj, null, 2)
+    return pre
+  }
+
+  function errorBox(e) {
+    return h('div', { class: 'error', role: 'alert' },
+      h('code', {}, e && e.code ? e.code : (e && e.name) || 'Error'),
+      h('span', {}, e && e.message ? e.message : String(e)),
+    )
+  }
+
+  function guardWith(entities, extra) {
+    const events = []
+    const opts = Object.assign({
+      policy: P.definePolicy({ entitySet: '0.1', onUnmapped: 'redact', entities }),
+      onAudit: (e) => events.push(e),
+    }, extra || {})
+    return { guard: P.createGuard(opts), events }
+  }
+
+  function section(cfg) {
+    const left = h('div', { class: 'col' })
+    const right = h('div', { class: 'col', 'aria-live': 'polite' })
+    const el = h('section', { class: 'step', id: cfg.id },
+      h('div', { class: 'head' },
+        h('p', { class: 'eyebrow' }, cfg.eyebrow),
+        h('h2', {}, cfg.title),
+        h('p', {}, cfg.lede),
+      ),
+      left, right,
+      cfg.foot ? h('p', { class: 'footnote' }, cfg.foot) : null,
+    )
+    return { el, left, right }
+  }
+
+  function inputPanel(id, label, value, presets, onChange, extra) {
+    const ta = h('textarea', { id, rows: 4, value, spellcheck: 'false' })
+    ta.addEventListener('input', debounce(onChange, 150))
+    const chips = presets && presets.length
+      ? h('div', { class: 'chips' }, presets.map((p) =>
+          h('button', { class: 'chip', type: 'button', title: p.note || '', onclick: () => { ta.value = p.text; onChange() } }, p.label)))
+      : null
+    return { ta, node: h('div', { class: 'panel' }, h('label', { class: 'label', for: id }, label), ta, chips, extra || null) }
+  }
+
+  // =====================================================================
+  // 1 · the path of one message
+  // =====================================================================
+  function stepPipeline() {
+    const s = section({
+      id: 's1', eyebrow: 'เส้นทางของข้อความ',
+      title: 'ข้อความเดินผ่าน 3 ขั้นก่อนถึง AI',
+      lede: 'ทำความสะอาด → ตรวจหา → ลงมือตาม policy · ลองพิมพ์เลขไทย หรือแทรกอักขระที่มองไม่เห็นเข้าไปกลางเบอร์',
+      foot: 'ลบอักขระที่มองไม่เห็นออก ทำให้ตำแหน่งในฉบับสะอาดเลื่อนไปจากต้นฉบับ guard จึงแปลงตำแหน่งกลับก่อนแก้ข้อความ ส่วนที่ไม่ใช่ข้อมูลส่วนตัวกลับไปเหมือนที่ลูกค้าพิมพ์ทุกตัวอักษร',
+    })
+    const { guard } = guardWith({ TH_NATIONAL_ID: { action: 'redact' }, PHONE: { action: 'mask', keep: 'last4' } })
+    const engine = P.createEngine(P.BUILTIN_DETECTORS)
+    const run = () => {
+      const text = inp.ta.value
+      const norm = P.normalise(text)
+      const det = engine.runSync(norm, { sessionId: 'demo', boundary: 'inbound' })
+      const r = guard.processSync(text)
+      const dropped = norm.original.length - norm.text.length
+      clear(s.right).append(
+        h('div', { class: 'panel' }, h('div', { class: 'stage' },
+          h('span', { class: 'n' }, '①'),
+          h('div', { class: 'body' }, h('h3', {}, 'ต้นฉบับที่ลูกค้าพิมพ์'), marked(text, [])),
+        )),
+        h('div', { class: 'panel' }, h('div', { class: 'stage' },
+          h('span', { class: 'n' }, '②'),
+          h('div', { class: 'body' },
+            h('h3', {}, 'ทำความสะอาด · normalise()'),
+            marked(norm.text, []),
+            h('p', { class: 'hint' }, dropped > 0
+              ? 'ลบอักขระที่มองไม่เห็น ' + dropped + ' ตัว · ตารางตำแหน่งที่เลื่อน: ' + JSON.stringify(norm.shifts)
+              : 'ไม่มีอักขระที่ต้องลบ · ตำแหน่งตรงกับต้นฉบับ (shifts: null)'),
+          ),
+        )),
+        h('div', { class: 'panel' }, h('div', { class: 'stage' },
+          h('span', { class: 'n' }, '③'),
+          h('div', { class: 'body' },
+            h('h3', {}, 'ตัวตรวจเจอ · engine.runSync()'),
+            marked(norm.text, det.candidates.map((c) => ({ start: c.start, end: c.end, cls: ENTITY[c.entity].cls, tag: ENTITY[c.entity].label + ' · ' + c.confidence }))),
+            det.candidates.length === 0 ? h('p', { class: 'empty' }, 'ไม่เจอข้อมูลส่วนบุคคล') : h('p', { class: 'hint' },
+              det.candidates.map((c) => {
+                const [os, oe] = P.toOriginalSpan(norm, c.start, c.end)
+                return c.entity + ' ตำแหน่ง ' + c.start + '–' + c.end + ' ในฉบับสะอาด → ' + os + '–' + oe + ' ในต้นฉบับ'
+              }).join(' · ')),
+          ),
+        )),
+        h('div', { class: 'panel' }, h('div', { class: 'stage' },
+          h('span', { class: 'n' }, '④'),
+          h('div', { class: 'body' }, h('h3', {}, 'ลงมือตาม policy · AI เห็น'), aiView(text, r)),
+        )),
+      )
+    }
+    const insert = h('button', { class: 'btn small', type: 'button', onclick: () => {
+      const ta = inp.ta
+      const at = ta.selectionStart ?? ta.value.length
+      ta.value = ta.value.slice(0, at) + '​' + ta.value.slice(at)
+      ta.focus(); ta.setSelectionRange(at + 1, at + 1); run()
+    } }, 'แทรกอักขระล่องหน (ZWSP) ตรงเคอร์เซอร์')
+    const inp = inputPanel('s1-input', 'ข้อความจากลูกค้า',
+      'เลขบัตร ๓-๑๐๐๕-๐๐๑๒๓-๔๕-๘ เบอร์ ๐๙๑-๘๘๘-​๗๗๗๗ ค่ะ',
+      [
+        { label: 'เลขไทย + อักขระล่องหน', text: 'เลขบัตร ๓-๑๐๐๕-๐๐๑๒๓-๔๕-๘ เบอร์ ๐๙๑-๘๘๘-​๗๗๗๗ ค่ะ' },
+        { label: 'เลขเต็มความกว้าง', text: 'เบอร์ ０９１８８８７７７７ ค่ะ' },
+        { label: 'ข้อความธรรมดา', text: 'เลขบัตร 3-1005-00123-45-8 เบอร์ 091-888-7777' },
+      ], run, h('div', { class: 'row' }, insert))
+    s.left.append(inp.node,
+      h('div', { class: 'panel' }, h('h3', {}, 'policy ที่ใช้'), h('div', { class: 'policy' }, 'TH_NATIONAL_ID → redact\nPHONE          → mask, keep: last4\nอื่น ๆ          → redact (onUnmapped)')),
+    )
+    run()
+    return s.el
+  }
+
+  // =====================================================================
+  // 2 · what each detector sees
+  // =====================================================================
+  function stepDetect() {
+    const s = section({
+      id: 's2', eyebrow: 'ตัวตรวจจับ 6 ตัว',
+      title: 'ตัวตรวจเห็นอะไร และมั่นใจแค่ไหน',
+      lede: 'แสดงทุกอย่างที่ตัวตรวจเจอ รวมถึงตัวที่ความมั่นใจต่ำกว่าเกณฑ์ 0.95 ซึ่ง guard จะไม่ลงมือ',
+      foot: 'เลขบัตรประชาชนกับบัตรเครดิตยืนยันด้วยหลักตรวจ (mod-11 · Luhn) · อีเมลกับ LINE ID ใช้รูปแบบเฉพาะ · เบอร์โทรกับเลขบัญชีไม่มีหลักตรวจ จึงอ่านคำรอบข้างประกอบ',
+    })
+    const engine = P.createEngine(P.BUILTIN_DETECTORS)
+    // Why a detector reported what it did. Mirrors the confidence constants in
+    // packages/core/src/detectors/*.ts — each confidence value has one cause.
+    const why = (c, value) => {
+      const digits = value.replace(/\D/g, '')
+      switch (c.detector) {
+        case 'th-national-id':
+          return c.confidence >= 0.95 ? 'เลข 13 หลัก และหลักสุดท้ายคำนวณ mod-11 ได้ตรง' : 'เลข 13 หลักเหมือนกัน แต่หลักสุดท้ายคำนวณ mod-11 ไม่ตรง จึงไม่ใช่เลขบัตรจริง'
+        case 'credit-card':
+          return c.confidence >= 0.95 ? 'ผ่านสูตร Luhn และเลขขึ้นต้นตรงกับผู้ออกบัตรที่รู้จัก เช่น 4 = Visa, 5 = Mastercard' : 'ผ่านสูตร Luhn แต่เลขขึ้นต้นไม่ตรงกับผู้ออกบัตรรายไหนเลย อาจผ่านโดยบังเอิญ'
+        case 'email':
+          return 'มีรูปแบบ ชื่อ@โดเมน.นามสกุล'
+        case 'line-user-id':
+          return 'ขึ้นต้นด้วย U ตามด้วยอักษร 0–9 a–f 32 ตัว ซึ่งเป็นรูปแบบ userId ของ LINE'
+        case 'phone':
+          if (c.confidence >= 0.99) return 'รูปแบบเบอร์ไทย และมีคำอย่าง เบอร์ / โทร / มือถือ อยู่ใกล้ ๆ'
+          if (c.confidence >= 0.97) return 'รูปแบบเบอร์มือถือ: 0 ตามด้วย 6 / 8 / 9 รวม 10 หลัก'
+          return 'รูปแบบเบอร์บ้าน: 0 ตามด้วยรหัสพื้นที่ 2–7 รวม 9 หลัก'
+        case 'bank-account':
+          return /^0[689]\d{8}$/.test(digits)
+            ? 'หน้าตาเหมือนเบอร์มือถือ แต่มีคำว่า บัญชี อยู่ใกล้ ๆ ตัวตรวจเบอร์จึงถอยให้'
+            : 'เป็นชุดตัวเลขแบบเลขบัญชี และมีคำว่า บัญชี / โอน หรือชื่อธนาคารอยู่ใกล้ ๆ'
+        default:
+          return ''
+      }
+    }
+    const run = () => {
+      const text = inp.ta.value
+      const norm = P.normalise(text)
+      const det = engine.runSync(norm, { sessionId: 'demo', boundary: 'inbound' })
+      const list = h('div', { class: 'panel' }, h('h3', {}, 'ที่ตัวตรวจเจอ · ก่อนตัดสินตาม policy'))
+      if (det.candidates.length === 0) {
+        const preset = PRESETS.find((p) => p.text === text)
+        list.append(h('p', { class: 'empty' }, 'ไม่เจออะไร · ข้อความนี้ผ่านไปโดยไม่แก้'))
+        if (preset && preset.whyNot) list.append(h('p', { class: 'why' }, 'ทำไมไม่จับ: ' + preset.whyNot))
+      }
+      for (const c of det.candidates) {
+        const meta = ENTITY[c.entity]
+        const acts = c.confidence >= 0.95
+        list.append(h('div', { class: 'cand' },
+          h('mark', { class: 'hl ' + meta.cls }, meta.label),
+          h('span', { class: 'mono' }, norm.text.slice(c.start, c.end)),
+          h('span', { class: 'pill ' + (acts ? 'ok' : 'neutral') }, acts ? 'ลงมือ' : 'ต่ำกว่าเกณฑ์ ไม่ลงมือ'),
+          h('p', { class: 'why' }, (acts ? 'จับเพราะ: ' : 'เจอแต่ไม่มั่นใจ: ') + why(c, norm.text.slice(c.start, c.end))),
+          h('div', { class: 'meta' },
+            h('span', { class: 'num' }, 'ความมั่นใจ ' + c.confidence.toFixed(2)),
+            h('div', { class: 'meter', role: 'img', 'aria-label': 'ความมั่นใจ ' + c.confidence + ' จากเกณฑ์ 0.95' },
+              h('i', { class: acts ? '' : 'low', style: 'width:' + Math.round(c.confidence * 100) + '%' }), h('b', {})),
+            h('span', {}, 'ตัวตรวจ ' + c.detector),
+          ),
+        ))
+      }
+      clear(s.right).append(
+        h('div', { class: 'panel' }, h('h3', {}, 'ข้อความ'), marked(norm.text, det.candidates.map((c) => ({ start: c.start, end: c.end, cls: ENTITY[c.entity].cls, tag: ENTITY[c.entity].label })))),
+        list,
+      )
+    }
+    const PRESETS = [
+      { label: 'บัตรประชาชน', text: 'เลขบัตรประชาชน 3-1005-00123-45-8', note: 'หลักตรวจถูก · มั่นใจ 0.99' },
+      { label: 'หลักตรวจผิด', text: 'เลขบัตรประชาชน 3-1005-00123-45-1', note: 'รูปแบบเหมือน แต่หลักตรวจผิด · 0.2' },
+      { label: 'บัตร Visa', text: 'บัตร 4111 1111 1111 1111', note: 'Luhn ผ่าน · ผู้ออกบัตรรู้จัก · 0.98' },
+      { label: 'ผู้ออกบัตรไม่รู้จัก', text: 'เลขอ้างอิง 9999 9999 9999 9995', note: 'Luhn ผ่านโดยบังเอิญ · 0.6' },
+      { label: 'อีเมล', text: 'ส่งใบเสร็จมาที่ somchai@example.com ด้วยค่ะ' },
+      { label: 'LINE user', text: 'ลูกค้า U0123456789abcdef0123456789abcdef ค่ะ' },
+      { label: 'LINE group', text: 'กลุ่ม C0123456789abcdef0123456789abcdef', note: 'ระบุห้อง ไม่ใช่คน · ไม่จับ', whyNot: 'ขึ้นต้นด้วย C คือรหัสกลุ่มแชท ไม่ได้ระบุตัวคน จึงไม่ใช่ข้อมูลส่วนบุคคล' },
+      { label: 'เบอร์ +66', text: 'โทรหาผมที่ +66 91 888 7777 ครับ' },
+      { label: 'เลขบัญชี', text: 'โอนมาที่ กสิกร 123-4-56789-0 นะครับ' },
+      { label: 'เลขเดียวกัน ใต้คำว่าบัญชี', text: 'เลขบัญชี 0812345678', note: 'เบอร์โทรถอนตัว ให้เลขบัญชีจับแทน' },
+      { label: 'เลขออเดอร์', text: 'เลขที่ออเดอร์ 8829301847 ราคา 250 บาท', note: 'ไม่มีคำว่าบัญชี · ไม่จับ', whyNot: 'ไม่ขึ้นต้นด้วย 0 จึงไม่ใช่เบอร์ และไม่มีคำว่า บัญชี หรือชื่อธนาคาร จึงไม่ใช่เลขบัญชี' },
+    ]
+    const inp = inputPanel('s2-input', 'ข้อความ · กดตัวอย่างด้านล่าง หรือพิมพ์เอง', 'เลขบัตร 3-1005-00123-45-8 บัตร 4111 1111 1111 1111', PRESETS, run)
+    s.left.append(inp.node, h('p', { class: 'hint' }, 'ชี้ที่ปุ่มตัวอย่างค้างไว้เพื่อดูว่าควรได้ผลอะไร'))
+    run()
+    return s.el
+  }
+
+  // =====================================================================
+  // 3 · six actions on one message
+  // =====================================================================
+  function stepActions() {
+    const s = section({
+      id: 's3', eyebrow: 'action ทั้ง 6',
+      title: 'ข้อความเดียวกัน ผ่าน policy 6 แบบ',
+      lede: 'เปลี่ยนแค่ action ของเบอร์โทร · ข้อมูลประเภทอื่นถูกปิดตามค่าเริ่มต้น',
+      foot: 'token และ hash ใช้ตัวอักษรล้วน ไม่มีตัวเลข จึงผ่าน guard รอบสองโดยไม่ถูกจับซ้ำ · block คืนข้อความว่าง ถ้าแอปลืมเช็คผลก็ไม่มีอะไรหลุด',
+    })
+    const keep = h('input', { type: 'checkbox', id: 's3-keep', checked: true })
+    const ACTIONS = [
+      { a: 'redact', when: 'ลบค่าออก แทนด้วยชื่อประเภท · ไม่เหลือส่วนไหนของค่าเดิม' },
+      { a: 'mask', when: 'แทนตัวเลขด้วย x คงขีดและเว้นวรรคไว้ · ใส่ keep: last4 จะเหลือ 4 ตัวท้าย' },
+      { a: 'tokenise', when: 'แทนด้วย token สุ่ม เก็บค่าจริงไว้ฝั่ง server · ค่าเดิมในห้องเดิมได้ token เดิม · tool แลกคืนได้ตาม purpose ภายในเวลาที่กำหนด' },
+      { a: 'hash', when: 'แทนด้วย HMAC ของค่า · ค่าเดียวกันได้ผลเดียวกันเสมอ แม้พิมพ์ต่างรูปแบบ · ย้อนกลับเป็นค่าจริงไม่ได้ถ้าไม่มี key' },
+      { a: 'flag', when: 'ไม่แก้ข้อความ ส่งต่อตามเดิม · แต่บันทึกลง audit ว่าเจออะไร ตรงไหน' },
+      { a: 'block', when: 'ไม่ส่งข้อความนี้เลย คืนข้อความว่าง · บอกใน blockedBy ว่าเจอประเภทไหน' },
+    ]
+    const run = () => {
+      const text = inp.ta.value
+      const tbody = h('tbody', {})
+      for (const { a, when } of ACTIONS) {
+        const rule = a === 'mask' ? (keep.checked ? { action: 'mask', keep: 'last4' } : { action: 'mask' })
+          : a === 'tokenise' ? { action: 'tokenise', allowedPurposes: ['otp_send'] } : { action: a }
+        let cell
+        let state
+        try {
+          const { guard } = guardWith({ PHONE: rule }, a === 'hash' ? { hmacKey: KEY } : {})
+          const r = guard.processSync(text)
+          cell = aiView(text, r)
+          state = r.outcome === 'blocked' ? h('span', { class: 'pill bad' }, 'blocked') : h('span', { class: 'pill ok' }, 'processed')
+        } catch (e) { cell = errorBox(e); state = null }
+        tbody.append(h('tr', {},
+          h('td', {}, h('b', { class: 'mono' }, a === 'mask' && keep.checked ? 'mask · last4' : a)),
+          h('td', {}, cell),
+          h('td', {}, state),
+          h('td', { class: 'hint' }, when),
+        ))
+      }
+      clear(s.right).append(h('div', { class: 'panel' },
+        h('div', { class: 'tablewrap' }, h('table', {},
+          h('thead', {}, h('tr', {}, h('th', {}, 'action'), h('th', {}, 'AI เห็น'), h('th', {}, 'ผล'), h('th', {}, 'ทำงานยังไง'))),
+          tbody,
+        )),
+      ))
+    }
+    keep.addEventListener('change', run)
+    const inp = inputPanel('s3-input', 'ข้อความจากลูกค้า', 'ขอเปลี่ยนเบอร์เป็น 091-888-7777 ค่ะ', [
+      { label: 'เบอร์อย่างเดียว', text: 'ขอเปลี่ยนเบอร์เป็น 091-888-7777 ค่ะ' },
+      { label: 'เบอร์เลขไทย', text: 'ขอเปลี่ยนเบอร์เป็น ๐๙๑-๘๘๘-๗๗๗๗ ค่ะ' },
+      { label: 'เบอร์ + อีเมล', text: 'เบอร์ 091-888-7777 อีเมล somchai@example.com' },
+    ], run, h('label', { class: 'check', for: 's3-keep' }, keep, 'mask ใส่ keep: last4 · เอาออกแล้วจะปิดทั้งหมด'))
+    s.left.append(inp.node)
+    run()
+    return s.el
+  }
+
+
+  // =====================================================================
+  // policy — the shop's rule file
+  // =====================================================================
+  function stepPolicyFile() {
+    const s = section({
+      id: 's-policy', eyebrow: 'policy',
+      title: 'policy คือไฟล์กติกา',
+      lede: 'บอกว่าเจอข้อมูลแต่ละประเภทแล้วให้ทำอะไร · dev เขียนครั้งเดียว รีวิวเหมือน code แล้ว guard โหลดตอน server เริ่ม',
+      foot: 'ไฟล์นี้คือ examples/pdpa-policy.json ใน repo · มีเทสบังคับว่าต้องโหลดผ่านเสมอ · hmacKey ไม่อยู่ใน policy เพราะไฟล์นี้ถูก commit ลง git ส่วน key ต้องอ่านจาก secret',
+    })
+    const ta = h('textarea', { id: 'sp-policy', class: 'code', value: EXAMPLE_POLICY, spellcheck: 'false' })
+    const msg = h('textarea', { id: 'sp-msg', rows: 3, spellcheck: 'false',
+      value: 'เลขบัตร 3-1005-00123-45-8 เบอร์ 091-888-7777 โอนเข้าบัญชี 123-4-56789-0 ติดต่อ support@myshop.co.th' })
+    const FIELDS = [
+      ['entitySet', 'เขียนสำหรับตัวตรวจชุดไหน · บังคับ · อัปเดต library แล้วมีข้อมูลประเภทใหม่ ร้านจะรู้'],
+      ['onUnmapped', 'เจอข้อมูลประเภทที่ไม่ได้เขียนกฎไว้ ให้ทำอะไร · ค่าเริ่มต้น redact'],
+      ['placeholderLanguage', 'th → [เบอร์โทร] · en → [phone]'],
+      ['entities', 'กฎของข้อมูลแต่ละประเภท: action และตัวเลือกของ action นั้น'],
+      ['allowlist', 'ค่าที่ไม่ต้องปิด เช่นอีเมลและเบอร์ของร้านเอง · ช่องเดียวที่อาจมีข้อมูลส่วนบุคคล'],
+      ['$schema', 'ให้ editor ตรวจไฟล์ตอนพิมพ์ · guard ไม่ใช้'],
+    ]
+    const RULES = [
+      ['action', 'ทุกตัว · บังคับ', 'redact · mask · tokenise · hash · flag · block'],
+      ['minConfidence', 'ทุกตัว', 'ความมั่นใจขั้นต่ำที่จะลงมือ · ค่าเริ่มต้น 0.95'],
+      ['keep', 'mask', '"last4" เหลือ 4 ตัวท้าย · ไม่ใส่ = ปิดหมด'],
+      ['allowedPurposes', 'tokenise · บังคับ', 'เหตุผลที่แลก token กลับได้'],
+      ['ttlSec', 'tokenise', 'อายุ token 1–3600 วินาที · ค่าเริ่มต้น 300'],
+      ['display', 'tokenise', 'ตอนตอบลูกค้า โชว์เป็น mask หรือ redact'],
+    ]
+    const table = (head, rows) => h('div', { class: 'tablewrap' }, h('table', {},
+      h('thead', {}, h('tr', {}, head.map((x) => h('th', {}, x)))),
+      h('tbody', {}, rows.map((r) => h('tr', {}, r.map((c, i) => h('td', { class: i === 0 ? 'mono' : '' }, c)))))))
+
+    const run = () => {
+      let policy
+      let guard
+      const loadEvents = []
+      try {
+        policy = P.parsePolicy(ta.value)
+        guard = P.createGuard({ policy, hmacKey: KEY, onAudit: (e) => loadEvents.push(e) })
+      } catch (e) {
+        clear(s.right).append(h('div', { class: 'panel' }, h('h3', {}, 'โหลด policy'), errorBox(e),
+          h('p', { class: 'hint' }, 'โหลดไม่ผ่าน = server ไม่ยอมเริ่ม · ดีกว่าไปพังตอนข้อความแรกของลูกค้า')))
+        return
+      }
+      const r = guard.processSync(msg.value, { sessionId: 'conv_8f2a' })
+      const actions = r.findings.map((f) => h('li', {}, h('span', { class: 'mono' }, f.entity), ' → ',
+        h('b', {}, f.allowlisted ? 'ปล่อยผ่าน (allowlist)' : f.action)))
+      clear(s.right).append(
+        h('div', { class: 'panel' },
+          h('h3', {}, 'เส้นทางของไฟล์นี้'),
+          h('ol', { class: 'steps-list' },
+            h('li', {}, 'dev เขียน pdpa-policy.json'),
+            h('li', {}, 'commit ลง git · รีวิวเหมือน code'),
+            h('li', {}, 'server เริ่ม → parsePolicy() ตรวจไฟล์ → createGuard() → บันทึก policy.loaded ลง audit'),
+            h('li', {}, 'guard ใช้กฎนี้กับทุกข้อความ จนกว่าจะ deploy ใหม่'),
+            h('li', {}, 'แก้กฎ = แก้ไฟล์ → รีวิว → deploy · hash เปลี่ยน'))),
+        h('div', { class: 'panel' },
+          h('h3', {}, 'โหลดแล้ว'),
+          h('p', {}, h('span', { class: 'pill ok' }, 'โหลดผ่าน'), ' policy.hash ', h('b', { class: 'mono' }, policy.hash)),
+          h('p', { class: 'hint' }, 'ทุก audit event มี hash นี้ · แก้ไฟล์ทางซ้ายแม้ตัวเดียว hash จะเปลี่ยน')),
+        h('div', { class: 'panel' },
+          h('h3', {}, 'event แรกใน audit: policy.loaded'),
+          h('p', { class: 'hint' }, 'guard บันทึกกฎฉบับเต็มครั้งเดียวตอนสร้าง · ย้อนดูกฎจาก hash ได้ใน log เลย ไม่ต้องไปหาไฟล์ · ค่าใน allowlist.exact ถูกเก็บเป็น sha256 ไม่ใช่ค่าจริง'),
+          h('details', { class: 'logrow' }, h('summary', {}, h('span', { class: 'pill neutral' }, 'policy.loaded'), ' ', h('span', { class: 'mono' }, policy.hash)), json(loadEvents[0]))),
+        h('div', { class: 'panel' },
+          h('label', { class: 'label', for: 'sp-msg' }, 'ลองส่งข้อความผ่าน policy นี้'), msg,
+          h('h3', {}, 'AI เห็น'), aiView(msg.value, r),
+          actions.length ? h('ul', { class: 'hint' }, actions) : null),
+      )
+    }
+    ta.addEventListener('input', debounce(run, 300))
+    msg.addEventListener('input', debounce(run, 200))
+    s.left.append(
+      h('div', { class: 'panel' },
+        h('label', { class: 'label', for: 'sp-policy' }, 'pdpa-policy.json · แก้ได้'), ta,
+        h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: () => { ta.value = EXAMPLE_POLICY; run() } }, 'คืนค่าตัวอย่าง'))),
+      h('div', { class: 'panel' }, h('h3', {}, 'ช่องบนสุดของไฟล์'), table(['ช่อง', 'ทำอะไร'], FIELDS)),
+      h('div', { class: 'panel' }, h('h3', {}, 'ช่องในกฎของแต่ละประเภท (entities)'), table(['ช่อง', 'ใช้กับ', 'ทำอะไร'], RULES),
+        h('p', { class: 'hint' }, 'ช่องที่ไม่มีในตาราง หรือใช้ผิด action เช่น keep กับ block → โหลดไม่ผ่าน')),
+    )
+    run()
+    return s.el
+  }
+
+  // =====================================================================
+  // 4 · tokenise and resolve
+  // =====================================================================
+  function stepTokenise() {
+    const s = section({
+      id: 's4', eyebrow: 'tokenise แล้วแลกค่ากลับ',
+      title: 'AI เห็นแค่ token · tool แลกค่าจริงได้ตาม purpose',
+      lede: 'purpose ไม่ใช่รหัสผ่าน แต่เป็นเหตุผลที่ policy อนุญาต · ทุกครั้งที่แลกถูกบันทึก ทั้งที่ได้และที่ถูกปฏิเสธ',
+      foot: 'ค่าเดิมในห้องแชทเดิมได้ token เดิม AI จึงไม่เข้าใจผิดว่ามีสองเบอร์ · แลกได้ค่าในรูปแบบมาตรฐาน 0918887777 ที่ tool ใช้ได้ทันที · ตอนตอบลูกค้า guard ขาออกแปลง token เป็นเบอร์ที่ปิดไว้ ลูกค้าไม่เห็น token และไม่เห็นเบอร์เต็ม · sessionId ควรเป็น id ห้องแชทที่ระบบสร้างเอง ไม่ใช่ LINE userId',
+    })
+    let state
+    const reset = () => {
+      state = guardWith({ PHONE: { action: 'tokenise', ttlSec: 300, allowedPurposes: ['otp_send'] } })
+    }
+    reset()
+    const sessionSel = h('select', { id: 's4-session' },
+      h('option', { value: 'conv_8f2a' }, 'ห้องแชทเดียวกัน (conv_8f2a)'),
+      h('option', { value: 'conv_b71c' }, 'ห้องแชทอื่น (conv_b71c)'))
+    const purposeSel = h('select', { id: 's4-purpose' },
+      h('option', { value: 'otp_send' }, 'otp_send · อยู่ใน allowedPurposes'),
+      h('option', { value: 'marketing' }, 'marketing · ไม่อยู่'))
+    const callerIn = h('input', { type: 'text', id: 's4-caller', value: 'otp-service' })
+    const tokenIn = h('input', { type: 'text', id: 's4-token', value: '', class: 'mono', placeholder: 'กดส่งผ่าน guard ก่อน' })
+    // Stand-ins for the ids a real app already has: its message ids and tool-call ids.
+    let refSeq = 10290
+    const nextRef = (kind) => kind + '_' + (++refSeq)
+    const replyIn = h('textarea', { id: 's4-reply', rows: 3, spellcheck: 'false' })
+    const out = h('div', { class: 'col' })
+    const resolveOut = h('div', { class: 'col' })
+    const replyOut = h('div', { class: 'col' })
+    const logOut = h('div', { class: 'col' })
+
+    // Every event this page's guard has emitted, oldest first: the order a DPO reads them in.
+    const renderLog = () => {
+      const evs = state.events
+      const list = h('div', { class: 'panel' },
+        h('h3', {}, 'audit log ทั้งหมดของห้องนี้ · ' + evs.length + ' event'),
+        h('p', { class: 'hint' }, 'กดที่แต่ละบรรทัดเพื่อดู event เต็ม · tokenId เชื่อม scan ที่ออก token กับ token.resolve ที่มาแลกทีหลัง · เทียบ purpose ที่ขอ กับ allowedPurposes ที่อนุญาตตอนเก็บได้ในที่เดียว · ref คือ id ข้อความหรือ tool call ในระบบของแอป ใช้ตามกลับไปหาข้อความต้นทาง'))
+      if (evs.length === 0) list.append(h('p', { class: 'empty' }, '—'))
+      evs.forEach((e, i) => {
+        const refTag = e.ref ? ' · ref ' + e.ref : ''
+        const summary = e.type === 'policy.loaded'
+          ? 'policy.loaded · ' + e.policy.hash + ' · กฎ ' + Object.keys(e.policy.entities).length + ' ประเภท'
+          : e.type === 'scan'
+          ? 'scan · ' + e.boundary + ' · ' + e.sessionId + ' · ' + e.outcome
+            + (e.findings.length ? ' · ' + e.findings.map((f) => f.entity + '→' + f.action + (f.tokenId ? ' (' + f.tokenId + ', อนุญาต ' + (f.allowedPurposes || []).join('/') + ')' : '')).join(', ') : '')
+            + (e.rendered ? ' · rendered ' + e.rendered.map((x) => x.as + (x.as === 'foreign' || x.as === 'unknown' ? ' ⚠' : '')).join(', ') : '')
+          : 'token.resolve · ' + e.sessionId + ' · ' + (e.tokenId || 'null') + ' · purpose ' + e.purpose + ' · ' + e.outcome + (e.reason ? ' (' + e.reason + ')' : '')
+        const pill = e.type === 'policy.loaded' ? 'neutral' : (e.outcome === 'denied' || e.outcome === 'blocked') ? 'bad' : 'ok'
+        list.append(h('details', { class: 'logrow' },
+          h('summary', {}, h('span', { class: 'num' }, String(i + 1) + '. '), h('span', { class: 'pill ' + pill }, e.type), ' ', h('span', { class: 'mono' }, summary.slice(e.type.length + 3) + refTag)),
+          json(e)))
+      })
+      clear(logOut).append(list)
+    }
+
+    const send = () => {
+      const text = inp.ta.value
+      const r = state.guard.processSync(text, { sessionId: 'conv_8f2a', ref: nextRef('msg') })
+      const tok = (r.text.match(/\[tok:[a-z]{16}\]/) || [])[0]
+      if (tok) {
+        tokenIn.value = tok
+        replyIn.value = 'ส่ง OTP ไปที่ ' + tok + ' แล้วค่ะ'
+      }
+      clear(out).append(h('div', { class: 'panel' }, h('h3', {}, 'AI เห็น'), aiView(text, r),
+        tok ? h('p', { class: 'hint' }, 'token นี้อายุ 5 นาที (ttlSec: 300) · ค่าจริงอยู่ในที่เก็บฝั่ง server เท่านั้น') : null))
+      flash(out)
+      renderLog()
+    }
+    const resolve = () => {
+      const before = state.events.length
+      const r = state.guard.resolveSync(tokenIn.value.trim(), {
+        purpose: purposeSel.value, caller: callerIn.value || undefined, sessionId: sessionSel.value, ref: nextRef('call'),
+      })
+      const ev = state.events.slice(before).find((e) => e.type === 'token.resolve')
+      clear(resolveOut).append(
+        h('div', { class: 'panel' }, h('h3', {}, 'ผลที่ tool ได้'),
+          r.ok ? h('p', {}, h('span', { class: 'pill ok' }, 'ได้ค่า'), ' ', h('b', { class: 'mono' }, r.value))
+            : h('p', {}, h('span', { class: 'pill bad' }, 'ถูกปฏิเสธ'), ' ', h('code', {}, r.reason))),
+        h('div', { class: 'panel' }, h('h3', {}, 'audit event ที่ถูกบันทึก'), ev ? json(ev) : h('p', { class: 'empty' }, '—')),
+      )
+      flash(resolveOut)
+      renderLog()
+    }
+    const RENDERED_AS = {
+      masked: ['ok', 'token ของห้องนี้ ลูกค้าเห็นแบบปิดไว้'],
+      placeholder: ['neutral', 'แสดงเป็นชื่อประเภท'],
+      foreign: ['bad', 'token ของห้องอื่น · ข้อมูลข้ามห้อง ต้องตามดู'],
+      unknown: ['warn', 'token ที่ไม่มีอยู่ หมดอายุ หรือปลอม · อาจมีคนลองหลอก AI'],
+    }
+    const renderedTable = (items) => h('div', {},
+      h('p', { class: 'hint' }, 'audit บันทึกทีละตัว (rendered) · ไม่มีค่าจริงและไม่มีรูปที่ปิดไว้'),
+      h('div', { class: 'tablewrap' }, h('table', {},
+        h('thead', {}, h('tr', {}, h('th', {}, 'as'), h('th', {}, 'tokenId'), h('th', {}, 'entity'), h('th', {}, 'แปลว่า'))),
+        h('tbody', {}, items.map((x) => h('tr', {},
+          h('td', {}, h('span', { class: 'pill ' + RENDERED_AS[x.as][0] }, x.as)),
+          h('td', { class: 'mono' }, x.tokenId || '—'),
+          h('td', { class: 'mono' }, x.entity === null ? 'null' : x.entity),
+          h('td', {}, RENDERED_AS[x.as][1])))))))
+    const reply = () => {
+      const before = state.events.length
+      const r = state.guard.processSync(replyIn.value, { sessionId: sessionSel.value, boundary: 'outbound', ref: nextRef('msg') })
+      const ev = state.events.slice(before).find((e) => e.type === 'scan')
+      clear(replyOut).append(
+        h('div', { class: 'panel' }, h('h3', {}, 'ลูกค้าเห็นใน LINE'), marked(r.text, []),
+          ev && ev.rendered ? renderedTable(ev.rendered) : h('p', { class: 'hint' }, 'ไม่มี token ให้แปลง')),
+      )
+      flash(replyOut)
+      renderLog()
+    }
+    const inp = inputPanel('s4-input', 'ข้อความจากลูกค้า (ห้องแชท conv_8f2a)', 'ขอ OTP ที่เบอร์ ๐๙๑-๘๘๘-๗๗๗๗ ค่ะ', [], () => {})
+    s.left.append(
+      inp.node,
+      h('div', { class: 'row' },
+        h('button', { class: 'btn primary', type: 'button', onclick: send }, 'ส่งผ่าน guard'),
+        h('button', { class: 'btn', type: 'button', onclick: () => { inp.ta.value = 'ยืนยันเบอร์ 091-888-7777 อีกทีค่ะ'; send() } }, 'ส่งเบอร์เดิมอีกครั้ง'),
+      ),
+      h('div', { class: 'panel' },
+        h('h3', {}, 'tool ขอแลก token · guard.resolveSync()'),
+        h('label', { class: 'label', for: 's4-token' }, 'token'), tokenIn,
+        h('label', { class: 'label', for: 's4-purpose' }, 'purpose · ขอไปทำอะไร'), purposeSel,
+        h('label', { class: 'label', for: 's4-caller' }, 'caller · ใครขอ'), callerIn,
+        h('label', { class: 'label', for: 's4-session' }, 'session · ใช้ทั้งตอนแลกค่าและตอนตอบลูกค้า'), sessionSel,
+        h('div', { class: 'row' },
+          h('button', { class: 'btn primary', type: 'button', onclick: resolve }, 'แลกค่า'),
+          h('button', { class: 'btn', type: 'button', onclick: () => {
+            state.guard.endSession('conv_8f2a')
+            clear(resolveOut).append(h('p', { class: 'notice' }, 'จบการสนทนาแล้ว · token ทั้งหมดของ conv_8f2a ถูกลบ ลองกดแลกค่าอีกครั้ง · endSession ไม่สร้าง audit event'))
+          } }, 'จบการสนทนา (endSession)'),
+        ),
+      ),
+      h('div', { class: 'panel' },
+        h('h3', {}, 'AI ตอบลูกค้า · guard ขาออก (boundary: outbound)'),
+        h('label', { class: 'label', for: 's4-reply' }, 'คำตอบที่ AI พิมพ์'), replyIn,
+        h('div', { class: 'chips' },
+          h('button', { class: 'chip', type: 'button', onclick: () => { replyIn.value = 'ส่ง OTP ไปที่ ' + tokenIn.value + ' แล้วค่ะ'; reply() } }, 'มี token'),
+          h('button', { class: 'chip', type: 'button', onclick: () => { replyIn.value = 'ส่งไปที่ ' + tokenIn.value.replace(/^\[|\]$/g, '') + ' แล้วค่ะ'; reply() } }, 'AI ตัดวงเล็บออก'),
+          h('button', { class: 'chip', type: 'button', onclick: () => { replyIn.value = 'ส่งไปที่ [tok:bcdfghjkmnpqrstv] แล้วค่ะ'; reply() } }, 'token ปลอม'),
+          h('button', { class: 'chip', type: 'button', onclick: () => { replyIn.value = 'เบอร์ของคุณคือ 091-888-7777 นะคะ'; reply() } }, 'AI พิมพ์เบอร์เต็ม'),
+        ),
+        h('div', { class: 'row' }, h('button', { class: 'btn primary', type: 'button', onclick: reply }, 'ส่งคำตอบผ่าน guard')),
+        h('p', { class: 'hint' }, 'เปลี่ยน session ด้านบนเป็นห้องอื่นแล้วส่ง จะเห็นว่าไม่ได้เบอร์ของห้องนี้'),
+      ),
+    )
+    s.right.append(out, resolveOut, replyOut, logOut)
+    send()
+    return s.el
+  }
+
+  // =====================================================================
+  // 5 · hash
+  // =====================================================================
+  function stepHash() {
+    const s = section({
+      id: 's5', eyebrow: 'hash',
+      title: 'ค่าเดียวกันได้ hash เดียวกันเสมอ',
+      lede: 'ใช้นับหรือเชื่อมข้อมูลโดยไม่เห็นค่าจริง · เบอร์เดียวกันพิมพ์ต่างรูปแบบก็ได้ hash เดียวกัน',
+      foot: 'คนที่มี key ไล่ hash เบอร์มือถือไทยได้ครบ ~100 ล้านเบอร์ในไม่กี่นาที · hash จึงยังนับเป็นข้อมูลส่วนบุคคลตราบที่ key ยังอยู่ · key ในหน้านี้เป็นตัวอย่างสำหรับ demo เท่านั้น',
+    })
+    const keyIn = h('input', { type: 'text', id: 's5-key', value: KEY, class: 'mono', spellcheck: 'false' })
+    const run = () => {
+      let made
+      try {
+        made = guardWith({ PHONE: { action: 'hash' }, BANK_ACCOUNT: { action: 'hash' } }, { hmacKey: keyIn.value })
+      } catch (e) {
+        clear(s.right).append(h('div', { class: 'panel' }, h('h3', {}, 'สร้าง guard ไม่ได้'), errorBox(e),
+          h('p', { class: 'hint' }, 'guard ไม่ยอมเริ่มทำงานถ้าใช้ hash ไม่ได้ · ล้มตอนเริ่มแอป ไม่ใช่ตอนข้อความแรก')))
+        return
+      }
+      const lines = inp.ta.value.split('\n').map((l) => l.trim()).filter(Boolean)
+      const tbody = h('tbody', {})
+      const seen = new Map()
+      for (const line of lines) {
+        const r = made.guard.processSync(line)
+        const hashes = r.text.match(/\[[A-Z_]+:[a-z]{16}\]/g) || []
+        for (const x of hashes) seen.set(x, (seen.get(x) || 0) + 1)
+        tbody.append(h('tr', {}, h('td', {}, marked(line, [])), h('td', {}, aiView(line, r))))
+      }
+      const repeats = [...seen.values()].filter((n) => n > 1).length
+      clear(s.right).append(h('div', { class: 'panel' },
+        h('div', { class: 'tablewrap' }, h('table', {},
+          h('thead', {}, h('tr', {}, h('th', {}, 'ลูกค้าพิมพ์'), h('th', {}, 'AI เห็น'))), tbody)),
+        h('p', { class: 'hint' }, repeats > 0 ? 'มี hash ที่ซ้ำกัน ' + repeats + ' ค่า · คือเบอร์เดียวกันที่พิมพ์ต่างรูปแบบ' : 'ไม่มี hash ซ้ำกัน'),
+      ))
+    }
+    keyIn.addEventListener('input', debounce(run, 200))
+    const inp = inputPanel('s5-input', 'ข้อความ · บรรทัดละข้อความ',
+      'เบอร์ 091-888-7777\nเบอร์ ๐๙๑๘๘๘๗๗๗๗\nเบอร์ +66 91 888 7777\nเลขบัญชี 0918887777\nเบอร์ 091-888-7778', [], run)
+    inp.ta.rows = 6
+    s.left.append(inp.node, h('div', { class: 'panel' },
+      h('label', { class: 'label', for: 's5-key' }, 'hmacKey · ลองแก้ key แล้วดู hash เปลี่ยน หรือลบให้สั้นกว่า 32 ตัว'), keyIn,
+      h('div', { class: 'chips' },
+        h('button', { class: 'chip', type: 'button', onclick: () => { keyIn.value = KEY; run() } }, 'key ตัวอย่าง'),
+        h('button', { class: 'chip', type: 'button', onclick: () => { keyIn.value = 'b'.repeat(64); run() } }, 'key อื่น'),
+        h('button', { class: 'chip', type: 'button', onclick: () => { keyIn.value = 'pdpa2026'; run() } }, 'key สั้นเกินไป'),
+      )))
+    run()
+    return s.el
+  }
+
+  // =====================================================================
+  // 6 · allowlist
+  // =====================================================================
+  function stepAllowlist() {
+    const s = section({
+      id: 's6', eyebrow: 'allowlist',
+      title: 'ร้านส่งข้อมูลของร้านเองได้ ข้อมูลลูกค้ายังถูกปิด',
+      lede: 'เทียบค่าหลังตัดรูปแบบออก ร้านเขียน 02-123-4567 ไว้ ลูกค้าพิมพ์ ๐๒๑๒๓๔๕๖๗ ก็ตรงกัน',
+      foot: 'pattern ต้องตรงทั้งค่า ระบบครอบ ^(?:…)$ ให้เอง · ค่าที่ปล่อยผ่านยังถูกบันทึกใน audit ว่า allowlisted: true แต่ไม่มีค่าจริงอยู่ในบันทึก',
+    })
+    const exactIn = h('textarea', { id: 's6-exact', rows: 3, value: 'support@myshop.co.th\n02-123-4567', spellcheck: 'false', class: 'mono' })
+    const patternIn = h('input', { type: 'text', id: 's6-pattern', value: '', class: 'mono', placeholder: 'เช่น .*@myshop\\.co\\.th' })
+    const run = () => {
+      const text = inp.ta.value
+      let made
+      try {
+        const exact = exactIn.value.split('\n').map((l) => l.trim()).filter(Boolean)
+        const pattern = patternIn.value.trim() ? [patternIn.value.trim()] : []
+        made = guardWith({ EMAIL: { action: 'redact' }, PHONE: { action: 'redact' } })
+        made = { events: [] }
+        const policy = P.definePolicy({ entitySet: '0.1', entities: { EMAIL: { action: 'redact' }, PHONE: { action: 'redact' } }, allowlist: { exact, pattern } })
+        made.guard = P.createGuard({ policy, onAudit: (e) => made.events.push(e) })
+      } catch (e) {
+        clear(s.right).append(h('div', { class: 'panel' }, h('h3', {}, 'โหลด policy ไม่ผ่าน'), errorBox(e)))
+        return
+      }
+      const r = made.guard.processSync(text, { boundary: 'outbound' })
+      clear(s.right).append(
+        h('div', { class: 'panel' }, h('h3', {}, 'ลูกค้าได้รับ'), aiView(text, r)),
+        h('div', { class: 'panel' }, h('h3', {}, 'findings ใน audit'), json(r.findings)),
+      )
+    }
+    exactIn.addEventListener('input', debounce(run, 200))
+    patternIn.addEventListener('input', debounce(run, 300))
+    const inp = inputPanel('s6-input', 'ข้อความที่ AI ตอบลูกค้า (outbound)',
+      'ติดต่อร้านได้ที่ support@myshop.co.th หรือโทร 021234567 ค่ะ · ส่งใบเสร็จไปที่ somchai@example.com แล้วนะคะ', [], run)
+    s.left.append(inp.node, h('div', { class: 'panel' },
+      h('label', { class: 'label', for: 's6-exact' }, 'allowlist.exact · บรรทัดละค่า'), exactIn,
+      h('label', { class: 'label', for: 's6-pattern' }, 'allowlist.pattern (ไม่บังคับ)'), patternIn,
+      h('div', { class: 'chips' },
+        h('button', { class: 'chip', type: 'button', onclick: () => { patternIn.value = '.*@myshop\\.co\\.th'; run() } }, 'ทุกอีเมลของร้าน'),
+        h('button', { class: 'chip', type: 'button', onclick: () => { patternIn.value = '0'; run() } }, 'pattern "0"'),
+        h('button', { class: 'chip', type: 'button', onclick: () => { patternIn.value = 'a)|(b'; run() } }, 'pattern ที่หลุดการครอบ'),
+        h('button', { class: 'chip', type: 'button', onclick: () => { exactIn.value = ''; patternIn.value = ''; run() } }, 'ไม่มี allowlist'),
+      )))
+    run()
+    return s.el
+  }
+
+  // =====================================================================
+  // 8 · audit
+  // =====================================================================
+  function stepAudit() {
+    const s = section({
+      id: 's8', eyebrow: 'audit',
+      title: 'บันทึกทุกครั้ง โดยไม่มีค่าจริงอยู่ข้างใน',
+      lede: 'หน้านี้ตรวจให้ดูสด ๆ ว่าค่าที่เจอในข้อความไม่มีอยู่ใน audit event เลย',
+      foot: 'ref คือ id ข้อความในระบบของแอป log ไม่มีค่าจริง แต่ชี้กลับไปหาข้อความต้นทางได้ · ถ้าระบบ log พัง ข้อความยังผ่าน แต่ไม่หายเงียบ ระบบนับไว้ใน guard.stats และแจ้ง onError · audit ต้องเก็บแยกจากข้อความต้นฉบับ เพราะตำแหน่งบวกข้อความเดิมประกอบกลับเป็นค่าจริงได้',
+    })
+    const broken = h('input', { type: 'checkbox', id: 's8-broken' })
+    let onErrorCalls = 0
+    const okGuard = guardWith({ PHONE: { action: 'mask', keep: 'last4' }, TH_NATIONAL_ID: { action: 'redact' } })
+    const brokenGuard = P.createGuard({
+      policy: P.definePolicy({ entitySet: '0.1', entities: { PHONE: { action: 'mask', keep: 'last4' }, TH_NATIONAL_ID: { action: 'redact' } } }),
+      onAudit: () => { throw new Error('log pipeline down') },
+      onError: () => { onErrorCalls++ },
+    })
+    const run = () => {
+      const text = inp.ta.value
+      if (broken.checked) {
+        const r = brokenGuard.processSync(text)
+        clear(s.right).append(
+          h('div', { class: 'panel' }, h('h3', {}, 'ข้อความยังผ่าน'), aiView(text, r)),
+          h('div', { class: 'panel' }, h('h3', {}, 'แต่ถูกนับ ไม่หายเงียบ'),
+            h('p', {}, 'guard.stats.auditSinkErrors = ', h('b', { class: 'num' }, String(brokenGuard.stats.auditSinkErrors))),
+            h('p', {}, 'onError ถูกเรียก ', h('b', { class: 'num' }, String(onErrorCalls)), ' ครั้ง'),
+            h('p', { class: 'hint' }, 'นับรวม policy.loaded ที่หายไปตอนสร้าง guard 1 ครั้ง')),
+        )
+        return
+      }
+      const before = okGuard.events.length
+      const r = okGuard.guard.processSync(text, { sessionId: 'conv_8f2a', ref: 'msg_' + (10300 + okGuard.events.length) })
+      const ev = okGuard.events[before]
+      const blob = JSON.stringify(ev)
+      const values = r.findings.map((f) => text.slice(f.start, f.end))
+      const leaked = values.filter((v) => blob.includes(v) || blob.includes(v.replace(/[\s-]/g, '')))
+      clear(s.right).append(
+        h('div', { class: 'panel' }, h('h3', {}, 'ค่าจริงอยู่ใน audit ไหม'),
+          values.length === 0 ? h('p', { class: 'empty' }, 'ข้อความนี้ไม่มีข้อมูลส่วนบุคคล')
+            : leaked.length === 0 ? h('p', {}, h('span', { class: 'pill ok' }, 'ไม่มี'), ' ค้นหาทั้ง ' + values.length + ' ค่าใน event แล้ว ไม่เจอสักค่า')
+              : h('p', {}, h('span', { class: 'pill bad' }, 'เจอ'), ' ' + leaked.join(', '))),
+        h('div', { class: 'panel' }, h('h3', {}, 'audit event ที่ onAudit ได้รับ'), json(ev)),
+        h('div', { class: 'panel' }, h('h3', {}, 'event แรกตอนสร้าง guard · policy.loaded'),
+          h('p', { class: 'hint' }, 'บอกว่า policy.hash ข้างบนคือกฎอะไร · เกิดครั้งเดียวต่อ guard'),
+          h('details', { class: 'logrow' }, h('summary', {}, h('span', { class: 'pill neutral' }, 'policy.loaded'), ' ', h('span', { class: 'mono' }, okGuard.events[0].policy.hash)), json(okGuard.events[0]))),
+      )
+    }
+    broken.addEventListener('change', run)
+    const inp = inputPanel('s8-input', 'ข้อความจากลูกค้า', 'เลขบัตร 3-1005-00123-45-8 เบอร์ 091-888-7777 ค่ะ', [], run,
+      h('label', { class: 'check', for: 's8-broken' }, broken, 'จำลองว่าระบบ log พัง (onAudit throw)'))
+    s.left.append(inp.node, h('div', { class: 'row' }, h('button', { class: 'btn primary', type: 'button', onclick: run }, 'ส่งข้อความ')))
+    run()
+    return s.el
+  }
+
+  // ---------- navigation ----------
+  const STEPS = [
+    ['เส้นทาง', stepPipeline], ['ตัวตรวจ', stepDetect], ['action', stepActions], ['policy', stepPolicyFile], ['tokenise', stepTokenise],
+    ['hash', stepHash], ['allowlist', stepAllowlist], ['audit', stepAudit],
+  ]
+  const stage = document.getElementById('stage')
+  const stepsNav = document.getElementById('steps')
+  const count = document.getElementById('count')
+  const built = new Map()
+  let current = 0
+
+  function show(i) {
+    current = Math.max(0, Math.min(STEPS.length - 1, i))
+    if (!built.has(current)) {
+      try { built.set(current, STEPS[current][1]()) } catch (e) { built.set(current, h('div', { class: 'step' }, errorBox(e))) }
+    }
+    clear(stage).append(built.get(current))
+    count.textContent = (current + 1) + ' / ' + STEPS.length
+    for (const [j, b] of [...stepsNav.children].entries()) {
+      if (j === current) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current')
+    }
+    document.getElementById('prev').disabled = current === 0
+    document.getElementById('next').disabled = current === STEPS.length - 1
+    try { history.replaceState(null, '', '#s' + (current + 1)) } catch (e) {}
+  }
+
+  STEPS.forEach(([label], i) => stepsNav.append(h('button', { type: 'button', onclick: () => show(i) }, label)))
+  document.getElementById('prev').addEventListener('click', () => show(current - 1))
+  document.getElementById('next').addEventListener('click', () => show(current + 1))
+  document.addEventListener('keydown', (e) => {
+    const t = e.target
+    if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.tagName === 'SELECT')) return
+    if (e.key === 'ArrowRight') show(current + 1)
+    if (e.key === 'ArrowLeft') show(current - 1)
+  })
+
+  if (!P) {
+    document.getElementById('libinfo').textContent = 'โหลด library ไม่สำเร็จ'
+    return
+  }
+  document.getElementById('libinfo').textContent = 'รัน @thai-pdpa-guard/core v' + P.VERSION + ' ตัวจริงในเบราว์เซอร์นี้ · ไม่มีข้อมูลส่งออกไปไหน'
+  const m = /^#s(\d+)$/.exec(location.hash)
+  show(m ? Number(m[1]) - 1 : 0)
+})()
+</script>

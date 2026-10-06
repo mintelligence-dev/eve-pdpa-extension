@@ -1,0 +1,15 @@
+packages:
+  - 'packages/*'
+  - 'internal/*'
+
+# Refuse dependency versions published less than 24h ago.
+# Cheap supply-chain quarantine for a library sold on supply-chain hygiene.
+minimumReleaseAge: 1440
+
+# pnpm 12 blocks install scripts unless a package is listed here.
+# These three are runtime binaries whose postinstall downloads the binary —
+# that is their whole job. Nothing else in the tree is allowed to run scripts.
+allowBuilds:
+  bun: true
+  deno: true
+  workerd: true

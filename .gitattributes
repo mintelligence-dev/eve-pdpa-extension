@@ -1,0 +1,8 @@
+# Byte offsets are this library's core output. A CRLF checkout on Windows would
+# silently shift every offset in every Thai fixture. Not optional.
+* text=auto eol=lf
+
+*.json    diff
+*.md      diff
+*.generated.ts linguist-generated=true
+pnpm-lock.yaml -diff linguist-generated=true

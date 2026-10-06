@@ -1,0 +1,15 @@
+{
+  "name": "@thai-pdpa-guard/consumer-cjs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@thai-pdpa-guard/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

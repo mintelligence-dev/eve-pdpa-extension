@@ -1,0 +1,29 @@
+[
+  {
+    "name": "core + dict (minified, raw bytes) — the headline 150 KB claim",
+    "path": ["packages/core/.size/index.js", "packages/core/.size/data/index.js"],
+    "limit": "150 kB",
+    "gzip": false,
+    "brotli": false
+  },
+  {
+    "name": "core + dict (min+gzip) — real bytes over the wire",
+    "path": ["packages/core/.size/index.js", "packages/core/.size/data/index.js"],
+    "limit": "45 kB",
+    "gzip": true
+  },
+  {
+    "name": "code only (minified, raw bytes) — code budget",
+    "path": ["packages/core/.size/index.js"],
+    "limit": "60 kB",
+    "gzip": false,
+    "brotli": false
+  },
+  {
+    "name": "dictionary only (minified, raw bytes) — data budget",
+    "path": ["packages/core/.size/data/index.js"],
+    "limit": "90 kB",
+    "gzip": false,
+    "brotli": false
+  }
+]

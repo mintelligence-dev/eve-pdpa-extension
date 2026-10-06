@@ -1,0 +1,47 @@
+{
+  "name": "thai-pdpa-guard-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": "^22.19.0 || ^24.5.0 || >=26.0.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "lint": "biome ci .",
+    "format": "biome format --write .",
+    "size": "size-limit",
+    "gates": "pnpm gate:deps && pnpm gate:builtins && pnpm gate:ner && pnpm gate:pack",
+    "gate:deps": "node scripts/assert-zero-deps.mjs",
+    "gate:builtins": "node scripts/assert-no-node-builtins.mjs",
+    "gate:ner": "node scripts/assert-no-ner-import.mjs",
+    "gate:pack": "pnpm --filter @thai-pdpa-guard/core exec publint --strict && pnpm --filter @thai-pdpa-guard/core exec attw --pack --profile node16",
+    "gate:attestation": "node scripts/assert-attestation.mjs",
+    "demo": "pnpm build && node scripts/demo/build.mjs",
+    "smoke": "node scripts/smoke-runtimes.mjs",
+    "smoke:node": "node packages/core/smoke/run.mjs",
+    "smoke:deno": "pnpm exec deno run packages/core/smoke/run.mjs",
+    "smoke:bun": "pnpm exec bun packages/core/smoke/run.mjs",
+    "smoke:workerd": "node scripts/smoke-workerd.mjs",
+    "smoke:browser": "node scripts/smoke-browser.mjs",
+    "verify": "pnpm lint && pnpm build && pnpm typecheck && pnpm test && pnpm gates && pnpm size && pnpm smoke"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "@biomejs/biome": "2.5.14",
+    "@changesets/cli": "3.0.3",
+    "@size-limit/file": "14.0.0",
+    "ajv": "8.20.0",
+    "bun": "1.4.2",
+    "deno": "2.9.6",
+    "miniflare": "4.20260730.0",
+    "playwright": "1.63.0",
+    "publint": "0.3.24",
+    "size-limit": "14.0.0",
+    "tsdown": "0.23.0",
+    "typescript": "5.9.3",
+    "vitest": "5.0.1"
+  }
+}

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.size/
+coverage/
+*.tsbuildinfo
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Built demo page (scripts/demo/build.mjs)
+scripts/demo/out/
+
+# Internal design notes and translations of internal pages — kept local
+docs/

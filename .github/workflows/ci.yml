@@ -1,0 +1,129 @@
+# Not active yet — this repo is not a git repo. Written now so the gate set is
+# fixed before there is code to grandfather in.
+#
+# Structure: build ONCE on Node 24, then smoke the resulting artifact on every
+# runtime with no install at all. Two reasons:
+#   1. the dev toolchain (vitest, size-limit, tsdown) requires Node 22+, so a
+#      Node 18 or 20 job literally cannot run `pnpm install`
+#   2. testing the published artifact beats testing a fresh rebuild of source
+name: ci
+
+on:
+  push: { branches: [main] }
+  pull_request: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with: { node-version: '24', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-dist
+          path: |
+            packages/core/dist
+            packages/core/.size
+            packages/core/smoke
+          retention-days: 3
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with: { node-version: '24', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm typecheck          # includes internal/consumer-* — proves the exports map
+      - run: pnpm test --coverage
+
+  constraints:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with: { node-version: '24', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with: { name: core-dist, path: packages/core }
+      - run: pnpm gate:deps
+      - run: pnpm gate:builtins
+      - run: pnpm gate:ner
+      - run: pnpm gate:attestation
+      - run: pnpm gate:pack          # publint --strict + attw --pack
+      - run: pnpm size
+
+  smoke-node:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22', '24']
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: core-dist, path: packages/core }
+      - uses: actions/setup-node@v6
+        with: { node-version: '${{ matrix.node }}' }
+      # No install. Runs the shipped artifact directly.
+      # On Node 18 the smoke script asserts ERR_PDPA_NO_CSPRNG without a
+      # randomSource and success with one — D7 as a tested contract.
+      - run: node packages/core/smoke/run.mjs
+
+  smoke-deno:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: core-dist, path: packages/core }
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      # No -A, no --allow-*. This is the canonical "no network calls" proof:
+      # Deno halts on any filesystem, network, env or subprocess access.
+      - run: deno run packages/core/smoke/run.mjs
+
+  smoke-bun:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: core-dist, path: packages/core }
+      - uses: oven-sh/setup-bun@v2
+      - run: bun packages/core/smoke/run.mjs
+
+  smoke-workerd:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with: { node-version: '24' }
+      - uses: actions/download-artifact@v4
+        with: { name: core-dist, path: packages/core }
+      - run: npm i --no-save miniflare@4.20260730.0
+      - run: node scripts/smoke-workerd.mjs
+
+  smoke-browser:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with: { node-version: '24' }
+      - uses: actions/download-artifact@v4
+        with: { name: core-dist, path: packages/core }
+      - run: npx --yes playwright@1.63.0 install --with-deps chromium
+      - run: npm i --no-save playwright@1.63.0
+      - run: node scripts/smoke-browser.mjs

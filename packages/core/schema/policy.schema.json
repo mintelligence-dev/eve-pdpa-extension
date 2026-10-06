@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thai-pdpa-guard.dev/schema/policy.schema.json",
+  "title": "thai-pdpa-guard policy",
+  "description": "What to do with each kind of personal data the guard finds. Point your editor at this file to get completion and errors while writing pdpa-policy.json or .yaml. definePolicy() and parsePolicy() enforce the same rules at load, and test/policy-schema.test.ts keeps the two in agreement.",
+  "type": "object",
+  "required": ["entitySet", "entities"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path or URL of this schema, so your editor can check the file as you type. Ignored by the guard and not part of the policy hash."
+    },
+    "entitySet": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The entity set this policy was written against, e.g. \"0.1\". Entities added in later releases are handled by onUnmapped until you add a rule for them. Required, so an upgrade can never change what happens to your data without you seeing it. D1.",
+      "examples": ["0.1"]
+    },
+    "onUnmapped": {
+      "enum": ["redact", "flag", "ignore"],
+      "default": "redact",
+      "description": "What happens to an entity the guard finds that this policy has no rule for. redact (default) keeps a new data type from leaking the day you upgrade. flag lets it through and reports it. ignore lets it through silently, and has to be written by hand. D1."
+    },
+    "entities": {
+      "type": "object",
+      "description": "One rule per entity type. Leave one out and onUnmapped applies to it.",
+      "additionalProperties": false,
+      "properties": {
+        "TH_NATIONAL_ID": {
+          "$ref": "#/$defs/rule",
+          "description": "Thai national id / tax id, 13 digits with a mod-11 check digit."
+        },
+        "PHONE": {
+          "$ref": "#/$defs/rule",
+          "description": "Thai mobile or landline number, national or +66 form."
+        },
+        "EMAIL": { "$ref": "#/$defs/rule", "description": "Email address." },
+        "BANK_ACCOUNT": {
+          "$ref": "#/$defs/rule",
+          "description": "Bank account number. Found only when the sentence says it is one — a bare run of digits is not claimed."
+        },
+        "CREDIT_CARD": {
+          "$ref": "#/$defs/rule",
+          "description": "Payment card number with a valid Luhn digit."
+        },
+        "LINE_USER_ID": {
+          "$ref": "#/$defs/rule",
+          "description": "LINE user id (U + 32 hex). Group and room ids are not covered."
+        }
+      }
+    },
+    "allowlist": {
+      "type": "object",
+      "description": "Values let through even though they are found — your own support address or call-centre number. Applies to every entity. A value let through is still reported, with allowlisted: true. D1.",
+      "additionalProperties": false,
+      "properties": {
+        "exact": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Exact values. Compared after formatting is removed, so \"02-123-4567\" also matches 021234567 and ๐๒๑๒๓๔๕๖๗.",
+          "examples": [["support@myshop.co.th", "02-123-4567"]]
+        },
+        "pattern": {
+          "type": "array",
+          "items": { "type": "string", "format": "regex" },
+          "description": "Regular expressions that must match the WHOLE value, after formatting is removed (emails lower-cased, numbers digits only). Anchors are added for you. Tested against the found value only, never the whole message.",
+          "examples": [[".*@myshop\\.co\\.th"]]
+        }
+      }
+    },
+    "placeholderLanguage": {
+      "enum": ["th", "en"],
+      "default": "th",
+      "description": "Language of redact placeholders: [เบอร์โทร] or [phone]. Does not affect hash output, which always uses the English entity name."
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["action"],
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": ["redact", "mask", "tokenise", "hash", "flag", "block"],
+          "description": "redact → [เบอร์โทร] · mask → xxx-xxx-7777 · tokenise → [tok:…], resolvable by an allowed purpose · hash → [PHONE:…], stable and one-way, needs hmacKey · flag → left as is, reported · block → the whole message is stopped."
+        },
+        "minConfidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.95,
+          "description": "Findings below this are ignored. Lower it to act on weaker matches, such as a Luhn-valid number with an unknown card issuer (0.6)."
+        },
+        "keep": {
+          "const": "last4",
+          "description": "mask only. Leave the last four characters visible. Without it, mask hides everything except separators. D8.1."
+        },
+        "ttlSec": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "default": 300,
+          "description": "tokenise only. Seconds a token can be resolved, counted from when it was first issued. D6."
+        },
+        "allowedPurposes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "tokenise only, and required for it. The purposes guard.resolve() accepts. A token no purpose may resolve is redact that reads worse — use redact instead. D6, D8.4.",
+          "examples": [["otp_send"]]
+        },
+        "display": {
+          "enum": ["mask", "redact"],
+          "default": "mask",
+          "description": "tokenise only. What the customer sees when the model writes the token into a reply that goes out through the guard (boundary: outbound). mask → the value as typed, all but the last four hidden (xxx-xxx-7777). redact → the placeholder ([เบอร์โทร]). The full value is never shown. D10.1."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "action": { "not": { "const": "mask" } } } },
+          "then": { "not": { "required": ["keep"] } }
+        },
+        {
+          "if": { "properties": { "action": { "not": { "const": "tokenise" } } } },
+          "then": {
+            "allOf": [
+              { "not": { "required": ["ttlSec"] } },
+              { "not": { "required": ["allowedPurposes"] } },
+              { "not": { "required": ["display"] } }
+            ]
+          }
+        },
+        {
+          "if": { "properties": { "action": { "const": "tokenise" } } },
+          "then": { "required": ["allowedPurposes"] }
+        }
+      ]
+    }
+  }
+}
