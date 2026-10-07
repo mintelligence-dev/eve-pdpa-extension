@@ -354,9 +354,14 @@ export function createGuard(options: GuardOptions): Guard {
     // reading order when the result is built.
     const blockers: EntityType[] = []
 
-    // Replace right to left so earlier offsets stay valid.
+    // Walked right to left: the pieces below are collected from the end.
     const ordered = [...candidates].sort((a, b) => b.start - a.start)
-    let out = norm.original
+    // Built from pieces and joined once. Splicing each replacement into the
+    // whole string copied the message once per value: seconds for a tool
+    // output listing thousands of customers.
+    const original = norm.original
+    const pieces: string[] = []
+    let cursor = original.length
 
     for (const c of ordered) {
       const rule = policy.entities[c.entity]
@@ -392,7 +397,7 @@ export function createGuard(options: GuardOptions): Guard {
       if (action === 'redact') {
         replacement = placeholder
       } else if (action === 'mask') {
-        replacement = maskValue(out.slice(c.start, c.end), rule?.keep)
+        replacement = maskValue(original.slice(c.start, c.end), rule?.keep)
       } else if (action === 'tokenise') {
         // onUnmapped cannot be tokenise, so a tokenise finding always has a rule.
         if (tokeniser === null || rule === undefined) {
@@ -402,7 +407,9 @@ export function createGuard(options: GuardOptions): Guard {
           // Taken from the span as typed, before it is replaced, so an
           // outbound reply can show ๐๙๑-๘๘๘-๗๗๗๗ as xxx-xxx-๗๗๗๗ (D10.1).
           const display =
-            rule.display === 'redact' ? undefined : maskValue(out.slice(c.start, c.end), 'last4')
+            rule.display === 'redact'
+              ? undefined
+              : maskValue(original.slice(c.start, c.end), 'last4')
           const id = yield* tokeniser.issue(
             sessionId,
             c.entity,
@@ -438,12 +445,17 @@ export function createGuard(options: GuardOptions): Guard {
         replacement = hashValue(hmac, c.entity, canonicalValue(c.entity, c.folded))
       }
 
-      if (replacement !== null) out = out.slice(0, c.start) + replacement + out.slice(c.end)
+      if (replacement !== null) {
+        pieces.push(original.slice(c.end, cursor), replacement)
+        cursor = c.start
+      }
 
       findings.push(finding)
     }
 
     findings.reverse()
+    pieces.push(original.slice(0, cursor))
+    let out = pieces.reverse().join('')
 
     // D10.1: a reply on its way to the customer must not carry a token or a
     // hash they cannot read. Tokens issued to this session come back masked;

@@ -73,7 +73,7 @@ function isUsableSpan(c: Candidate, length: number): boolean {
  * entities separately and do not cancel out (D5). That happens on the benchmark's
  * own records, not here.
  */
-function mergeOverlaps(candidates: readonly Candidate[]): Candidate[] {
+function mergeOverlaps(candidates: readonly Candidate[], length: number): Candidate[] {
   const ranked = [...candidates].sort((a, b) => {
     const byLength = b.end - b.start - (a.end - a.start)
     if (byLength !== 0) return byLength
@@ -84,10 +84,16 @@ function mergeOverlaps(candidates: readonly Candidate[]): Candidate[] {
     return a.detector < b.detector ? -1 : a.detector > b.detector ? 1 : 0
   })
 
+  // Kept spans never overlap one another, so marking the characters each one
+  // covers answers "is this stretch still free?" by reading that stretch alone.
+  // Comparing against every kept span instead made a message with thousands
+  // of values — a tool returning a customer list — take seconds.
+  const taken = new Uint8Array(length)
   const kept: Candidate[] = []
-  for (const c of ranked) {
-    const overlaps = kept.some((k) => c.start < k.end && k.start < c.end)
-    if (!overlaps) kept.push(c)
+  next: for (const c of ranked) {
+    for (let i = c.start; i < c.end; i++) if (taken[i] === 1) continue next
+    taken.fill(1, c.start, c.end)
+    kept.push(c)
   }
 
   return kept.sort((a, b) => a.start - b.start)
@@ -121,10 +127,11 @@ export function createEngine(detectors: readonly Detector[]): Engine {
 
   function finish(
     raw: Candidate[],
+    length: number,
     degradedDetectors: string[],
     skippedDetectors: string[],
   ): EngineResult {
-    return { candidates: mergeOverlaps(raw), degradedDetectors, skippedDetectors }
+    return { candidates: mergeOverlaps(raw, length), degradedDetectors, skippedDetectors }
   }
 
   return {
@@ -163,7 +170,7 @@ export function createEngine(detectors: readonly Detector[]): Engine {
         }
       }
 
-      return finish(raw, degradedDetectors, skippedDetectors)
+      return finish(raw, input.text.length, degradedDetectors, skippedDetectors)
     },
 
     async run(input, ctx): Promise<EngineResult> {
@@ -187,7 +194,7 @@ export function createEngine(detectors: readonly Detector[]): Engine {
         }
       }
 
-      return finish(raw, degradedDetectors, [])
+      return finish(raw, input.text.length, degradedDetectors, [])
     },
   }
 }
