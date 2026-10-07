@@ -33,19 +33,32 @@ const MAX_PREAMBLE_ROWS = 10
 
 const SENDERS: Readonly<Record<string, Sender>> = { User: 'customer', Account: 'shop' }
 
-/** True when the file starts the way a Thai-language LINE OA export does. */
+/** Enough for the lines about the file and the header, whatever the shop is called. */
+const SNIFF_BYTES = 2048
+
+/**
+ * True when the file starts the way a Thai-language LINE OA export does: the
+ * first line names the account, and the export's header follows within the
+ * first few lines. Both, because `ชื่อบัญชี` alone is also a common first
+ * column in an ordinary Thai CSV — a list of bank accounts — which must stay
+ * an ordinary CSV.
+ */
 export async function looksLikeLineOa(path: string, encoding: string): Promise<boolean> {
   const handle = await open(path, 'r')
   try {
-    const { buffer, bytesRead } = await handle.read(Buffer.alloc(256), 0, 256, 0)
+    const { buffer, bytesRead } = await handle.read(Buffer.alloc(SNIFF_BYTES), 0, SNIFF_BYTES, 0)
     let head: string
     try {
-      // Not fatal: a cut-off character at byte 256 must not hide the first word.
+      // Not fatal: a character cut off at the last byte must not hide the rest.
       head = new TextDecoder(encoding).decode(buffer.subarray(0, bytesRead))
     } catch {
       return false
     }
-    return head.startsWith(`${LINE_OA_FIRST},`)
+    const lines = head.split(/\r?\n/).slice(0, MAX_PREAMBLE_ROWS)
+    return (
+      lines[0]?.startsWith(`${LINE_OA_FIRST},`) === true &&
+      lines.slice(1).some((l) => l.startsWith(`${LINE_OA_SENDER},`))
+    )
   } finally {
     await handle.close()
   }

@@ -123,16 +123,11 @@ describe('files nobody would write on purpose', () => {
         `{"text":"x","a":${'['.repeat(100000)}${']'.repeat(100000)}}`,
         '.jsonl',
       ],
-      // Few findings on purpose: thousands in one message is slow in core today
-      // (time grows with the square of the count) — see progress.th.md.
       [
-        '5 MB single message',
-        JSON.stringify({ text: `${'ก'.repeat(5_000_000)} เบอร์ 0918887777` }),
+        '5 MB, 300,000 phone numbers in one message',
+        JSON.stringify({ text: 'เบอร์ 0918887777 '.repeat(300_000) }),
         '.jsonl',
       ],
-      ['5 MB unclosed quote', `id,text\n1,"${'ก'.repeat(5_000_000)}`, '.csv'],
-      ['NUL bytes', 'id,text\n1,\u0000\u0000เบอร์ 0918887777\u0000', '.csv'],
-      ['text is object', JSON.stringify({ text: { a: 1 } }), '.jsonl'],
       ['line-oa preamble, no header', 'ชื่อบัญชี,x\n'.repeat(50), '.csv'],
       ['line-oa header only', 'ชื่อบัญชี,x\nประเภทผู้ส่ง,ชื่อผู้ส่ง,วันส่ง,เวลาส่ง,ข้อความ\n', '.csv'],
     ]

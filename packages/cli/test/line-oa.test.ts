@@ -114,6 +114,26 @@ describe('LINE OA chat export', () => {
     expect(r.entities.BANK_ACCOUNT).toBe(1)
   })
 
+  it('leaves an ordinary Thai CSV whose first column is also ชื่อบัญชี alone', async () => {
+    const accounts = join(dir, 'accounts.csv')
+    writeFileSync(
+      accounts,
+      'ชื่อบัญชี,เลขบัญชี,ข้อความ\nร้านตัวอย่าง,123-4-56789-0,โอนเข้าเลขบัญชี 123-4-56789-0\n',
+    )
+    const r = await report('scan', accounts, '--text-field', 'ข้อความ')
+    expect(r.format).toBe('csv')
+    expect(r.entities.BANK_ACCOUNT).toBe(1)
+  })
+
+  it('is not recognised from the first line alone, without the export header after it', async () => {
+    const half = join(dir, 'half.csv')
+    writeFileSync(half, [...PREAMBLE, 'a,b,text', 'x,y,สวัสดี'].join('\n'))
+    // Read as an ordinary CSV, its first line is the header, which has no text column.
+    const r = await cli('scan', half)
+    expect(r.code).toBe(EXIT.USAGE)
+    expect(r.stderr).toContain('no column "text"')
+  })
+
   it('leaves an ordinary CSV alone', async () => {
     const plain = join(dir, 'plain.csv')
     writeFileSync(plain, 'id,text\nm1,สวัสดี\n')
