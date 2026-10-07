@@ -14,6 +14,8 @@ import * as core from '../dist/index.js'
 
 // Synthetic, checksum-valid, documented in fixtures/ATTESTATION.md.
 const FAKE_ID = '3100500123458'
+// A policy that tokenises refuses a call without one. D10.4.
+const SESSION = { sessionId: 'conv_a' }
 
 export async function run() {
   const required = [
@@ -100,13 +102,23 @@ export async function run() {
 
   if (hasCsprng) {
     const g2 = core.createGuard({ policy: tokenisePolicy })
-    const r2 = g2.processSync(`เลขบัตร ${FAKE_ID}`)
+    const r2 = g2.processSync(`เลขบัตร ${FAKE_ID}`, SESSION)
     if (r2.text.includes(FAKE_ID)) throw new Error('value survived tokenisation')
     // Letters only, so a second pass through the guard can never find a number in it.
     if (!/\[tok:[bcdfghjkmnpqrstv]{16}\]/.test(r2.text)) throw new Error('token format wrong')
-    if (g2.processSync(r2.text).text !== r2.text)
+    if (g2.processSync(r2.text, SESSION).text !== r2.text)
       throw new Error('token re-detected on second pass')
     checkResolve(g2, r2.text)
+    // D10.4: a tokenising policy will not fall back to one shared session.
+    let noSession = null
+    try {
+      g2.processSync('x')
+    } catch (e) {
+      noSession = e
+    }
+    if (noSession?.code !== 'ERR_PDPA_NO_SESSION') {
+      throw new Error('expected ERR_PDPA_NO_SESSION without a sessionId')
+    }
   } else {
     let threw = null
     try {
@@ -126,7 +138,7 @@ export async function run() {
         return a
       },
     })
-    const r3 = g3.processSync(`เลขบัตร ${FAKE_ID}`)
+    const r3 = g3.processSync(`เลขบัตร ${FAKE_ID}`, SESSION)
     if (r3.text.includes(FAKE_ID)) {
       throw new Error('value survived tokenisation via randomSource')
     }
@@ -145,10 +157,10 @@ function checkResolve(guard, text) {
   const token = /\[tok:[bcdfghjkmnpqrstv]{16}\]/.exec(text)?.[0]
   if (token === undefined) throw new Error('no token to resolve')
 
-  const ok = guard.resolveSync(token, { purpose: 'otp_send' })
+  const ok = guard.resolveSync(token, { ...SESSION, purpose: 'otp_send' })
   if (!ok.ok || ok.value !== FAKE_ID) throw new Error('token did not resolve to its value')
 
-  const denied = guard.resolveSync(token, { purpose: 'marketing' })
+  const denied = guard.resolveSync(token, { ...SESSION, purpose: 'marketing' })
   if (denied.ok || denied.reason !== 'purpose_not_allowed')
     throw new Error('wrong purpose was not refused')
 
@@ -156,8 +168,8 @@ function checkResolve(guard, text) {
   if (other.ok || other.reason !== 'session_mismatch')
     throw new Error('other session was not refused')
 
-  guard.endSession('anonymous')
-  if (guard.resolveSync(token, { purpose: 'otp_send' }).ok)
+  guard.endSession(SESSION.sessionId)
+  if (guard.resolveSync(token, { ...SESSION, purpose: 'otp_send' }).ok)
     throw new Error('endSession left the token')
 }
 

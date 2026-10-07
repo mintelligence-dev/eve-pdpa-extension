@@ -29,6 +29,29 @@ function checkStrings(value: unknown, path: string): readonly string[] {
   return value
 }
 
+const LINE_USER_ID_SHAPE = /^U[0-9a-f]{32}$/
+
+/**
+ * The one form of an allowlist entry that the `policy.loaded` digest is taken
+ * of, so `02-123-4567`, `๐๒-๑๒๓-๔๕๖๗` and `021234567` in a policy give one
+ * digest, and an investigator holding the value can recompute it.
+ *
+ * Entries are not tagged with an entity, so the entity is read off the shape:
+ * an `@` means email, U + 32 hex a LINE id, anything else a number — and every
+ * numeric entity canonicalises the way PHONE does (separators out, +66 → 0),
+ * since none of the others can start with +66. The rule is written out in
+ * audit-event.schema.json; change one and the other must follow.
+ */
+export function allowlistDigestForm(entry: string): string {
+  const folded = normalise(entry).text
+  const entity: EntityType = folded.includes('@')
+    ? 'EMAIL'
+    : LINE_USER_ID_SHAPE.test(folded)
+      ? 'LINE_USER_ID'
+      : 'PHONE'
+  return canonicalValue(entity, folded)
+}
+
 /**
  * Compiles the allowlist once, at load, so a scan never parses a pattern.
  *

@@ -116,7 +116,7 @@ describe('D10.1 — tokens in an outbound reply', () => {
 describe('D10.1 — hashes in an outbound reply', () => {
   it('become the placeholder', () => {
     const { guard } = setup()
-    const hashed = guard.processSync('อีเมล somchai@example.com').text
+    const hashed = guard.processSync('อีเมล somchai@example.com', { sessionId: 'conv_a' }).text
     expect(hashed).toMatch(/\[EMAIL:[a-z]{16}\]/)
     const r = guard.processSync(hashed, { sessionId: 'conv_a', boundary: 'outbound' })
     expect(r.text).toBe('อีเมล [อีเมล]')
@@ -220,8 +220,11 @@ describe('D10.9 — ref points the log back at the app', () => {
 
   it('must be a short string', () => {
     const { guard } = setup()
-    expect(() => guard.processSync('x', { ref: '' })).toThrow(TypeError)
-    expect(() => guard.processSync('x', { ref: 'a'.repeat(257) })).toThrow(TypeError)
-    expect(() => guard.processSync('x', { ref: 42 as unknown as string })).toThrow(TypeError)
+    const opts = { sessionId: 'conv_a' }
+    expect(() => guard.processSync('x', { ...opts, ref: '' })).toThrow(TypeError)
+    expect(() => guard.processSync('x', { ...opts, ref: 'a'.repeat(257) })).toThrow(TypeError)
+    expect(() => guard.processSync('x', { ...opts, ref: 42 as unknown as string })).toThrow(
+      TypeError,
+    )
   })
 })

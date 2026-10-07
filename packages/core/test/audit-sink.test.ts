@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createGuard } from '../src/guard.js'
 import { definePolicy } from '../src/policy.js'
 import type { GuardOptions } from '../src/types.js'
+import { inSession } from './helpers/in-session.js'
 
 /**
  * D3 — what happens to audit when the sink misbehaves or is missing.
@@ -23,7 +24,7 @@ const throwingSink = () => {
 }
 
 function build(extra: Partial<GuardOptions> = {}) {
-  return createGuard({ policy, ...extra })
+  return inSession(createGuard({ policy, ...extra }))
 }
 
 afterEach(() => {
@@ -95,6 +96,57 @@ describe('a sink that throws', () => {
   })
 })
 
+describe('a sink that returns a Promise', () => {
+  // An async logger passed straight in — `onAudit: (e) => db.insert(e)` — type
+  // checks against a void sink. Its rejection must not vanish. D3.
+  const rejectingSink = () => Promise.reject(new Error('log pipeline down'))
+  const settle = () => new Promise((r) => setTimeout(r, 0))
+
+  it('does not wait for it, and does not fail the message', () => {
+    const guard = build({ onAudit: rejectingSink })
+    expect(guard.processSync('เบอร์ 0918887777').text).toBe('เบอร์ [เบอร์โทร]')
+  })
+
+  it('counts a rejection once it rejects, from scans and resolves alike', async () => {
+    const guard = build({ onAudit: rejectingSink })
+    guard.processSync('เบอร์ 0918887777')
+    guard.resolveSync('[tok:bbbbbbbbbbbbbbbb]', { purpose: 'kyc' })
+    expect(guard.stats.auditSinkErrors).toBe(0)
+    await settle()
+    expect(guard.stats.auditSinkErrors).toBe(3)
+  })
+
+  it('reports a rejection to onError with what was being written', async () => {
+    const onError = vi.fn()
+    const guard = build({ onAudit: rejectingSink, onError })
+    guard.processSync('เบอร์ 0918887777')
+    await settle()
+    expect(onError).toHaveBeenCalledTimes(2)
+    expect(onError.mock.calls[1]?.[0]).toBeInstanceOf(Error)
+    expect(onError.mock.calls[1]?.[1]).toEqual({ source: 'audit_sink', eventType: 'scan' })
+  })
+
+  it('swallows nothing and leaks nothing when onError throws too', async () => {
+    // A rejection left unhandled would fail this run; vitest reports them.
+    const guard = build({
+      onAudit: rejectingSink,
+      onError: () => {
+        throw new Error('error handler broken as well')
+      },
+    })
+    guard.processSync('เบอร์ 0918887777')
+    await settle()
+    expect(guard.stats.auditSinkErrors).toBe(2)
+  })
+
+  it('does not count one that resolves', async () => {
+    const guard = build({ onAudit: async () => {} })
+    guard.processSync('เบอร์ 0918887777')
+    await settle()
+    expect(guard.stats.auditSinkErrors).toBe(0)
+  })
+})
+
 describe('no sink at all', () => {
   // The warning is once per process, so each test loads a fresh copy of guard.
   async function freshGuardModule() {
@@ -125,6 +177,8 @@ describe('no sink at all', () => {
   it('still protects the message', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { createGuard: fresh } = await freshGuardModule()
-    expect(fresh({ policy }).processSync('เบอร์ 0918887777').text).toBe('เบอร์ [เบอร์โทร]')
+    expect(fresh({ policy }).processSync('เบอร์ 0918887777', { sessionId: 'conv_a' }).text).toBe(
+      'เบอร์ [เบอร์โทร]',
+    )
   })
 })

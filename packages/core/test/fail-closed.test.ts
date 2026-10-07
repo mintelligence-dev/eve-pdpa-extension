@@ -13,6 +13,7 @@ import type {
   TokenRecord,
   TokenStore,
 } from '../src/types.js'
+import { inSession } from './helpers/in-session.js'
 
 /**
  * D4 — what happens when the guard itself fails, as opposed to missing a value.
@@ -39,11 +40,13 @@ const TOKENISE: PolicyInput['entities'] = {
 
 function guardWith(extra: Partial<GuardOptions>, entities = TOKENISE) {
   const events: AuditRecord[] = []
-  const guard = createGuard({
-    policy: definePolicy({ entitySet: '0.1', entities }),
-    onAudit: (e) => events.push(e),
-    ...extra,
-  })
+  const guard = inSession(
+    createGuard({
+      policy: definePolicy({ entitySet: '0.1', entities }),
+      onAudit: (e) => events.push(e),
+      ...extra,
+    }),
+  )
   const scans = () => events.filter((e): e is AuditEvent => e.type === 'scan')
   return { guard, scans }
 }

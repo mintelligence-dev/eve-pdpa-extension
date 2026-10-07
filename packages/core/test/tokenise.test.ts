@@ -11,6 +11,7 @@ import type {
   TokenResolveEvent,
   TokenStore,
 } from '../src/types.js'
+import { inSession } from './helpers/in-session.js'
 
 const PHONE_RULE: EntityRule = {
   action: 'tokenise',
@@ -20,11 +21,13 @@ const PHONE_RULE: EntityRule = {
 
 function guardWith(extra: Partial<GuardOptions> = {}, rule: EntityRule = PHONE_RULE) {
   const events: AuditRecord[] = []
-  const guard = createGuard({
-    policy: definePolicy({ entitySet: '0.1', entities: { PHONE: rule } }),
-    onAudit: (e) => events.push(e),
-    ...extra,
-  })
+  const guard = inSession(
+    createGuard({
+      policy: definePolicy({ entitySet: '0.1', entities: { PHONE: rule } }),
+      onAudit: (e) => events.push(e),
+      ...extra,
+    }),
+  )
   const resolves = () => events.filter((e): e is TokenResolveEvent => e.type === 'token.resolve')
   return { guard, events, resolves }
 }
@@ -399,5 +402,56 @@ describe('a second pass through the guard', () => {
     const { guard } = guardWith()
     const once = guard.processSync('เบอร์ 0918887777').text
     expect(guard.processSync(once).text).toBe(once)
+  })
+})
+
+// D10.4 — one shared 'anonymous' session would let one customer's chat
+// resolve another's token. A policy that tokenises refuses to guess.
+describe('a policy that tokenises needs a sessionId', () => {
+  const tokenising = definePolicy({ entitySet: '0.1', entities: { PHONE: PHONE_RULE } })
+  const bare = () => createGuard({ policy: tokenising, onAudit: () => {} })
+  const noSession = { code: 'ERR_PDPA_NO_SESSION' }
+
+  it('refuses processSync and process without one', async () => {
+    expect(() => bare().processSync('เบอร์ 0918887777')).toThrow(expect.objectContaining(noSession))
+    await expect(bare().process('เบอร์ 0918887777')).rejects.toMatchObject(noSession)
+  })
+
+  it('refuses even a message with nothing to tokenise, so the mistake shows on the first call', () => {
+    expect(() => bare().processSync('สวัสดีครับ')).toThrow(PdpaError)
+  })
+
+  it('refuses resolveSync and resolve without one', async () => {
+    expect(() => bare().resolveSync('[tok:bbbbbbbbbbbbbbbb]', { purpose: 'otp_send' })).toThrow(
+      expect.objectContaining(noSession),
+    )
+    await expect(
+      bare().resolve('[tok:bbbbbbbbbbbbbbbb]', { purpose: 'otp_send' }),
+    ).rejects.toMatchObject(noSession)
+  })
+
+  it('treats an empty string as missing', () => {
+    expect(() => bare().processSync('x', { sessionId: '' })).toThrow(PdpaError)
+  })
+
+  it('never names the message in the error', () => {
+    expect(() => bare().processSync('เบอร์ 0918887777')).toThrow(
+      expect.not.objectContaining({ message: expect.stringContaining('0918887777') }),
+    )
+  })
+
+  it('works with one', () => {
+    const r = bare().processSync('เบอร์ 0918887777', { sessionId: 'conv_a' })
+    expect(r.text).toMatch(/\[tok:[a-z]{16}\]/)
+  })
+
+  it('still defaults to anonymous when the policy does not tokenise', () => {
+    const events: AuditRecord[] = []
+    const guard = createGuard({
+      policy: definePolicy({ entitySet: '0.1', entities: { PHONE: { action: 'redact' } } }),
+      onAudit: (e) => events.push(e),
+    })
+    expect(guard.processSync('เบอร์ 0918887777').text).toBe('เบอร์ [เบอร์โทร]')
+    expect(events.at(-1)).toMatchObject({ type: 'scan', sessionId: 'anonymous' })
   })
 })

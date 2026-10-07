@@ -241,7 +241,11 @@ export interface PolicyLoadedEvent {
     readonly placeholderLanguage: 'th' | 'en'
     readonly entities: Readonly<Partial<Record<EntityType, EntityRule>>>
     readonly allowlist: {
-      /** `sha256:<hex>` of each value exactly as written in the policy. */
+      /**
+       * `sha256:<hex>` of each value in canonical form, so every way of
+       * writing one value gives one digest. The rule is in
+       * audit-event.schema.json and `allowlistDigestForm`.
+       */
       readonly exact: readonly string[]
       readonly pattern: readonly string[]
     }
@@ -290,7 +294,11 @@ export interface GuardErrorContext {
 }
 
 export interface GuardStats {
-  /** onAudit calls that threw. Each one is an audit event that never arrived. D3. */
+  /**
+   * onAudit calls that threw, or returned a Promise that rejected — the latter
+   * counted when it rejects, not when the call returns. Each one is an audit
+   * event that never arrived. D3.
+   */
   readonly auditSinkErrors: number
 }
 
@@ -362,7 +370,10 @@ export interface ResolveOptions {
   readonly purpose: string
   /** Who is asking, for the audit trail. Not checked — it is a label, not a credential. */
   readonly caller?: string
-  /** The session the token was issued in. Defaults to 'anonymous', as processSync does. */
+  /**
+   * The session the token was issued in. Required — the call throws
+   * ERR_PDPA_NO_SESSION without it — when the policy tokenises. D10.4.
+   */
   readonly sessionId?: string
   /** Copied into the token.resolve event, e.g. the tool-call id. D10.9. */
   readonly ref?: string
@@ -373,7 +384,12 @@ export type ResolveResult =
   | { readonly ok: false; readonly reason: ResolveReason }
 
 export interface ProcessOptions {
-  /** The conversation. Defaults to 'anonymous'. */
+  /**
+   * The conversation. Required when the policy tokenises — the call throws
+   * ERR_PDPA_NO_SESSION without it, because tokens are kept apart by session.
+   * Otherwise defaults to 'anonymous'. Written to every audit event as given:
+   * a LINE user id here puts a LINE user id in the log. D10.4, D10.5.
+   */
   readonly sessionId?: string
   readonly boundary?: Boundary
   /** Copied into the scan event, e.g. the app's message id. D10.9. */

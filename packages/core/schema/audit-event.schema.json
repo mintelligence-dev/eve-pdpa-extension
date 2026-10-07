@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thai-pdpa-guard.dev/schema/audit-event.schema.json",
+  "title": "thai-pdpa-guard audit event",
+  "description": "One record passed to onAudit, written one per line as NDJSON. Three types: policy.loaded (once, when a guard is built), scan (once per process/processSync call) and token.resolve (once per resolve attempt, allowed or refused). No record ever carries a real value, the text around one, or an unkeyed hash of one. Offsets plus the original message give the value back, so keep audit logs apart from message logs. Shape is fixed for schemaVersion 1.0: a new field or enum value means a new schemaVersion. test/audit-schema.test.ts checks every event the guard emits against this file. D2.",
+  "oneOf": [
+    { "$ref": "#/$defs/policyLoaded" },
+    { "$ref": "#/$defs/scan" },
+    { "$ref": "#/$defs/tokenResolve" }
+  ],
+  "$defs": {
+    "schemaVersion": {
+      "const": "1.0",
+      "description": "Version of this record's shape. Switch on it before reading anything else."
+    },
+    "eventId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique enough to tell two events apart. Not ordered, and not a security token."
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+      "description": "When the event was written, UTC, millisecond precision (Date.prototype.toISOString)."
+    },
+    "sessionId": {
+      "type": "string",
+      "description": "The conversation, as the app named it. 'anonymous' when none was passed. Counts as personal data where the app can map it back to a customer — give audit logs a retention period. D2."
+    },
+    "ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The app's own id for what this event is about — a message id, a tool-call id — copied as is. Must not itself be personal data. D10.9."
+    },
+    "prevHash": {
+      "type": ["string", "null"],
+      "description": "Reserved for a hash chain that shows when an event was removed. Always null in 0.1. D2."
+    },
+    "entity": {
+      "enum": ["TH_NATIONAL_ID", "PHONE", "EMAIL", "BANK_ACCOUNT", "CREDIT_CARD", "LINE_USER_ID"]
+    },
+    "action": {
+      "enum": ["redact", "mask", "tokenise", "hash", "flag", "block"]
+    },
+    "tokenId": {
+      "type": "string",
+      "pattern": "^[bcdfghjkmnpqrstv]{16}$",
+      "description": "The id inside [tok:…]. Letters only, so a phone number can never pass for one."
+    },
+    "detectorIds": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "policyRef": {
+      "type": "object",
+      "required": ["hash", "entitySet"],
+      "additionalProperties": false,
+      "description": "The policy in force. Look up the policy.loaded event with the same hash for the full rules.",
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+:[0-9a-f]+$",
+          "description": "Digest of the rules, allowlist included, as <algorithm>:<hex>. Same rules, same hash. Identifies a policy; does not protect one."
+        },
+        "entitySet": { "type": "string", "minLength": 1 }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "required": ["version", "detectors", "entitiesSupported", "nerAvailable"],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "@thai-pdpa-guard/core version."
+        },
+        "detectors": {
+          "$ref": "#/$defs/detectorIds",
+          "description": "Detectors loaded in this guard, by id."
+        },
+        "entitiesSupported": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/entity" },
+          "description": "What this guard could find. An entity missing here was not looked for: a scan with no findings for it means nothing about whether it was there."
+        },
+        "nerAvailable": { "type": "boolean", "description": "Always false in 0.1." }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "required": ["action"],
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": ["redact", "mask", "tokenise", "hash", "flag", "block"],
+          "description": "redact → [เบอร์โทร] · mask → xxx-xxx-7777 · tokenise → [tok:…], resolvable by an allowed purpose · hash → [PHONE:…], stable and one-way, needs hmacKey · flag → left as is, reported · block → the whole message is stopped."
+        },
+        "minConfidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.95,
+          "description": "Findings below this are ignored. Lower it to act on weaker matches, such as a Luhn-valid number with an unknown card issuer (0.6)."
+        },
+        "keep": {
+          "const": "last4",
+          "description": "mask only. Leave the last four characters visible. Without it, mask hides everything except separators. D8.1."
+        },
+        "ttlSec": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "default": 300,
+          "description": "tokenise only. Seconds a token can be resolved, counted from when it was first issued. D6."
+        },
+        "allowedPurposes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "tokenise only, and required for it. The purposes guard.resolve() accepts. A token no purpose may resolve is redact that reads worse — use redact instead. D6, D8.4.",
+          "examples": [["otp_send"]]
+        },
+        "display": {
+          "enum": ["mask", "redact"],
+          "default": "mask",
+          "description": "tokenise only. What the customer sees when the model writes the token into a reply that goes out through the guard (boundary: outbound). mask → the value as typed, all but the last four hidden (xxx-xxx-7777). redact → the placeholder ([เบอร์โทร]). The full value is never shown. D10.1."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "action": { "not": { "const": "mask" } } } },
+          "then": { "not": { "required": ["keep"] } }
+        },
+        {
+          "if": { "properties": { "action": { "not": { "const": "tokenise" } } } },
+          "then": {
+            "allOf": [
+              { "not": { "required": ["ttlSec"] } },
+              { "not": { "required": ["allowedPurposes"] } },
+              { "not": { "required": ["display"] } }
+            ]
+          }
+        },
+        {
+          "if": { "properties": { "action": { "const": "tokenise" } } },
+          "then": { "required": ["allowedPurposes"] }
+        }
+      ]
+    },
+
+    "policyLoaded": {
+      "type": "object",
+      "title": "policy.loaded",
+      "description": "Written once, when a guard is built: the full rules every later event's policy.hash stands for. D10.7.",
+      "required": ["schemaVersion", "eventId", "type", "at", "policy", "engine", "prevHash"],
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": { "$ref": "#/$defs/schemaVersion" },
+        "eventId": { "$ref": "#/$defs/eventId" },
+        "type": { "const": "policy.loaded" },
+        "at": { "$ref": "#/$defs/at" },
+        "policy": {
+          "type": "object",
+          "required": [
+            "hash",
+            "entitySet",
+            "onUnmapped",
+            "placeholderLanguage",
+            "entities",
+            "allowlist"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "hash": { "$ref": "#/$defs/policyRef/properties/hash" },
+            "entitySet": { "type": "string", "minLength": 1 },
+            "onUnmapped": { "enum": ["redact", "flag", "ignore"] },
+            "placeholderLanguage": { "enum": ["th", "en"] },
+            "entities": {
+              "type": "object",
+              "description": "The rules as written in the policy, one per entity.",
+              "propertyNames": { "$ref": "#/$defs/entity" },
+              "additionalProperties": { "$ref": "#/$defs/rule" }
+            },
+            "allowlist": {
+              "type": "object",
+              "required": ["exact", "pattern"],
+              "additionalProperties": false,
+              "properties": {
+                "exact": {
+                  "type": "array",
+                  "items": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+                  "description": "SHA-256 of each listed value in canonical form, never the value. To check whether a value was listed: fold Thai and full-width digits to ASCII, then lower-case it if it contains @; leave it as is if it is a LINE user id; otherwise remove spaces and hyphens and turn a leading +66 into 0. So 02-123-4567, ๐๒-๑๒๓-๔๕๖๗ and 021234567 give one digest. A digest proves which value was listed, given the value; it does not hide a phone number from someone willing to try them all."
+                },
+                "pattern": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "As written in the policy."
+                }
+              }
+            }
+          }
+        },
+        "engine": { "$ref": "#/$defs/engine" },
+        "prevHash": { "$ref": "#/$defs/prevHash" }
+      }
+    },
+
+    "finding": {
+      "type": "object",
+      "required": ["entity", "start", "end", "confidence", "detector", "action"],
+      "additionalProperties": false,
+      "properties": {
+        "entity": { "$ref": "#/$defs/entity" },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "UTF-16 offset into the original message, as passed in."
+        },
+        "end": { "type": "integer", "minimum": 1, "description": "Exclusive." },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "detector": { "type": "string", "minLength": 1 },
+        "action": {
+          "$ref": "#/$defs/action",
+          "description": "The action the policy names. Not applied when allowlisted is set."
+        },
+        "unmapped": {
+          "const": true,
+          "description": "The policy has no rule for this entity; onUnmapped chose the action. D1."
+        },
+        "allowlisted": {
+          "const": true,
+          "description": "Found, and let through by the policy's allowlist. The text was left as is. D1."
+        },
+        "tokenId": {
+          "$ref": "#/$defs/tokenId",
+          "description": "tokenise only: the token written into the text. Absent when the token store refused and the message was blocked instead. D2."
+        },
+        "ttlSec": { "type": "integer", "minimum": 1, "maximum": 3600 },
+        "allowedPurposes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Purposes this token may be resolved for, as they stood when it was issued. Compare with token.resolve. D10.6."
+        }
+      },
+      "dependentRequired": {
+        "tokenId": ["ttlSec", "allowedPurposes"],
+        "ttlSec": ["tokenId"],
+        "allowedPurposes": ["tokenId"]
+      },
+      "dependentSchemas": {
+        "tokenId": {
+          "properties": { "action": { "const": "tokenise" } },
+          "not": { "required": ["allowlisted"] }
+        }
+      }
+    },
+
+    "rendered": {
+      "type": "object",
+      "required": ["kind", "entity", "as"],
+      "additionalProperties": false,
+      "description": "One token or hash the model wrote into an outbound reply, and what the customer saw instead. masked: a token of this session, shown as xxx-xxx-7777 · placeholder: a token under display redact, or a hash · foreign: a token issued to ANOTHER session · unknown: a token this guard does not hold (forged, expired or ended). D10.8.",
+      "properties": {
+        "kind": { "enum": ["token", "hash"] },
+        "tokenId": { "$ref": "#/$defs/tokenId" },
+        "entity": {
+          "oneOf": [{ "$ref": "#/$defs/entity" }, { "type": "null" }],
+          "description": "null for foreign and unknown."
+        },
+        "as": { "enum": ["masked", "placeholder", "foreign", "unknown"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "token" } } },
+          "then": { "required": ["tokenId"] },
+          "else": {
+            "not": { "required": ["tokenId"] },
+            "properties": { "as": { "const": "placeholder" } }
+          }
+        },
+        {
+          "if": { "properties": { "as": { "enum": ["foreign", "unknown"] } } },
+          "then": { "properties": { "entity": { "type": "null" } } },
+          "else": { "properties": { "entity": { "$ref": "#/$defs/entity" } } }
+        }
+      ]
+    },
+
+    "scan": {
+      "type": "object",
+      "title": "scan",
+      "description": "One per process/processSync call. findings is in reading order.",
+      "required": [
+        "schemaVersion",
+        "eventId",
+        "type",
+        "at",
+        "sessionId",
+        "boundary",
+        "policy",
+        "engine",
+        "input",
+        "findings",
+        "skippedDetectors",
+        "degradedDetectors",
+        "outcome",
+        "durationMs",
+        "prevHash"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": { "$ref": "#/$defs/schemaVersion" },
+        "eventId": { "$ref": "#/$defs/eventId" },
+        "type": { "const": "scan" },
+        "at": { "$ref": "#/$defs/at" },
+        "sessionId": { "$ref": "#/$defs/sessionId" },
+        "ref": { "$ref": "#/$defs/ref" },
+        "boundary": { "enum": ["inbound", "prompt", "tool_input", "tool_output", "outbound"] },
+        "contextUsed": {
+          "const": true,
+          "description": "The app passed the other side's last message as context. Its text is not recorded. D10.11."
+        },
+        "policy": { "$ref": "#/$defs/policyRef" },
+        "engine": { "$ref": "#/$defs/engine" },
+        "input": {
+          "type": "object",
+          "required": ["chars"],
+          "additionalProperties": false,
+          "properties": {
+            "chars": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Length in UTF-16 code units."
+            }
+          }
+        },
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+        "skippedDetectors": {
+          "$ref": "#/$defs/detectorIds",
+          "description": "Async detectors processSync could not run. Their entities were not looked for in this message."
+        },
+        "degradedDetectors": {
+          "$ref": "#/$defs/detectorIds",
+          "description": "Detectors that failed on this message; the scan went on without them. D4."
+        },
+        "outcome": {
+          "enum": ["processed", "blocked", "error"],
+          "description": "blocked: the caller got no text back. D8.2."
+        },
+        "rendered": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/rendered" },
+          "description": "outbound only, and only when something was rewritten. Reading order. D10.1, D10.8."
+        },
+        "durationMs": { "type": "number", "minimum": 0 },
+        "prevHash": { "$ref": "#/$defs/prevHash" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "boundary": { "not": { "const": "outbound" } } } },
+          "then": { "not": { "required": ["rendered"] } }
+        }
+      ]
+    },
+
+    "tokenResolve": {
+      "type": "object",
+      "title": "token.resolve",
+      "description": "One per resolve attempt. A refusal is the more valuable record: something asked for a real value outside the purpose it was collected for. D6.",
+      "required": [
+        "schemaVersion",
+        "eventId",
+        "type",
+        "at",
+        "sessionId",
+        "policy",
+        "tokenId",
+        "entity",
+        "purpose",
+        "caller",
+        "outcome",
+        "prevHash"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": { "$ref": "#/$defs/schemaVersion" },
+        "eventId": { "$ref": "#/$defs/eventId" },
+        "type": { "const": "token.resolve" },
+        "at": { "$ref": "#/$defs/at" },
+        "sessionId": { "$ref": "#/$defs/sessionId" },
+        "ref": { "$ref": "#/$defs/ref" },
+        "policy": { "$ref": "#/$defs/policyRef" },
+        "tokenId": {
+          "oneOf": [{ "$ref": "#/$defs/tokenId" }, { "type": "null" }],
+          "description": "null when what the caller passed was not a token. The string passed is never recorded."
+        },
+        "entity": {
+          "oneOf": [{ "$ref": "#/$defs/entity" }, { "type": "null" }],
+          "description": "null unless the token exists and belongs to this session."
+        },
+        "purpose": {
+          "type": "string",
+          "description": "As the caller named it. A label, not a credential."
+        },
+        "caller": {
+          "type": ["string", "null"],
+          "description": "As the caller named itself. Not checked."
+        },
+        "outcome": { "enum": ["allowed", "denied"] },
+        "reason": { "enum": ["not_found", "session_mismatch", "expired", "purpose_not_allowed"] },
+        "prevHash": { "$ref": "#/$defs/prevHash" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "outcome": { "const": "denied" } } },
+          "then": { "required": ["reason"] },
+          "else": {
+            "not": { "required": ["reason"] },
+            "properties": {
+              "tokenId": { "$ref": "#/$defs/tokenId" },
+              "entity": { "$ref": "#/$defs/entity" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "tokenId": { "type": "null" } }, "required": ["tokenId"] },
+          "then": {
+            "properties": { "reason": { "const": "not_found" }, "entity": { "type": "null" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "reason": { "const": "session_mismatch" } },
+            "required": ["reason"]
+          },
+          "then": { "properties": { "entity": { "type": "null" } } }
+        }
+      ]
+    }
+  }
+}

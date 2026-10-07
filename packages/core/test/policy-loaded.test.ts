@@ -60,6 +60,36 @@ describe('policy.loaded', () => {
     expect(loaded.policy.allowlist.exact).toContain(`sha256:${hex}`)
   })
 
+  it('gives every way of writing one value the same digest', () => {
+    const digestsOf = (exact: string[]) => {
+      const events: AuditRecord[] = []
+      createGuard({
+        policy: definePolicy({ entitySet: '0.1', entities: {}, allowlist: { exact } }),
+        onAudit: (e) => events.push(e),
+      })
+      return (events[0] as PolicyLoadedEvent).policy.allowlist.exact
+    }
+    const [phone] = digestsOf(['021234567'])
+    for (const written of ['02-123-4567', '๐๒-๑๒๓-๔๕๖๗', '+66 2 123 4567', '02 123 4567']) {
+      expect(digestsOf([written]), written).toEqual([phone])
+    }
+    const [email] = digestsOf(['support@myshop.co.th'])
+    expect(digestsOf(['Support@MyShop.co.th'])).toEqual([email])
+    // An email keeps its hyphens: my-shop and myshop are different domains.
+    expect(digestsOf(['support@my-shop.co.th'])).not.toEqual([email])
+  })
+
+  it('digests the canonical form, which anyone with the value can rebuild', async () => {
+    const { events } = build()
+    const loaded = events[0] as PolicyLoadedEvent
+    const bytes = new Uint8Array(
+      await crypto.subtle.digest('SHA-256', new TextEncoder().encode('021234567')),
+    )
+    const hex = [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('')
+    // The policy lists it as 02-123-4567.
+    expect(loaded.policy.allowlist.exact).toContain(`sha256:${hex}`)
+  })
+
   it('is not written when there is no sink', () => {
     // Nothing to assert on but that building does not throw without onAudit.
     expect(() => createGuard({ policy, onAudit: undefined })).not.toThrow()

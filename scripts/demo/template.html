@@ -571,7 +571,7 @@ pre.json {
         let state
         try {
           const { guard } = guardWith({ PHONE: rule }, a === 'hash' ? { hmacKey: KEY } : {})
-          const r = guard.processSync(text)
+          const r = guard.processSync(text, { sessionId: 'conv_demo' })
           cell = aiView(text, r)
           state = r.outcome === 'blocked' ? h('span', { class: 'pill bad' }, 'blocked') : h('span', { class: 'pill ok' }, 'processed')
         } catch (e) { cell = errorBox(e); state = null }

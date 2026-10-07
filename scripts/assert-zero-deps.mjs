@@ -87,6 +87,9 @@ try {
   if (!names.includes('schema/policy.schema.json')) {
     note('tarball: schema/policy.schema.json must be published for editor validation')
   }
+  if (!names.includes('schema/audit-event.schema.json')) {
+    note('tarball: schema/audit-event.schema.json must be published for log pipelines')
+  }
   // A tripwire for code that is not ours — a dependency bundled into dist/ would
   // add hundreds of KB to MBs — not a size budget. The budget users feel is the
   // minified bundle, checked by size-limit against the spec's 150 KB.

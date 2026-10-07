@@ -13,6 +13,7 @@ import type {
   TokenRecord,
   TokenStore,
 } from '../src/types.js'
+import { inSession } from './helpers/in-session.js'
 
 const KEY = 'a3f1c9e07b2d4f6a8c1e3b5d7f9a0c2e4b6d8f1a3c5e7b9d0f2a4c6e8b1d3f5a'
 const TOKEN = /\[tok:[bcdfghjkmnpqrstv]{16}\]/
@@ -57,12 +58,14 @@ function asyncStore(inner: TokenStore = createMemoryTokenStore()): TokenStore & 
 
 function build(extra: Partial<GuardOptions> = {}) {
   const events: AuditRecord[] = []
-  const guard = createGuard({
-    policy: definePolicy(POLICY),
-    hmacKey: KEY,
-    onAudit: (e) => events.push(e),
-    ...extra,
-  })
+  const guard = inSession(
+    createGuard({
+      policy: definePolicy(POLICY),
+      hmacKey: KEY,
+      onAudit: (e) => events.push(e),
+      ...extra,
+    }),
+  )
   const scans = () => events.filter((e): e is AuditEvent => e.type === 'scan')
   return { guard, events, scans }
 }

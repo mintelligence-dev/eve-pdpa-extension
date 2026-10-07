@@ -8,7 +8,7 @@ import {
   parseTokenId,
   type StoreStep,
 } from './actions/tokenise.js'
-import { compileAllowlist } from './allowlist.js'
+import { allowlistDigestForm, compileAllowlist } from './allowlist.js'
 import type { Hmac } from './crypto/hmac.js'
 import { sha256 } from './crypto/sha256.js'
 import { BUILTIN_DETECTORS } from './detectors/index.js'
@@ -170,17 +170,37 @@ export function createGuard(options: GuardOptions): Guard {
    * would be worse than losing the log line — but it is counted and reported,
    * never swallowed. onError throwing in turn is ignored, so a broken error
    * handler cannot fail the message either.
+   *
+   * An async sink is not waited for — the sink is sync by contract (D3) — but
+   * a Promise it returns is not dropped either: a rejection counts the same as
+   * a throw, just later, and never surfaces as an unhandled rejection.
    */
   function emit(event: AuditRecord): void {
     if (onAudit === undefined) return
-    try {
-      onAudit(event)
-    } catch (error) {
+    const sinkFailed = (error: unknown): void => {
       auditSinkErrors++
       if (onError !== undefined) {
         try {
           onError(error, { source: 'audit_sink', eventType: event.type })
         } catch {}
+      }
+    }
+    let returned: unknown
+    try {
+      returned = onAudit(event)
+    } catch (error) {
+      sinkFailed(error)
+      return
+    }
+    if (
+      typeof returned === 'object' &&
+      returned !== null &&
+      typeof (returned as PromiseLike<unknown>).then === 'function'
+    ) {
+      try {
+        ;(returned as PromiseLike<unknown>).then(undefined, sinkFailed)
+      } catch (error) {
+        sinkFailed(error)
       }
     }
   }
@@ -192,6 +212,24 @@ export function createGuard(options: GuardOptions): Guard {
 
   // Compiled once per guard, not per message.
   const allowlist = compileAllowlist(policy.allowlist)
+
+  /**
+   * D10.4: a policy that tokenises needs to know whose conversation this is.
+   * Defaulting every caller to one shared 'anonymous' session would let one
+   * customer's chat resolve another's token, and give the same number from two
+   * customers the same token — with nothing to say it was happening. A policy
+   * without tokenise has nothing to keep apart, so it still defaults.
+   */
+  function sessionFor(sessionId: string | undefined, call: string): string {
+    if (store !== null && (sessionId === undefined || sessionId === '')) {
+      throw new PdpaError(
+        'ERR_PDPA_NO_SESSION',
+        `${call} needs a sessionId: this policy tokenises, and tokens are kept apart by session. ` +
+          'Pass the conversation id, e.g. { sessionId: chat.id }',
+      )
+    }
+    return sessionId ?? 'anonymous'
+  }
 
   function newEventId(startedAt: number): string {
     // An event id only has to be unique enough to tell events apart. If the
@@ -220,7 +258,7 @@ export function createGuard(options: GuardOptions): Guard {
         placeholderLanguage: policy.placeholderLanguage,
         entities: policy.entities,
         allowlist: {
-          exact: policy.allowlist.exact.map(sha256Hex),
+          exact: policy.allowlist.exact.map((e) => sha256Hex(allowlistDigestForm(e))),
           pattern: [...policy.allowlist.pattern],
         },
       },
@@ -243,9 +281,9 @@ export function createGuard(options: GuardOptions): Guard {
   function settle(
     id: string | null,
     rec: TokenRecord | undefined,
+    sessionId: string,
     opts: ResolveOptions,
   ): { result: ResolveResult; expired: boolean } {
-    const sessionId = opts.sessionId ?? 'anonymous'
     const ref = checkRef(opts.ref)
     const reason = id === null ? 'not_found' : judge(rec, sessionId, opts.purpose, Date.now())
 
@@ -286,7 +324,7 @@ export function createGuard(options: GuardOptions): Guard {
     opts: ProcessOptions | undefined,
   ): Generator<Step, ProcessResult, unknown> {
     const startedAt = Date.now()
-    const sessionId = opts?.sessionId ?? 'anonymous'
+    const sessionId = sessionFor(opts?.sessionId, 'process')
     const boundary: Boundary = opts?.boundary ?? 'inbound'
     const ref = checkRef(opts?.ref)
     const previous = checkContext(opts?.context)
@@ -563,9 +601,10 @@ export function createGuard(options: GuardOptions): Guard {
     },
 
     async resolve(token, opts): Promise<ResolveResult> {
+      const sessionId = sessionFor(opts.sessionId, 'resolve')
       const id = parseTokenId(token)
       const rec = id !== null && store !== null ? await store.get(id) : undefined
-      const { result, expired } = settle(id, rec, opts)
+      const { result, expired } = settle(id, rec, sessionId, opts)
       // D6: an expired token is deleted the moment it is asked for.
       if (expired && id !== null && store !== null) await store.delete(id)
       return result
@@ -578,10 +617,11 @@ export function createGuard(options: GuardOptions): Guard {
           'resolveSync needs a sync token store; this guard has an async one — use resolve',
         )
       }
+      const sessionId = sessionFor(opts.sessionId, 'resolveSync')
       const id = parseTokenId(token)
       const rec =
         id !== null && store !== null ? (store.get(id) as TokenRecord | undefined) : undefined
-      const { result, expired } = settle(id, rec, opts)
+      const { result, expired } = settle(id, rec, sessionId, opts)
       if (expired && id !== null && store !== null) store.delete(id)
       return result
     },

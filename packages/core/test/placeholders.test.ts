@@ -3,6 +3,7 @@ import { createGuard } from '../src/guard.js'
 import { definePolicy } from '../src/policy.js'
 import { encodeLetters, tokenId } from '../src/random.js'
 import type { PolicyInput, RandomSource } from '../src/types.js'
+import { inSession } from './helpers/in-session.js'
 
 const LETTERS = /^[bcdfghjkmnpqrstv]+$/
 
@@ -41,10 +42,12 @@ describe('a token survives a second pass through the guard — item 6', () => {
   it('even for the bytes that spelled a phone number in hex', () => {
     // As hex these bytes read 0918887777abcdef, which the phone detector found
     // inside the token and redacted, leaving [tok:[เบอร์โทร]abcdef].
-    const guard = createGuard({
-      policy: definePolicy({ entitySet: '0.1', entities: EVERYTHING }),
-      randomSource: fixedBytes([0x09, 0x18, 0x88, 0x77, 0x77, 0xab, 0xcd, 0xef]),
-    })
+    const guard = inSession(
+      createGuard({
+        policy: definePolicy({ entitySet: '0.1', entities: EVERYTHING }),
+        randomSource: fixedBytes([0x09, 0x18, 0x88, 0x77, 0x77, 0xab, 0xcd, 0xef]),
+      }),
+    )
 
     const once = guard.processSync('เบอร์ 0812345678').text
     expect(once).toMatch(/^เบอร์ \[tok:[bcdfghjkmnpqrstv]{16}\]$/)
@@ -52,7 +55,9 @@ describe('a token survives a second pass through the guard — item 6', () => {
   })
 
   it('for a few thousand random tokens', () => {
-    const guard = createGuard({ policy: definePolicy({ entitySet: '0.1', entities: EVERYTHING }) })
+    const guard = inSession(
+      createGuard({ policy: definePolicy({ entitySet: '0.1', entities: EVERYTHING }) }),
+    )
     for (let i = 0; i < 3000; i++) {
       const once = guard.processSync('เบอร์ 0812345678 เลขบัตร 3-1005-00123-45-8').text
       const twice = guard.processSync(once)
