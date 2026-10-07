@@ -195,3 +195,70 @@ describe('the built binary', () => {
     await expect(run(process.execPath, [bin, 'scan', clean])).resolves.toBeDefined()
   })
 })
+
+describe('below the confidence threshold', () => {
+  // Passes Luhn, but no card issuer uses a 9 prefix: the detector gives 0.6.
+  const WEAK_CARD = '9000123456789016'
+  const weak = file(
+    jsonl(
+      { id: 'm1', text: `เลข ${WEAK_CARD} ครับ` },
+      { id: 'm2', text: 'เบอร์ 0918887777' },
+      { id: 'm3', text: `อีกใบ ${WEAK_CARD}` },
+    ),
+  )
+  const policyWith = (rule: object) =>
+    file(JSON.stringify({ entitySet: '0.1', entities: { CREDIT_CARD: rule } }), '.json')
+
+  it('counts what the guard dropped, and where, apart from what it acted on', async () => {
+    const r = await report('scan', weak)
+    expect(r.entities.CREDIT_CARD).toBe(0)
+    expect(r.belowThreshold.entities).toEqual({
+      CREDIT_CARD: { count: 2, threshold: 0.95, lowest: 0.6, highest: 0.6 },
+    })
+    expect(r.belowThreshold.hits).toEqual([
+      { line: 1, id: 'm1', entities: ['CREDIT_CARD'] },
+      { line: 3, id: 'm3', entities: ['CREDIT_CARD'] },
+    ])
+  })
+
+  it("uses the rule's minConfidence — at 0.6 the guard acts, and nothing is below", async () => {
+    const r = await report(
+      'scan',
+      weak,
+      '--policy',
+      policyWith({ action: 'redact', minConfidence: 0.6 }),
+    )
+    expect(r.entities.CREDIT_CARD).toBe(2)
+    expect(r.belowThreshold.entities).toEqual({})
+  })
+
+  it('agrees with the guard on the default threshold', async () => {
+    // No minConfidence: guard and report must both use the same default, or a
+    // value would be counted in both places or neither.
+    const r = await report('scan', weak, '--policy', policyWith({ action: 'redact' }))
+    expect(r.entities.CREDIT_CARD).toBe(0)
+    expect(r.belowThreshold.entities.CREDIT_CARD?.threshold).toBe(0.95)
+  })
+
+  it('leaves out an entity the policy ignores', async () => {
+    const ignoring = file(
+      JSON.stringify({ entitySet: '0.1', onUnmapped: 'ignore', entities: {} }),
+      '.json',
+    )
+    expect((await report('scan', weak, '--policy', ignoring)).belowThreshold.entities).toEqual({})
+  })
+
+  it('says so for a person, without the value', async () => {
+    const { stdout, code } = await cli('scan', weak)
+    expect(stdout).toContain('below the confidence threshold')
+    expect(stdout).toContain('CREDIT_CARD  2  (confidence 0.6, threshold 0.95)')
+    expect(stdout).not.toContain(WEAK_CARD)
+    // The phone was acted on; that, not the weak cards, is what sets the exit code.
+    expect(code).toBe(EXIT.FOUND)
+  })
+
+  it('does not change the exit code on its own', async () => {
+    const onlyWeak = file(jsonl({ text: `เลข ${WEAK_CARD}` }))
+    expect((await cli('scan', onlyWeak)).code).toBe(EXIT.CLEAN)
+  })
+})

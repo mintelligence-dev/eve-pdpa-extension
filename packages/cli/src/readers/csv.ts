@@ -12,7 +12,7 @@ export interface CsvOptions {
   readonly encoding: string
 }
 
-interface Row {
+export interface Row {
   /** Line the row starts on: a quoted field can run over several. */
   readonly line: number
   readonly fields: readonly string[]
@@ -28,7 +28,7 @@ interface Row {
  * Written here rather than taken from a package: it is small, and every
  * dependency of a tool that reads customer data is one more thing to audit.
  */
-async function* rows(chunks: AsyncIterable<string>, delimiter: string): AsyncGenerator<Row> {
+export async function* rows(chunks: AsyncIterable<string>, delimiter: string): AsyncGenerator<Row> {
   let fields: string[] = []
   let field = ''
   let quoted = false

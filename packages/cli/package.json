@@ -19,6 +19,9 @@
   "engines": {
     "node": ">=18.18.0"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@thai-pdpa-guard/core": "workspace:*"
   },

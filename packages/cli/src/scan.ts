@@ -1,11 +1,15 @@
 import { randomBytes } from 'node:crypto'
 import {
   type Action,
+  actionFor,
+  BUILTIN_DETECTORS,
   type CompiledPolicy,
+  createEngine,
   createGuard,
   definePolicy,
   ENTITY_TYPES,
   type EntityType,
+  normalise,
   type TokenStore,
 } from '@thai-pdpa-guard/core'
 
@@ -16,15 +20,28 @@ export type ReadItem =
       readonly line: number
       readonly id: string | null
       readonly text: string
+      /** Who wrote it, where the export says. LINE OA only. */
+      readonly sender?: Sender
     }
   | { readonly kind: 'bad'; readonly line: number; readonly problem: string }
+
+/** `customer` wrote it, or the `shop` did — staff or an auto-reply. Never a name. */
+export type Sender = 'customer' | 'shop'
 
 /** One message that held personal data. Where it is and what kinds — never the values. */
 export interface Hit {
   readonly line: number
   readonly id: string | null
   readonly entities: readonly EntityType[]
+  readonly sender?: Sender
   readonly blocked?: true
+}
+
+export interface SenderCount {
+  readonly scanned: number
+  readonly withFindings: number
+  /** Values found, allowlisted ones excluded. */
+  readonly values: number
 }
 
 export interface ScanReport {
@@ -45,10 +62,38 @@ export interface ScanReport {
   /** Values found and let through by the policy's allowlist. */
   readonly allowlisted: number
   readonly hits: readonly Hit[]
+  /**
+   * LINE OA only: the same counts split by who wrote the message. Staff type
+   * customers' data too — "sent the OTP to 091…" — so both sides are scanned.
+   */
+  readonly senders?: Readonly<Record<Sender, SenderCount>>
+  /**
+   * Found by a detector, but below the rule's minConfidence, so the policy did
+   * nothing with them. Most are not personal data — that is what the
+   * threshold is for — but the count says how much rests on it.
+   */
+  readonly belowThreshold: {
+    readonly entities: Readonly<Partial<Record<EntityType, ThresholdCount>>>
+    readonly hits: readonly Hit[]
+  }
   readonly unreadable: readonly { readonly line: number; readonly problem: string }[]
   /** Detectors that failed on at least one message. Those messages were not fully scanned. */
   readonly degradedDetectors: readonly string[]
 }
+
+export interface ThresholdCount {
+  readonly count: number
+  /** The rule's minConfidence, or the guard's default. */
+  readonly threshold: number
+  readonly lowest: number
+  readonly highest: number
+}
+
+/**
+ * The guard's threshold when a rule names none. Mirrors guard.ts; the
+ * below-threshold tests fail if the two drift apart.
+ */
+const DEFAULT_MIN_CONFIDENCE = 0.95
 
 /** Every entity flagged: found and counted, nothing rewritten. */
 export const DEFAULT_POLICY: CompiledPolicy = definePolicy({
@@ -69,7 +114,7 @@ const DISCARD_STORE: TokenStore = {
   clearSession() {},
 }
 
-export type Format = 'jsonl' | 'csv' | 'tsv'
+export type Format = 'jsonl' | 'csv' | 'tsv' | 'line-oa'
 
 export interface ScanOptions {
   readonly file: string
@@ -100,6 +145,12 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
     hmacKey: new Uint8Array(randomBytes(32)),
   })
 
+  // The guard drops a candidate under the threshold before anything else sees
+  // it. The same detectors, run again here, show what was dropped.
+  const engine = createEngine(BUILTIN_DETECTORS)
+  const weak: Partial<Record<EntityType, ThresholdCount>> = {}
+  const weakHits: Hit[] = []
+
   const entities = Object.fromEntries(ENTITY_TYPES.map((e) => [e, 0])) as Record<EntityType, number>
   const actions: Partial<Record<Action, number>> = {}
   const hits: Hit[] = []
@@ -107,6 +158,11 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
   let scanned = 0
   let blocked = 0
   let allowlisted = 0
+  const senders: Record<Sender, { scanned: number; withFindings: number; values: number }> = {
+    customer: { scanned: 0, withFindings: 0, values: 0 },
+    shop: { scanned: 0, withFindings: 0, values: 0 },
+  }
+  let sawSender = false
 
   for await (const item of items) {
     if (item.kind === 'bad') {
@@ -120,22 +176,52 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
     const result = await guard.process(item.text, { sessionId })
     await guard.endSession(sessionId)
 
+    const side = item.sender === undefined ? undefined : senders[item.sender]
+    if (side !== undefined) {
+      sawSender = true
+      side.scanned++
+    }
+    const from = item.sender === undefined ? {} : { sender: item.sender }
+
     const kinds: EntityType[] = []
     for (const f of result.findings) {
       if (f.allowlisted === true) {
         allowlisted++
         continue
       }
+      if (side !== undefined) side.values++
       entities[f.entity]++
       actions[f.action] = (actions[f.action] ?? 0) + 1
       if (!kinds.includes(f.entity)) kinds.push(f.entity)
     }
     if (result.outcome === 'blocked') blocked++
+
+    const weakKinds: EntityType[] = []
+    const detected = await engine.run(normalise(item.text), { sessionId, boundary: 'inbound' })
+    for (const c of detected.candidates) {
+      // An entity the policy ignores is ignored at any confidence.
+      if (actionFor(policy, c.entity) === null) continue
+      const threshold = policy.entities[c.entity]?.minConfidence ?? DEFAULT_MIN_CONFIDENCE
+      if (c.confidence >= threshold) continue
+      const was = weak[c.entity]
+      weak[c.entity] = {
+        count: (was?.count ?? 0) + 1,
+        threshold,
+        lowest: Math.min(was?.lowest ?? 1, c.confidence),
+        highest: Math.max(was?.highest ?? 0, c.confidence),
+      }
+      if (!weakKinds.includes(c.entity)) weakKinds.push(c.entity)
+    }
+    if (weakKinds.length > 0) {
+      weakHits.push({ line: item.line, id: item.id, entities: weakKinds, ...from })
+    }
     if (kinds.length > 0) {
+      if (side !== undefined) side.withFindings++
       hits.push({
         line: item.line,
         id: item.id,
         entities: kinds,
+        ...from,
         ...(result.outcome === 'blocked' ? { blocked: true as const } : {}),
       })
     }
@@ -150,6 +236,8 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
     ...(opts.policy === undefined ? {} : { actions }),
     allowlisted,
     hits,
+    ...(sawSender ? { senders } : {}),
+    belowThreshold: { entities: weak, hits: weakHits },
     unreadable,
     degradedDetectors: [...degraded],
   }

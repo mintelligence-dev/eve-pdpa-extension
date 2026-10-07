@@ -1,20 +1,26 @@
-import { access, readFile } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import { extname } from 'node:path'
 import { parseArgs } from 'node:util'
 import { type CompiledPolicy, PdpaError, parsePolicy, VERSION } from '@thai-pdpa-guard/core'
 import { readCsv } from './readers/csv.js'
 import { readJsonl } from './readers/jsonl.js'
+import { LINE_OA_TEXT, lineOaLabel, looksLikeLineOa, readLineOa } from './readers/line-oa.js'
 import { formatHuman } from './report.js'
 import { type Format, type ReadItem, scan } from './scan.js'
+import { describePolicy, validatePolicy } from './validate.js'
 
 /**
- * Exit codes, so a script or CI job can branch without reading the report:
+ * Exit codes, so a script or CI job can branch without reading the report.
  *
+ * scan:
  *   0  every message read, nothing found
  *   1  personal data found
  *   2  could not run: bad arguments, missing file, invalid policy
  *   3  nothing found, but some lines could not be read — "nothing found" must
  *      not be readable as "nothing there"
+ *
+ * policy validate:
+ *   0  valid · 1  invalid · 2  could not run
  */
 export const EXIT = { CLEAN: 0, FOUND: 1, USAGE: 2, UNREADABLE: 3 } as const
 
@@ -24,12 +30,15 @@ Find Thai personal data in chat exports before they reach an AI model.
 
 Usage:
   thai-pdpa-guard scan <file> [options]
+  thai-pdpa-guard policy validate <file>
 
-Options:
+scan options:
   --policy <file>       Also show what this policy would do with each value
   --json                Machine-readable report on stdout
-  --format <fmt>        jsonl, csv or tsv (default: from the file extension)
-  --text-field <name>   Field or column holding the message (default: text)
+  --format <fmt>        jsonl, csv, tsv or line-oa (default: from the file —
+                        a LINE OA chat export is recognised by its first line)
+  --text-field <name>   Field or column holding the message (default: text;
+                        ข้อความ for LINE OA)
   --id-field <name>     Field or column holding the message id (default: id)
   --encoding <name>     File encoding (default: utf-8). A CSV saved by Thai
                         Excel is usually windows-874
@@ -39,8 +48,12 @@ Options:
 The report lists types, counts, line numbers and message ids. It never
 contains the personal data itself.
 
-Exit codes: 0 nothing found · 1 found · 2 could not run · 3 nothing found
-but some lines could not be read.
+scan exit codes: 0 nothing found · 1 found · 2 could not run · 3 nothing
+found but some lines could not be read.
+
+policy validate checks a policy file the way createGuard will load it, and
+says what it does with each kind of data. Exit codes: 0 valid · 1 invalid ·
+2 could not run.
 `
 
 export interface Io {
@@ -54,7 +67,8 @@ const FORMATS: Readonly<Record<string, Format>> = {
   '.csv': 'csv',
   '.tsv': 'tsv',
 }
-const isFormat = (f: string | undefined): f is Format => f === 'jsonl' || f === 'csv' || f === 'tsv'
+const isFormat = (f: string | undefined): f is Format =>
+  f === 'jsonl' || f === 'csv' || f === 'tsv' || f === 'line-oa'
 
 export async function main(argv: readonly string[], io: Io): Promise<number> {
   let parsed: ReturnType<typeof parse>
@@ -75,25 +89,77 @@ export async function main(argv: readonly string[], io: Io): Promise<number> {
     return values.help === true ? EXIT.CLEAN : EXIT.USAGE
   }
 
-  const [command, file, ...rest] = positionals
+  const [command, ...args] = positionals
+  if (command === 'policy') return policyCommand(args, io)
   if (command !== 'scan') return usageError(io, `unknown command: ${command}`)
-  if (file === undefined) return usageError(io, 'scan needs a file')
-  if (rest.length > 0) return usageError(io, `scan takes one file, got ${positionals.length - 1}`)
+  return scanCommand(args, values, io)
+}
 
-  const format = values.format ?? FORMATS[extname(file).toLowerCase()]
-  if (!isFormat(format)) {
+async function policyCommand(args: readonly string[], io: Io): Promise<number> {
+  const [sub, file, ...rest] = args
+  if (sub !== 'validate') return usageError(io, `unknown policy command: ${sub ?? '(none)'}`)
+  if (file === undefined) return usageError(io, 'policy validate needs a file')
+  if (rest.length > 0)
+    return usageError(io, `policy validate takes one file, got ${args.length - 1}`)
+
+  let json: string
+  try {
+    json = await readFile(file, 'utf8')
+  } catch {
+    io.stderr(`cannot read ${file}\n`)
+    return EXIT.USAGE
+  }
+  const result = validatePolicy(json)
+  if (!result.ok) {
+    io.stderr(`${file}  invalid\n  ${result.problem}\n`)
+    return EXIT.FOUND
+  }
+  io.stdout(describePolicy(file, result.policy))
+  return EXIT.CLEAN
+}
+
+async function scanCommand(
+  args: readonly string[],
+  values: ReturnType<typeof parse>['values'],
+  io: Io,
+): Promise<number> {
+  const [file, ...rest] = args
+  if (file === undefined) return usageError(io, 'scan needs a file')
+  if (rest.length > 0) return usageError(io, `scan takes one file, got ${args.length}`)
+
+  const named = values.format ?? FORMATS[extname(file).toLowerCase()]
+  if (!isFormat(named)) {
     return usageError(
       io,
       values.format === undefined
-        ? `cannot tell the format of ${file} — pass --format jsonl, csv or tsv`
-        : `unsupported format: ${values.format} (supported: jsonl, csv, tsv)`,
+        ? `cannot tell the format of ${file} — pass --format jsonl, csv, tsv or line-oa`
+        : `unsupported format: ${values.format} (supported: jsonl, csv, tsv, line-oa)`,
     )
   }
 
+  let isFile = false
   try {
-    await access(file)
-  } catch {
-    io.stderr(`cannot read ${file}\n`)
+    isFile = (await stat(file)).isFile()
+  } catch {}
+  if (!isFile) {
+    io.stderr(`cannot read ${file} — not a file\n`)
+    return EXIT.USAGE
+  }
+
+  // A LINE OA export is a .csv whose first lines describe the file. Read as a
+  // plain CSV, its first line would be taken for the header.
+  let format: Format = named
+  try {
+    if (
+      named === 'csv' &&
+      values.format === undefined &&
+      (await looksLikeLineOa(file, values.encoding))
+    ) {
+      format = 'line-oa'
+    }
+  } catch (error) {
+    // Left uncaught, Node would exit 1 — the code that means "found personal data".
+    io.stderr(`cannot read ${file}: ${(error as Error).message}\n`)
     return EXIT.USAGE
   }
 
@@ -112,7 +178,8 @@ export async function main(argv: readonly string[], io: Io): Promise<number> {
   let report: Awaited<ReturnType<typeof scan>>
   try {
     report = await scan(reader(file, format, values), {
-      file,
+      // The export names each file after the customer's LINE name.
+      file: format === 'line-oa' ? lineOaLabel(file) : file,
       format,
       ...(policy === undefined ? {} : { policy }),
     })
@@ -139,7 +206,8 @@ function parse(argv: readonly string[]) {
       policy: { type: 'string' },
       json: { type: 'boolean' },
       format: { type: 'string' },
-      'text-field': { type: 'string', default: 'text' },
+      // Default depends on the format: see reader().
+      'text-field': { type: 'string' },
       // No default here: a CSV id column the user named must exist; the default may not.
       'id-field': { type: 'string' },
       encoding: { type: 'string', default: 'utf-8' },
@@ -154,8 +222,14 @@ function reader(
   format: Format,
   values: ReturnType<typeof parse>['values'],
 ): AsyncIterable<ReadItem> {
+  if (format === 'line-oa') {
+    return readLineOa(file, {
+      textField: values['text-field'] ?? LINE_OA_TEXT,
+      encoding: values.encoding,
+    })
+  }
   const common = {
-    textField: values['text-field'],
+    textField: values['text-field'] ?? 'text',
     idField: values['id-field'] ?? 'id',
     encoding: values.encoding,
   }

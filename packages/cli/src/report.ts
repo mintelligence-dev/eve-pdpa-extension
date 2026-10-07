@@ -1,4 +1,4 @@
-import type { ScanReport } from './scan.js'
+import type { Hit, ScanReport } from './scan.js'
 
 /** How many messages the human report lists before saying how many more. The JSON report lists all. */
 const MAX_LISTED = 20
@@ -9,6 +9,13 @@ const plural = (x: number, one: string, many: string) => `${n(x)} ${x === 1 ? on
 function table(rows: readonly (readonly [string, string])[]): string[] {
   const width = Math.max(...rows.map(([k]) => k.length))
   return rows.map(([k, v]) => `  ${k.padEnd(width)}  ${v}`)
+}
+
+/** `line 7   m04`: numbers padded so the ids line up whatever the line count. */
+function where(h: Hit, all: readonly Hit[]): string {
+  const width = Math.max(...all.map((x) => String(x.line).length))
+  const who = h.sender === undefined ? '' : `  ${h.sender === 'shop' ? 'shop    ' : 'customer'}`
+  return `line ${String(h.line).padEnd(width)}${who}${h.id === null ? '' : `  ${h.id}`}`
 }
 
 /** For a person at a terminal. Types, counts, line numbers and ids — no values. */
@@ -25,6 +32,12 @@ export function formatHuman(r: ScanReport): string {
   out.push(
     `messages ${n(r.records.scanned)} scanned · ${n(r.records.withFindings)} with personal data${unread}`,
   )
+  if (r.senders !== undefined) {
+    const { customer: c, shop: sh } = r.senders
+    out.push(
+      `         from customers ${n(c.withFindings)} of ${n(c.scanned)} · from the shop ${n(sh.withFindings)} of ${n(sh.scanned)}`,
+    )
+  }
   out.push('')
 
   const found = Object.entries(r.entities).filter(([, c]) => c > 0)
@@ -56,11 +69,31 @@ export function formatHuman(r: ScanReport): string {
     out.push(
       ...table(
         shown.map((h) => [
-          `line ${h.line}${h.id === null ? '' : `  ${h.id}`}`,
+          where(h, shown),
           h.entities.join(', ') + (h.blocked === true ? '  [blocked]' : ''),
         ]),
       ),
     )
+  }
+
+  const weak = Object.entries(r.belowThreshold.entities)
+  if (weak.length > 0) {
+    out.push('')
+    out.push('below the confidence threshold — found, but the policy does nothing with them')
+    out.push(
+      ...table(
+        weak.map(([e, t]) => {
+          const range = t.lowest === t.highest ? `${t.lowest}` : `${t.lowest}–${t.highest}`
+          return [e, `${n(t.count)}  (confidence ${range}, threshold ${t.threshold})`]
+        }),
+      ),
+    )
+    const shown = r.belowThreshold.hits.slice(0, MAX_LISTED)
+    if (r.belowThreshold.hits.length > shown.length) {
+      out.push(`  in ${n(r.belowThreshold.hits.length)} messages; first ${shown.length}:`)
+    }
+    out.push(...table(shown.map((h) => [where(h, shown), h.entities.join(', ')])))
+    out.push('  lower minConfidence in the policy to act on them')
   }
 
   if (r.unreadable.length > 0) {
