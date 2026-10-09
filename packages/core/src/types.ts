@@ -260,6 +260,7 @@ export interface PolicyLoadedEvent {
        * audit-event.schema.json and `allowlistDigestForm`.
        */
       readonly exact: readonly string[]
+      /** `sha256:<hex>` of each pattern exactly as the policy writes it. */
       readonly pattern: readonly string[]
     }
   }

@@ -146,7 +146,7 @@ Every time the guard runs, it calls `onAudit` with one event:
 
 | type | When |
 |---|---|
-| `policy.loaded` | Once, when the guard is created · the full rules that `policy.hash` refers to · allowlist values are stored as SHA-256 |
+| `policy.loaded` | Once, when the guard is created · the full rules that `policy.hash` refers to · allowlist values and patterns are stored as SHA-256 |
 | `scan` | Every `process` / `processSync` call · what was found, where, and what was done |
 | `token.resolve` | Every attempt to exchange a token, allowed or refused · the purpose asked for · who asked |
 

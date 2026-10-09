@@ -37,7 +37,7 @@ describe('policy.loaded', () => {
     expect(loaded.policy.hash).toBe(scan.policy.hash)
     expect(loaded.policy.entities).toEqual(policy.entities)
     expect(loaded.policy.onUnmapped).toBe('redact')
-    expect(loaded.policy.allowlist.pattern).toEqual(['.*@myshop\\.co\\.th'])
+    expect(loaded.policy.allowlist.pattern).toHaveLength(1)
   })
 
   it('writes allowlist values as digests, never as they are', () => {
@@ -88,6 +88,25 @@ describe('policy.loaded', () => {
     const hex = [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('')
     // The policy lists it as 02-123-4567.
     expect(loaded.policy.allowlist.exact).toContain(`sha256:${hex}`)
+  })
+
+  it('writes patterns as digests too, since one can hold a real number', async () => {
+    const pattern = '0918887777|somchai\\.r@gmail\\.com'
+    const events: AuditRecord[] = []
+    createGuard({
+      policy: definePolicy({ entitySet: '0.1', entities: {}, allowlist: { pattern: [pattern] } }),
+      onAudit: (e) => events.push(e),
+    })
+    const loaded = events[0] as PolicyLoadedEvent
+    const blob = JSON.stringify(loaded)
+    expect(blob).not.toContain('0918887777')
+    expect(blob).not.toContain('somchai')
+    // Taken of the pattern as written, so the policy file gives the same digest.
+    const bytes = new Uint8Array(
+      await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pattern)),
+    )
+    const hex = [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('')
+    expect(loaded.policy.allowlist.pattern).toEqual([`sha256:${hex}`])
   })
 
   it('is not written when there is no sink', () => {

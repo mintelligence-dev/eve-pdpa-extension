@@ -286,7 +286,9 @@ export function createGuard(options: GuardOptions): Guard {
         entities: policy.entities,
         allowlist: {
           exact: policy.allowlist.exact.map((e) => sha256Hex(allowlistDigestForm(e))),
-          pattern: [...policy.allowlist.pattern],
+          // As written, not canonicalised: a pattern is a rule, but nothing stops
+          // a policy writing a staff member's number into one.
+          pattern: policy.allowlist.pattern.map((p) => sha256Hex(p)),
         },
       },
       engine: {

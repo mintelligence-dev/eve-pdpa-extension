@@ -146,7 +146,7 @@ await guard.process('123-4-56789-0', { sessionId: 'conv_8f2a', context: 'รบ�
 
 | type | เมื่อไหร่ |
 |---|---|
-| `policy.loaded` | ครั้งเดียวตอนสร้าง guard · กฎฉบับเต็มที่ `policy.hash` หมายถึง · ค่าใน allowlist ถูกเก็บเป็น SHA-256 |
+| `policy.loaded` | ครั้งเดียวตอนสร้าง guard · กฎฉบับเต็มที่ `policy.hash` หมายถึง · ค่าและ pattern ใน allowlist ถูกเก็บเป็น SHA-256 |
 | `scan` | ทุกครั้งที่เรียก `process` / `processSync` · เจออะไร ตำแหน่งไหน ทำอะไรไป |
 | `token.resolve` | ทุกครั้งที่ขอแลก token ทั้งที่ได้และถูกปฏิเสธ · purpose ที่ขอ · ใครขอ |
 

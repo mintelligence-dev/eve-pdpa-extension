@@ -336,8 +336,18 @@ describe('what the schema rejects', () => {
 
   it('an allowlist entry that is not a digest', () => {
     const { loaded } = sample()
-    loaded.policy.allowlist.exact = ['02-123-4567']
-    expect(schemaAccepts(loaded)).toBe(false)
+    expect(
+      schemaAccepts({
+        ...loaded,
+        policy: { ...loaded.policy, allowlist: { exact: ['02-123-4567'], pattern: [] } },
+      }),
+    ).toBe(false)
+    expect(
+      schemaAccepts({
+        ...loaded,
+        policy: { ...loaded.policy, allowlist: { exact: [], pattern: ['0918887777'] } },
+      }),
+    ).toBe(false)
   })
 
   it('another schemaVersion or type', () => {

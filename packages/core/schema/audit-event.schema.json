@@ -197,8 +197,8 @@
                 },
                 "pattern": {
                   "type": "array",
-                  "items": { "type": "string" },
-                  "description": "As written in the policy."
+                  "items": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+                  "description": "SHA-256 of each pattern exactly as written in the policy, with no folding: a pattern is a rule, but it can hold a real phone number or address. The rule itself is in the policy file that policy.hash names."
                 }
               }
             }
