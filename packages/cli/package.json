@@ -14,7 +14,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "NOTICE"
   ],
   "engines": {
     "node": ">=18.18.0"
@@ -26,6 +28,7 @@
     "@thai-pdpa-guard/core": "workspace:*"
   },
   "scripts": {
+    "prepack": "node ../../scripts/copy-legal.mjs",
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
