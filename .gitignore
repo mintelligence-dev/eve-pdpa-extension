@@ -16,3 +16,7 @@ docs/
 
 # Generated benchmark data and report (bench/generate.mjs, bench/evaluate.mjs)
 bench/out/
+
+# Copied from the root by scripts/copy-legal.mjs on pack
+packages/*/LICENSE
+packages/*/NOTICE

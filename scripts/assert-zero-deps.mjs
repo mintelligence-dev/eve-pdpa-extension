@@ -87,6 +87,9 @@ try {
   if (!names.includes('schema/policy.schema.json')) {
     note('tarball: schema/policy.schema.json must be published for editor validation')
   }
+  for (const legal of ['LICENSE', 'NOTICE']) {
+    if (!names.includes(legal)) note(`tarball: ${legal} must be published (Apache-2.0)`)
+  }
   if (!names.includes('schema/audit-event.schema.json')) {
     note('tarball: schema/audit-event.schema.json must be published for log pipelines')
   }

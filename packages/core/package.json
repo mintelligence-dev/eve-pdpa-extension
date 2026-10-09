@@ -48,6 +48,7 @@
     "provenance": true
   },
   "scripts": {
+    "prepack": "node ../../scripts/copy-legal.mjs",
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
