@@ -214,7 +214,10 @@ esac
 - The LINE OA format comes from a Thai-language export seen in 2025 · if LINE changes it, the CLI stops and says it cannot find the column, rather than scanning the wrong one in silence
 - **Reports only, never rewrites the file** · there is no command yet that writes a protected copy
 
+## Reporting a vulnerability
+
+**Do not open a public issue.** Email **kunlachat@m-intelligence.tech** with the subject line starting `[thai-pdpa-guard security]`. Reproduce with made-up values — never send real personal data.
+
 ## License
 
 Apache-2.0
-<!-- TODO before publish: vulnerability reporting channel (email from SECURITY.md) -->
