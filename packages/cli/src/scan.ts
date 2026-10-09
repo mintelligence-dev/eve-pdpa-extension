@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto'
+import { randomBytes, randomFillSync } from 'node:crypto'
 import {
   type Action,
   actionFor,
@@ -143,6 +143,10 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
     // hash output is never shown, so any key will do; a fresh one per run
     // means nothing about it outlives the scan.
     hmacKey: new Uint8Array(randomBytes(32)),
+    // Node 18 has no globalThis.crypto, and core cannot import node:crypto
+    // (D7), so a tokenising policy would stop the scan there. The CLI only
+    // ever runs on Node, so it hands core Node's CSPRNG directly.
+    randomSource: (n) => randomFillSync(new Uint8Array(n)),
   })
 
   // The guard drops a candidate under the threshold before anything else sees

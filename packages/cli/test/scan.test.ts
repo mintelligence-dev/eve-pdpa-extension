@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { EXIT } from '../src/cli.js'
 import { cli, dir, file, jsonl, report } from './helpers.js'
 
@@ -260,5 +260,18 @@ describe('below the confidence threshold', () => {
   it('does not change the exit code on its own', async () => {
     const onlyWeak = file(jsonl({ text: `เลข ${WEAK_CARD}` }))
     expect((await cli('scan', onlyWeak)).code).toBe(EXIT.CLEAN)
+  })
+})
+
+describe('on a runtime without globalThis.crypto (stock Node 18)', () => {
+  it('still scans with a tokenising policy', async () => {
+    // What createGuard sees on Node 18; the CLI must supply its own source.
+    vi.stubGlobal('crypto', undefined)
+    try {
+      const r = await report('scan', CHATS, '--policy', POLICY)
+      expect(r.actions).toMatchObject({ tokenise: 1 })
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })
