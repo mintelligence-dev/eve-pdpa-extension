@@ -290,7 +290,10 @@ npx @thai-pdpa-guard/cli scan chats.csv --policy pdpa-policy.json
 
 See [`@thai-pdpa-guard/cli`](https://www.npmjs.com/package/@thai-pdpa-guard/cli)
 
+## Reporting a vulnerability
+
+**Do not open a public issue.** Email **kunlachat@m-intelligence.tech** with the subject line starting `[thai-pdpa-guard security]`. Reproduce with made-up values — never send real personal data.
+
 ## License
 
 Apache-2.0
-<!-- TODO before publish: vulnerability reporting channel (email from SECURITY.md) -->

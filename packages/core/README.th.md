@@ -290,7 +290,10 @@ npx @thai-pdpa-guard/cli scan chats.csv --policy pdpa-policy.json
 
 ดู [`@thai-pdpa-guard/cli`](https://www.npmjs.com/package/@thai-pdpa-guard/cli)
 
+## แจ้งช่องโหว่
+
+**อย่าเปิด issue สาธารณะ** · ส่งอีเมลถึง **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[thai-pdpa-guard security]` · ใช้ข้อมูลปลอมในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
+
 ## License
 
 Apache-2.0
-<!-- TODO ก่อน publish: ช่องทางแจ้งช่องโหว่ (อีเมลจาก SECURITY.md) -->

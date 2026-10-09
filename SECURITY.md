@@ -7,11 +7,9 @@ real people's national ID numbers, phone numbers and addresses.
 
 **Do not open a public issue.**
 
-Report privately through GitHub Security Advisories on this repository
-(Security → Report a vulnerability), or email `TBD@example.invalid`.
-
-> ⚠️ The contact address above is a placeholder and must be replaced with a
-> monitored address before the first npm publish.
+Email **kunlachat@m-intelligence.tech** with the subject line starting
+`[thai-pdpa-guard security]`. Include the version, the runtime, and the
+smallest input that reproduces the problem.
 
 We aim to acknowledge within 3 working days and to ship a fix or a mitigation
 within 30 days for anything rated high or critical.
