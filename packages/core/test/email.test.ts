@@ -34,6 +34,13 @@ describe('finds', () => {
     expect(spans('a@example.com และ b@example.net')).toHaveLength(2)
   })
 
+  it('an address at the end of a sentence, without the full stop', () => {
+    expect(spans('ส่งที่ somchai@example.com.')).toEqual(['somchai@example.com'])
+    expect(spans('ส่งที่ somchai@example.com. ขอบคุณค่ะ')).toEqual(['somchai@example.com'])
+    expect(spans('อีเมล somchai@example.com...')).toEqual(['somchai@example.com'])
+    expect(spans('somchai@example.co.th.ค่ะ')).toEqual(['somchai@example.co.th'])
+  })
+
   it('an address a customer typed in full-width characters', () => {
     // normalise folds the whole full-width range, so the detector never sees it.
     expect(detect('ＡＢ＠ｅｘａｍｐｌｅ．ｃｏｍ')).toHaveLength(1)
@@ -59,6 +66,9 @@ describe('leaves alone', () => {
     // address and leave the rest of the token in place.
     expect(detect('a@example.com1')).toEqual([])
     expect(detect('a@example.com-x')).toEqual([])
+    // A dot that leads on into more of the run is not a full stop.
+    expect(detect('a@example.com.1')).toEqual([])
+    expect(detect('a@example.com..x')).toEqual([])
   })
 })
 

@@ -47,8 +47,11 @@ export const emailDetector: Detector = {
 
       // The TLD is greedy over letters, so only a digit, a hyphen or a further
       // dotted label can follow — each of which means the run was cut short and
-      // this is not the whole address.
-      if (!isIsolated(input.text, start, end, belongsToAddress)) continue
+      // this is not the whole address. A full stop, or an ellipsis, with nothing
+      // of the run after it ends the sentence instead, and stays out of the span.
+      let tail = end
+      while (input.text[tail] === '.') tail++
+      if (!isIsolated(input.text, start, tail, belongsToAddress)) continue
 
       found.push({
         entity: 'EMAIL',
