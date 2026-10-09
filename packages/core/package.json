@@ -38,7 +38,8 @@
     "dist",
     "schema",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=18.18.0"
