@@ -12,7 +12,7 @@ import { cli, dir, report } from './helpers.js'
 const PREAMBLE = ['ชื่อบัญชี,ร้านตัวอย่าง', "ไทม์โซน,'+07:00", 'วันดาวน์โหลด,2026/10/07 15:23']
 const HEADER = 'ประเภทผู้ส่ง,ชื่อผู้ส่ง,วันส่ง,เวลาส่ง,ข้อความ'
 const CUSTOMER = 'สมชาย ตัวอย่าง'
-const row = (who: 'User' | 'Account', name: string, text: string) =>
+const row = (who: string, name: string, text: string) =>
   `${who},'${name},2026/10/07,13:23:47,${text}`
 
 let n = 0
@@ -58,6 +58,23 @@ describe('LINE OA chat export', () => {
       customer: { scanned: 3, withFindings: 2, values: 2 },
       shop: { scanned: 3, withFindings: 1, values: 1 },
     })
+  })
+
+  it('names no sender for a type it does not know, even one every object answers to', async () => {
+    const file = exportFile([
+      ...PREAMBLE,
+      HEADER,
+      ...['Bot', 'constructor', 'toString', '__proto__'].map((who) =>
+        row(who, CUSTOMER, 'เบอร์ 091-888-7777'),
+      ),
+    ])
+    const r = await report('scan', file)
+    expect(r.records.withFindings).toBe(4)
+    for (const hit of r.hits) expect(hit).not.toHaveProperty('sender')
+    // No message had a sender it knows, so there is no per-side summary to give.
+    expect(r.senders).toBeUndefined()
+    const { stdout } = await cli('scan', file)
+    expect(stdout).not.toContain('customer')
   })
 
   it("never shows the customer's name — not from the file name, not from the sender column", async () => {

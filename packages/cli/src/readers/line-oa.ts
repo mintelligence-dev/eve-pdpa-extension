@@ -119,7 +119,9 @@ export async function* readLineOa(path: string, opts: LineOaOptions): AsyncGener
       }
       continue
     }
-    const sender = senderAt === -1 ? undefined : SENDERS[(row.fields[senderAt] as string).trim()]
+    const label = senderAt === -1 ? undefined : (row.fields[senderAt] as string).trim()
+    // Own keys only: every object answers to "constructor" and "toString".
+    const sender = label !== undefined && Object.hasOwn(SENDERS, label) ? SENDERS[label] : undefined
     yield {
       kind: 'record',
       line: row.line,
