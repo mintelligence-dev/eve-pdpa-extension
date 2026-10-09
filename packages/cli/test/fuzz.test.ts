@@ -1,13 +1,15 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { main } from '../src/cli.js'
+import { INTERNAL_ERROR, main } from '../src/cli.js'
 import { dir } from './helpers.js'
 
 /**
  * Files nobody would write on purpose. Whatever goes in, the CLI must not
  * crash: an uncaught error makes Node exit 1, which is the code for "personal
- * data found". Every run ends in one of the four codes it documents.
+ * data found". Every run ends in one of the four codes it documents. A bug the
+ * CLI catches still exits 2, so the code alone cannot tell a bad file from a
+ * crash; the internal-error message can.
  */
 
 // Seeded so a failure can be replayed.
@@ -91,8 +93,13 @@ async function run(content: string | Uint8Array, ext: string, extra: string[] = 
 describe('files nobody would write on purpose', () => {
   it('2,000 random text files: never throws, always a known exit code', async () => {
     for (let i = 0; i < 2000; i++) {
-      const { code } = await run(randomText(Math.floor(rnd() * 200)), pick(EXTS), pick(EXTRA_ARGS))
+      const { code, out } = await run(
+        randomText(Math.floor(rnd() * 200)),
+        pick(EXTS),
+        pick(EXTRA_ARGS),
+      )
       expect([0, 1, 2, 3]).toContain(code)
+      expect(out).not.toContain(INTERNAL_ERROR)
     }
   }, 120_000)
 
@@ -101,8 +108,9 @@ describe('files nobody would write on purpose', () => {
       const bytes = Uint8Array.from({ length: Math.floor(rnd() * 500) }, () =>
         Math.floor(rnd() * 256),
       )
-      const { code } = await run(bytes, pick(EXTS), pick(EXTRA_ARGS))
+      const { code, out } = await run(bytes, pick(EXTS), pick(EXTRA_ARGS))
       expect([0, 1, 2, 3]).toContain(code)
+      expect(out).not.toContain(INTERNAL_ERROR)
     }
   }, 120_000)
 
@@ -132,8 +140,9 @@ describe('files nobody would write on purpose', () => {
       ['line-oa header only', 'ชื่อบัญชี,x\nประเภทผู้ส่ง,ชื่อผู้ส่ง,วันส่ง,เวลาส่ง,ข้อความ\n', '.csv'],
     ]
     for (const [name, content, ext] of cases) {
-      const { code } = await run(content, ext)
+      const { code, out } = await run(content, ext)
       expect([0, 1, 2, 3], name).toContain(code)
+      expect(out, name).not.toContain(INTERNAL_ERROR)
     }
   }, 120_000)
 

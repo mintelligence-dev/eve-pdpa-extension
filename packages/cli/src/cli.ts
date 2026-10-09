@@ -3,6 +3,7 @@ import { extname } from 'node:path'
 import { parseArgs } from 'node:util'
 import { type CompiledPolicy, PdpaError, parsePolicy, VERSION } from '@thai-pdpa-guard/core'
 import { readCsv } from './readers/csv.js'
+import { InputError } from './readers/decode.js'
 import { readJsonl } from './readers/jsonl.js'
 import { LINE_OA_TEXT, lineOaLabel, looksLikeLineOa, readLineOa } from './readers/line-oa.js'
 import { formatHuman } from './report.js'
@@ -159,7 +160,7 @@ async function scanCommand(
     }
   } catch (error) {
     // Left uncaught, Node would exit 1 — the code that means "found personal data".
-    io.stderr(`cannot read ${file}: ${(error as Error).message}\n`)
+    io.stderr(`cannot read ${file}: ${whyStopped(error)}\n`)
     return EXIT.USAGE
   }
 
@@ -185,8 +186,7 @@ async function scanCommand(
     })
   } catch (error) {
     // Left uncaught, Node would exit 1 — the code that means "found personal data".
-    // fs errors name the path; core errors never carry a value.
-    io.stderr(`scan stopped: ${(error as Error).message}\n`)
+    io.stderr(`scan stopped: ${whyStopped(error)}\n`)
     return EXIT.USAGE
   }
 
@@ -195,6 +195,27 @@ async function scanCommand(
   if (report.records.withFindings > 0) return EXIT.FOUND
   if (report.records.unreadable > 0) return EXIT.UNREADABLE
   return EXIT.CLEAN
+}
+
+export const INTERNAL_ERROR = 'internal error'
+
+/**
+ * What to print for an error that stopped the scan. Input, fs and core errors
+ * are expected and their messages are safe: an InputError names the problem,
+ * an fs error the path, and a core error never carries a value (D2). Anything
+ * else is a bug here, and its message is not printed — a SyntaxError from
+ * JSON.parse, say, quotes the text it choked on.
+ */
+function whyStopped(error: unknown): string {
+  if (
+    error instanceof InputError ||
+    error instanceof PdpaError ||
+    (error instanceof Error && /^E[A-Z]+$/.test(String((error as NodeJS.ErrnoException).code)))
+  ) {
+    return error.message
+  }
+  const name = error instanceof Error ? error.name : typeof error
+  return `${INTERNAL_ERROR} (${name}) — please report it to the thai-pdpa-guard maintainers`
 }
 
 function parse(argv: readonly string[]) {
