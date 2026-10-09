@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
@@ -186,9 +187,13 @@ describe('exit codes', () => {
   })
 })
 
+// Needs a build, which `pnpm test` does not run: skipped without one. verify
+// builds first, so there it always runs, against the code as it is now.
+const BIN = fileURLToPath(new URL('../dist/index.js', import.meta.url))
+
 describe('the built binary', () => {
-  it('runs, and exits with the code the report implies', async () => {
-    const bin = fileURLToPath(new URL('../dist/index.js', import.meta.url))
+  it.skipIf(!existsSync(BIN))('runs, and exits with the code the report implies', async () => {
+    const bin = BIN
     const run = promisify(execFile)
     await expect(run(process.execPath, [bin, 'scan', CHATS])).rejects.toMatchObject({ code: 1 })
     const clean = file(jsonl({ text: 'สวัสดี' }))
