@@ -25,6 +25,7 @@ import type {
   Boundary,
   DetectContext,
   Guard,
+  GuardErrorContext,
   GuardOptions,
   GuardStats,
   NormalisedText,
@@ -34,6 +35,7 @@ import type {
   RandomSource,
   RenderedItem,
   ResolveOptions,
+  ResolveReason,
   ResolveResult,
   TokenRecord,
   TokenResolveEvent,
@@ -88,6 +90,19 @@ function sha256Hex(value: string): string {
 type Step =
   | { readonly op: 'detect'; readonly input: NormalisedText; readonly ctx: DetectContext }
   | StoreStep
+
+/**
+ * A token store call that threw or rejected, as the drivers hand it back into
+ * scan. Lets scan tell a store failure — reported as `token_store` (D15) — from
+ * anything else that can fail while issuing a token, such as the random source.
+ */
+class StoreFailure extends Error {
+  readonly original: unknown
+  constructor(original: unknown) {
+    super('token store failed')
+    this.original = original
+  }
+}
 
 /** Long enough for any id an app would use; short enough that nobody pastes a message in. */
 const MAX_REF_LENGTH = 256
@@ -153,6 +168,25 @@ export function createGuard(options: GuardOptions): Guard {
   const onAudit = options.onAudit
   const onError = options.onError
   let auditSinkErrors = 0
+  let tokenStoreErrors = 0
+
+  /**
+   * A failure core handled instead of throwing: counted, so a health check can
+   * see it, and passed to onError. onError throwing in turn is ignored, so a
+   * broken error handler cannot fail the message.
+   */
+  function report(
+    error: unknown,
+    source: GuardErrorContext['source'],
+    eventType: AuditRecord['type'],
+  ): void {
+    if (source === 'audit_sink') auditSinkErrors++
+    else tokenStoreErrors++
+    if (onError === undefined) return
+    try {
+      onError(error, { source, eventType })
+    } catch {}
+  }
 
   // D3: running without a sink is allowed — a first try should not hit a wall —
   // but never silently, because audit nobody kept is a compliance gap.
@@ -177,14 +211,7 @@ export function createGuard(options: GuardOptions): Guard {
    */
   function emit(event: AuditRecord): void {
     if (onAudit === undefined) return
-    const sinkFailed = (error: unknown): void => {
-      auditSinkErrors++
-      if (onError !== undefined) {
-        try {
-          onError(error, { source: 'audit_sink', eventType: event.type })
-        } catch {}
-      }
-    }
+    const sinkFailed = (error: unknown): void => report(error, 'audit_sink', event.type)
     let returned: unknown
     try {
       returned = onAudit(event)
@@ -281,11 +308,18 @@ export function createGuard(options: GuardOptions): Guard {
   function settle(
     id: string | null,
     rec: TokenRecord | undefined,
+    storeFailed: boolean,
     sessionId: string,
     opts: ResolveOptions,
   ): { result: ResolveResult; expired: boolean } {
     const ref = checkRef(opts.ref)
-    const reason = id === null ? 'not_found' : judge(rec, sessionId, opts.purpose, Date.now())
+    // A store that could not be asked says nothing about the token: the
+    // attempt is refused and recorded like any other, never thrown (D15).
+    const reason: ResolveReason | null = storeFailed
+      ? 'store_unavailable'
+      : id === null
+        ? 'not_found'
+        : judge(rec, sessionId, opts.purpose, Date.now())
 
     if (onAudit !== undefined) {
       const event: TokenResolveEvent = {
@@ -424,10 +458,17 @@ export function createGuard(options: GuardOptions): Guard {
             ttlSec: rule.ttlSec ?? DEFAULT_TTL_SEC,
             allowedPurposes: [...(rule.allowedPurposes ?? [])],
           }
-        } catch {
-          // D4 level 2: the store refused (full, or broken). The value was
-          // found and cannot be hidden the way the policy asked, so the
-          // message stops rather than going out with the raw value in it.
+        } catch (error) {
+          // D4 level 2: the store refused (full, or broken), or the random
+          // source did. The value was found and cannot be hidden the way the
+          // policy asked, so the message stops rather than going out with the
+          // raw value in it. A store failure is also reported and marked on the
+          // finding: otherwise a store that is down blocks every message with
+          // a phone number in it and nothing says why (D15).
+          if (error instanceof StoreFailure) {
+            report(error.original, 'token_store', 'scan')
+            finding = { ...finding, failed: 'token_store' }
+          }
           outcome = 'blocked'
           blockers.push(c.entity)
         }
@@ -487,16 +528,22 @@ export function createGuard(options: GuardOptions): Guard {
         }
         const tokenId = id as string
         let rec: TokenRecord | undefined
+        let unavailable = false
         if (store !== null) {
           try {
             rec = (yield { op: 'get', id: tokenId }) as TokenRecord | undefined
-          } catch {
+          } catch (error) {
             // A store that cannot answer cannot vouch for the token either.
-            // The customer gets the placeholder, never the token text.
-            rec = undefined
+            // The customer gets the placeholder, never the token text, and the
+            // event says the store failed rather than the token being unknown.
+            report(error instanceof StoreFailure ? error.original : error, 'token_store', 'scan')
+            unavailable = true
           }
         }
-        if (rec === undefined) {
+        if (unavailable) {
+          rendered.push({ kind: 'token', tokenId, entity: null, as: 'unavailable' })
+          rewritten += unknownText
+        } else if (rec === undefined) {
           rendered.push({ kind: 'token', tokenId, entity: null, as: 'unknown' })
           rewritten += unknownText
         } else if (rec.sessionId !== sessionId) {
@@ -580,8 +627,12 @@ export function createGuard(options: GuardOptions): Guard {
     if (step.op === 'detect') return engine.runSync(step.input, step.ctx)
     // processSync refused an async store up front, so these return plain values.
     if (store === null) throw new TypeError('unreachable: store step without a store')
-    if (step.op === 'get') return store.get(step.id)
-    return store.set(step.id, step.rec)
+    try {
+      if (step.op === 'get') return store.get(step.id)
+      return store.set(step.id, step.rec)
+    } catch (error) {
+      throw new StoreFailure(error)
+    }
   }
 
   /** Runs scan to completion, awaiting each step. */
@@ -603,22 +654,42 @@ export function createGuard(options: GuardOptions): Guard {
   async function stepAsync(step: Step): Promise<unknown> {
     if (step.op === 'detect') return engine.run(step.input, step.ctx)
     if (store === null) throw new TypeError('unreachable: store step without a store')
-    if (step.op === 'get') return await store.get(step.id)
-    return await store.set(step.id, step.rec)
+    try {
+      if (step.op === 'get') return await store.get(step.id)
+      return await store.set(step.id, step.rec)
+    } catch (error) {
+      throw new StoreFailure(error)
+    }
   }
 
   return {
     get stats(): GuardStats {
-      return { auditSinkErrors }
+      return { auditSinkErrors, tokenStoreErrors }
     },
 
     async resolve(token, opts): Promise<ResolveResult> {
       const sessionId = sessionFor(opts.sessionId, 'resolve')
       const id = parseTokenId(token)
-      const rec = id !== null && store !== null ? await store.get(id) : undefined
-      const { result, expired } = settle(id, rec, sessionId, opts)
-      // D6: an expired token is deleted the moment it is asked for.
-      if (expired && id !== null && store !== null) await store.delete(id)
+      let rec: TokenRecord | undefined
+      let storeFailed = false
+      if (id !== null && store !== null) {
+        try {
+          rec = await store.get(id)
+        } catch (error) {
+          report(error, 'token_store', 'token.resolve')
+          storeFailed = true
+        }
+      }
+      const { result, expired } = settle(id, rec, storeFailed, sessionId, opts)
+      // D6: an expired token is deleted the moment it is asked for. It has
+      // already been refused, so a store that fails here only gets reported.
+      if (expired && id !== null && store !== null) {
+        try {
+          await store.delete(id)
+        } catch (error) {
+          report(error, 'token_store', 'token.resolve')
+        }
+      }
       return result
     },
 
@@ -631,10 +702,24 @@ export function createGuard(options: GuardOptions): Guard {
       }
       const sessionId = sessionFor(opts.sessionId, 'resolveSync')
       const id = parseTokenId(token)
-      const rec =
-        id !== null && store !== null ? (store.get(id) as TokenRecord | undefined) : undefined
-      const { result, expired } = settle(id, rec, sessionId, opts)
-      if (expired && id !== null && store !== null) store.delete(id)
+      let rec: TokenRecord | undefined
+      let storeFailed = false
+      if (id !== null && store !== null) {
+        try {
+          rec = store.get(id) as TokenRecord | undefined
+        } catch (error) {
+          report(error, 'token_store', 'token.resolve')
+          storeFailed = true
+        }
+      }
+      const { result, expired } = settle(id, rec, storeFailed, sessionId, opts)
+      if (expired && id !== null && store !== null) {
+        try {
+          store.delete(id)
+        } catch (error) {
+          report(error, 'token_store', 'token.resolve')
+        }
+      }
       return result
     },
 

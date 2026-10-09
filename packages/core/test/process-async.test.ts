@@ -151,8 +151,10 @@ describe('process() — an async token store (D10.2)', () => {
     })
     expect(r.text).toBe('ส่งไปที่ [ข้อมูลที่ปิดไว้]')
     expect(scans().at(-1)?.rendered).toEqual([
-      { kind: 'token', tokenId: 'bcdfghjkmnpqrstv', entity: null, as: 'unknown' },
+      { kind: 'token', tokenId: 'bcdfghjkmnpqrstv', entity: null, as: 'unavailable' },
     ])
+    // Said as a store failure, not passed off as a token nobody issued (D15).
+    expect(guard.stats.tokenStoreErrors).toBe(1)
   })
 
   it('keeps sessions apart when messages from two chats are in flight at once', async () => {

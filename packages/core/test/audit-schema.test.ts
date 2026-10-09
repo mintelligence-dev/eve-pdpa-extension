@@ -185,6 +185,37 @@ describe('every event the guard emits passes the schema', () => {
     expect(new Set(kinds)).toEqual(new Set(['masked', 'placeholder', 'foreign', 'unknown']))
   })
 
+  it('a token store that is down — on the way in, on resolve, and on the way out (D15)', async () => {
+    const down = {
+      sync: false,
+      set: async () => {
+        throw new Error('ClientClosedError')
+      },
+      get: async () => {
+        throw new Error('ClientClosedError')
+      },
+      delete: async () => {},
+      clearSession: async () => {},
+    }
+    const { guard } = build(
+      { entitySet: '0.1', entities: { PHONE: ruleFor('tokenise') } },
+      { tokenStore: down },
+    )
+    expect((await guard.process('เบอร์ 0918887777', { sessionId: 'conv_a' })).outcome).toBe(
+      'blocked',
+    )
+    expect(
+      await guard.resolve('[tok:bbbbbbbbbbbbbbbb]', { purpose: 'otp_send', sessionId: 'conv_a' }),
+    ).toEqual({
+      ok: false,
+      reason: 'store_unavailable',
+    })
+    await guard.process('ส่งไป [tok:bbbbbbbbbbbbbbbb]', {
+      sessionId: 'conv_a',
+      boundary: 'outbound',
+    })
+  })
+
   it('every way a resolve can end', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     const { guard } = build({

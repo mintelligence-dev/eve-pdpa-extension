@@ -245,6 +245,10 @@
           "minItems": 1,
           "items": { "type": "string", "minLength": 1 },
           "description": "Purposes this token may be resolved for, as they stood when it was issued. Compare with token.resolve. D10.6."
+        },
+        "failed": {
+          "const": "token_store",
+          "description": "The action could not be applied because the token store failed; the message was blocked instead. Tells a block the store caused from one the policy asked for. D15."
         }
       },
       "dependentRequired": {
@@ -256,6 +260,10 @@
         "tokenId": {
           "properties": { "action": { "const": "tokenise" } },
           "not": { "required": ["allowlisted"] }
+        },
+        "failed": {
+          "properties": { "action": { "const": "tokenise" } },
+          "not": { "anyOf": [{ "required": ["tokenId"] }, { "required": ["allowlisted"] }] }
         }
       }
     },
@@ -264,15 +272,15 @@
       "type": "object",
       "required": ["kind", "entity", "as"],
       "additionalProperties": false,
-      "description": "One token or hash the model wrote into an outbound reply, and what the customer saw instead. masked: a token of this session, shown as xxx-xxx-7777 · placeholder: a token under display redact, or a hash · foreign: a token issued to ANOTHER session · unknown: a token this guard does not hold (forged, expired or ended). D10.8.",
+      "description": "One token or hash the model wrote into an outbound reply, and what the customer saw instead. masked: a token of this session, shown as xxx-xxx-7777 · placeholder: a token under display redact, or a hash · foreign: a token issued to ANOTHER session · unknown: a token this guard does not hold (forged, expired or ended) · unavailable: the token store could not be asked (D15). D10.8.",
       "properties": {
         "kind": { "enum": ["token", "hash"] },
         "tokenId": { "$ref": "#/$defs/tokenId" },
         "entity": {
           "oneOf": [{ "$ref": "#/$defs/entity" }, { "type": "null" }],
-          "description": "null for foreign and unknown."
+          "description": "null for foreign, unknown and unavailable."
         },
-        "as": { "enum": ["masked", "placeholder", "foreign", "unknown"] }
+        "as": { "enum": ["masked", "placeholder", "foreign", "unknown", "unavailable"] }
       },
       "allOf": [
         {
@@ -284,7 +292,7 @@
           }
         },
         {
-          "if": { "properties": { "as": { "enum": ["foreign", "unknown"] } } },
+          "if": { "properties": { "as": { "enum": ["foreign", "unknown", "unavailable"] } } },
           "then": { "properties": { "entity": { "type": "null" } } },
           "else": { "properties": { "entity": { "$ref": "#/$defs/entity" } } }
         }
@@ -413,7 +421,16 @@
           "description": "As the caller named itself. Not checked."
         },
         "outcome": { "enum": ["allowed", "denied"] },
-        "reason": { "enum": ["not_found", "session_mismatch", "expired", "purpose_not_allowed"] },
+        "reason": {
+          "enum": [
+            "not_found",
+            "session_mismatch",
+            "expired",
+            "purpose_not_allowed",
+            "store_unavailable"
+          ],
+          "description": "store_unavailable: the token store failed; says nothing about the token. D15."
+        },
         "prevHash": { "$ref": "#/$defs/prevHash" }
       },
       "allOf": [

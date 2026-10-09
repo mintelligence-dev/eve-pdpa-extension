@@ -127,6 +127,12 @@ export interface AuditFinding {
    * finding the policy file the hash points to. Purpose names, never values. D10.6.
    */
   readonly allowedPurposes?: readonly string[]
+  /**
+   * The action could not be applied because the token store failed — down,
+   * full, or refusing. The message was blocked instead (D4). Tells a block the
+   * store caused from one the policy asked for. D15.
+   */
+  readonly failed?: 'token_store'
 }
 
 /** Carries positions and types. Never a real value. D2. */
@@ -176,17 +182,24 @@ export interface AuditEvent {
  *   placeholder  a token under display: 'redact', or a hash — shown as [เบอร์โทร]
  *   foreign      a token issued to ANOTHER session. Data crossing between chats.
  *   unknown      a token this guard does not hold: forged, expired, or ended
+ *   unavailable  the token store could not be asked, so whose it is is not known (D15)
  */
 export interface RenderedItem {
   readonly kind: 'token' | 'hash'
   /** The id the model wrote, for a token. Absent for a hash. */
   readonly tokenId?: string
-  /** null for foreign and unknown: whose data it is not, is not this event's to say. */
+  /** null for foreign, unknown and unavailable: whose data it is not, is not this event's to say. */
   readonly entity: EntityType | null
-  readonly as: 'masked' | 'placeholder' | 'foreign' | 'unknown'
+  readonly as: 'masked' | 'placeholder' | 'foreign' | 'unknown' | 'unavailable'
 }
 
-export type ResolveReason = 'not_found' | 'session_mismatch' | 'expired' | 'purpose_not_allowed'
+export type ResolveReason =
+  | 'not_found'
+  | 'session_mismatch'
+  | 'expired'
+  | 'purpose_not_allowed'
+  /** The token store failed. Not a judgement on the token: try again later. D15. */
+  | 'store_unavailable'
 
 /**
  * One per resolve attempt, allowed or refused. D2, D6.
@@ -287,9 +300,15 @@ export interface TokenStore {
   clearSession(sessionId: string): void | Promise<void>
 }
 
-/** Where a failure that core caught, rather than threw, came from. */
+/**
+ * Where a failure that core caught, rather than threw, came from.
+ *
+ *   audit_sink   onAudit threw or rejected; the event was lost
+ *   token_store  the token store threw or rejected; the message was blocked,
+ *                the resolve refused, or the reply's token shown as a placeholder
+ */
 export interface GuardErrorContext {
-  readonly source: 'audit_sink'
+  readonly source: 'audit_sink' | 'token_store'
   readonly eventType: AuditRecord['type']
 }
 
@@ -300,6 +319,12 @@ export interface GuardStats {
    * event that never arrived. D3.
    */
   readonly auditSinkErrors: number
+  /**
+   * Token store calls that threw or rejected. Each one blocked a message,
+   * refused a resolve, or hid a token in a reply. A rising count is a store
+   * that is down or full. D15.
+   */
+  readonly tokenStoreErrors: number
 }
 
 export interface GuardOptions {
@@ -315,9 +340,10 @@ export interface GuardOptions {
    */
   readonly onAudit?: AuditSink
   /**
-   * Told about failures core caught instead of throwing — today, a throwing
-   * onAudit. Informational: the message has already been handled. An error
-   * thrown from here is ignored, so it cannot turn into a loop.
+   * Told about failures core caught instead of throwing: an onAudit that
+   * throws, or a token store that fails (D15). Informational: the message has
+   * already been handled. An error thrown from here is ignored, so it cannot
+   * turn into a loop.
    */
   readonly onError?: (error: unknown, context: GuardErrorContext) => void
   /**
@@ -417,6 +443,9 @@ export interface Guard {
    * Access control is holding this guard object — the model only ever sees the
    * token. `purpose` is purpose limitation (PDPA) enforced against the policy
    * and recorded, not a secret: code that holds the guard can name any purpose.
+   *
+   * A failing token store does not throw: the result is `store_unavailable`,
+   * the attempt is audited like any other, and onError is told. D15.
    */
   resolve(token: string, opts: ResolveOptions): Promise<ResolveResult>
   /** As resolve, for a sync token store. Throws ERR_PDPA_ASYNC_STORE otherwise. */
