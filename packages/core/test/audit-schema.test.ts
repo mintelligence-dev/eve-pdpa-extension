@@ -71,15 +71,25 @@ function ruleFor(action: Action): EntityRule {
 // Every record that left the guard, from every test in this file.
 const seen: AuditRecord[] = []
 
+// Why each event the schema turned down was turned down. The guard catches a
+// throw from onAudit and only counts it (a sink must not break a scan), so a
+// failure thrown inside the sink would never reach the test. afterEach checks.
+let rejected: string[] = []
+
 function build(input: PolicyInput, extra: Partial<GuardOptions> = {}) {
   const events: AuditRecord[] = []
   const guard = createGuard({
     policy: definePolicy(input),
     hmacKey: KEY,
     onAudit: (e) => {
-      expectValid(e)
-      // Through JSON, as a log pipeline would see it: no undefined, no symbols.
-      expectValid(JSON.parse(JSON.stringify(e)))
+      // Through JSON as well, as a log pipeline would see it: no undefined, no symbols.
+      for (const event of [e, JSON.parse(JSON.stringify(e))]) {
+        try {
+          expectValid(event)
+        } catch (error) {
+          rejected.push((error as Error).message)
+        }
+      }
       events.push(e)
       seen.push(e)
     },
@@ -90,6 +100,9 @@ function build(input: PolicyInput, extra: Partial<GuardOptions> = {}) {
 
 afterEach(() => {
   vi.useRealTimers()
+  const why = rejected
+  rejected = []
+  expect(why).toEqual([])
 })
 
 describe('every event the guard emits passes the schema', () => {
@@ -155,10 +168,13 @@ describe('every event the guard emits passes the schema', () => {
     }
     const slow: Detector = { id: 'slow', entities: ['BANK_ACCOUNT'], detect: async () => [] }
     const policy: PolicyInput = { entitySet: '0.1', entities: { PHONE: { action: 'redact' } } }
-    const { guard } = build(policy, { detectors: [broken, slow, ...BUILTIN_DETECTORS] })
+    const { guard, events } = build(policy, { detectors: [broken, slow, ...BUILTIN_DETECTORS] })
     guard.processSync(ALL_SIX)
     await guard.process(ALL_SIX)
-    build(policy, { detectors: [] }).guard.processSync(ALL_SIX)
+    const none = build(policy, { detectors: [] })
+    none.guard.processSync(ALL_SIX)
+    expect(events.filter((e) => e.type === 'scan')).toHaveLength(2)
+    expect(none.events.filter((e) => e.type === 'scan')).toHaveLength(1)
   })
 
   it('every way a token comes back out in a reply', () => {
@@ -197,7 +213,7 @@ describe('every event the guard emits passes the schema', () => {
       delete: async () => {},
       clearSession: async () => {},
     }
-    const { guard } = build(
+    const { guard, events } = build(
       { entitySet: '0.1', entities: { PHONE: ruleFor('tokenise') } },
       { tokenStore: down },
     )
@@ -214,6 +230,8 @@ describe('every event the guard emits passes the schema', () => {
       sessionId: 'conv_a',
       boundary: 'outbound',
     })
+    const out = events.at(-1)
+    expect(out?.type === 'scan' && out.boundary).toBe('outbound')
   })
 
   it('every way a resolve can end', () => {
