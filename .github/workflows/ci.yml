@@ -65,13 +65,16 @@ jobs:
       - run: pnpm gate:pack          # publint --strict + attw --pack
       - run: pnpm size
 
-  smoke-node:
+  smoke-node-core:
     needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        node: ['18', '20', '22', '24']
+        # '18' resolves to the newest 18.x, so 18.18.0 — the floor both
+        # packages put in engines — is pinned on its own. Odd majors are left
+        # out: none is ever LTS and every one is past end of life.
+        node: ['18.18.0', '18', '20', '22', '24', '26']
     steps:
       - uses: actions/download-artifact@v4
         with: { name: core-dist, path: packages/core }
