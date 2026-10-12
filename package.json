@@ -23,12 +23,13 @@
     "demo": "pnpm build && node scripts/demo/build.mjs",
     "smoke": "node scripts/smoke-runtimes.mjs",
     "smoke:node": "node packages/core/smoke/run.mjs",
+    "smoke:cli": "node packages/cli/smoke/run.mjs",
     "smoke:deno": "pnpm exec deno run packages/core/smoke/run.mjs",
     "smoke:bun": "pnpm exec bun packages/core/smoke/run.mjs",
     "smoke:workerd": "node scripts/smoke-workerd.mjs",
     "smoke:browser": "node scripts/smoke-browser.mjs",
     "readme": "node scripts/check-readme.mjs",
-    "verify": "pnpm lint && pnpm build && pnpm typecheck && pnpm test && pnpm gates && pnpm size && pnpm smoke && pnpm readme"
+    "verify": "pnpm lint && pnpm build && pnpm typecheck && pnpm test && pnpm gates && pnpm size && pnpm smoke && pnpm smoke:cli && pnpm readme"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

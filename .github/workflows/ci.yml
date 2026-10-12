@@ -33,6 +33,15 @@ jobs:
             packages/core/.size
             packages/core/smoke
           retention-days: 3
+      # Separate artifact: adding cli paths to core-dist would move its root
+      # from packages/core to packages/ and break every download above.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-dist
+          path: |
+            packages/cli/dist
+            packages/cli/smoke
+          retention-days: 3
 
   quality:
     runs-on: ubuntu-latest
@@ -74,6 +83,7 @@ jobs:
         # '18' resolves to the newest 18.x, so 18.18.0 — the floor both
         # packages put in engines — is pinned on its own. Odd majors are left
         # out: none is ever LTS and every one is past end of life.
+        # Keep in step with smoke-node-cli.
         node: ['18.18.0', '18', '20', '22', '24', '26']
     steps:
       - uses: actions/download-artifact@v4
@@ -84,6 +94,31 @@ jobs:
       # On Node 18 the smoke script asserts ERR_PDPA_NO_CSPRNG without a
       # randomSource and success with one — D7 as a tested contract.
       - run: node packages/core/smoke/run.mjs
+
+  # Its own job so a core failure on one Node version does not hide whether
+  # the cli works there too.
+  smoke-node-cli:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18.18.0', '18', '20', '22', '24', '26']
+    steps:
+      # Checkout only for the package.json files: Node needs core's exports map
+      # to resolve the cli's import of @thai-pdpa-guard/core.
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with: { name: core-dist, path: packages/core }
+      - uses: actions/download-artifact@v4
+        with: { name: cli-dist, path: packages/cli }
+      - uses: actions/setup-node@v6
+        with: { node-version: '${{ matrix.node }}' }
+      # No install. The link pnpm would make, so the cli finds core.
+      - run: |
+          mkdir -p packages/cli/node_modules/@thai-pdpa-guard
+          ln -s ../../../core packages/cli/node_modules/@thai-pdpa-guard/core
+      - run: node packages/cli/smoke/run.mjs
 
   smoke-deno:
     needs: build
