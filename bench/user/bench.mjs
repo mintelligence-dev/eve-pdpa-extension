@@ -16,7 +16,7 @@
 //   decoy hit   an FP that lands on a labelled look-alike (order no., tracking, amount…)
 //   overreach   a TP whose span takes in non-space characters outside the value
 import { writeFileSync } from 'node:fs'
-import { createGuard, definePolicy, ENTITY_TYPES } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy, ENTITY_TYPES } from '@eve-pdpa-extension/core'
 import { ENTITIES, loadSet } from './lib/data.mjs'
 import { onlyDigits } from './lib/values.mjs'
 
@@ -240,7 +240,7 @@ const L = []
 L.push(`# Detection benchmark — ${set} set`)
 L.push('')
 L.push(
-  `Package: @thai-pdpa-guard/core, engine version reported in audit: \`${events.find((e) => e.engine)?.engine.version}\` · run ${new Date().toISOString()}`,
+  `Package: @eve-pdpa-extension/core, engine version reported in audit: \`${events.find((e) => e.engine)?.engine.version}\` · run ${new Date().toISOString()}`,
 )
 L.push('')
 L.push(

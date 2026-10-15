@@ -41,7 +41,7 @@ export function packAll() {
       cwd: join(ROOT, 'packages', name),
       stdio: 'ignore',
     })
-    const file = readdirSync(out).find((f) => f.startsWith(`thai-pdpa-guard-${name}-`))
+    const file = readdirSync(out).find((f) => f.startsWith(`eve-pdpa-extension-${name}-`))
     if (file === undefined) throw new Error(`pnpm pack produced no tarball for ${name}`)
     tarballs[name] = join(out, file)
   }

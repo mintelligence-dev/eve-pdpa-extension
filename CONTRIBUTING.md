@@ -13,7 +13,7 @@ detectors.
 Need a Thai national ID for a test? Generate one:
 
 ```ts
-import { makeThaiId } from '@thai-pdpa-guard/core/test/helpers/make-thai-id'
+import { makeThaiId } from '@eve-pdpa-extension/core/test/helpers/make-thai-id'
 ```
 
 ## Constraints you cannot negotiate around

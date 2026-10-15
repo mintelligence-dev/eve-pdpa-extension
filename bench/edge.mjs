@@ -2,7 +2,7 @@
 // what went wrong. The synthetic benchmark (generate.mjs + evaluate.mjs) answers
 // "how good is it on average"; this answers "which exact sentences break it".
 //
-//   pnpm --filter @thai-pdpa-guard/core build
+//   pnpm --filter @eve-pdpa-extension/core build
 //   node bench/edge.mjs [--set open|sealed] [--detail]
 //
 // Cases live in bench/edge/<set>/*.json, written by a tester that has never read

@@ -15,7 +15,7 @@ import {
   normalise,
   phoneDetector,
   thaiNationalIdDetector,
-} from '@thai-pdpa-guard/core'
+} from '@eve-pdpa-extension/core'
 import { allRules, check, makeGuard } from '../lib/kit.mjs'
 
 const ctx = { sessionId: 's', boundary: 'inbound' }

@@ -1,8 +1,13 @@
 {
-  "name": "@thai-pdpa-guard/core",
+  "name": "@eve-pdpa-extension/core",
   "version": "0.0.0",
   "description": "Detect and protect Thai personal data before it reaches an AI model, tool, log or human reviewer.",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mintelligence-dev/eve-pdpa-extension.git",
+    "directory": "packages/core"
+  },
   "type": "module",
   "sideEffects": false,
   "dependencies": {},

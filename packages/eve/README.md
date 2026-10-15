@@ -1,4 +1,4 @@
-# @thai-pdpa-guard/eve
+# @eve-pdpa-extension/eve
 
 Adapter สำหรับ [eve](https://eve.dev) — durable AI agent framework ของ Vercel OSS
 

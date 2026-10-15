@@ -1,4 +1,4 @@
-# @thai-pdpa-guard/ner
+# @eve-pdpa-extension/ner
 
 Adapter เรียกโมเดล NER — ไม่มี model bytes อยู่ในนี้ · Node เท่านั้น · **เริ่ม 0.3**
 

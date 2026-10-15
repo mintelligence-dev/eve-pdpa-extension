@@ -8,7 +8,7 @@ import {
   definePolicy,
   PdpaError,
   parsePolicy,
-} from '@thai-pdpa-guard/core'
+} from '@eve-pdpa-extension/core'
 import { check, expectCode, expectCodeAsync, makeGuard } from '../lib/kit.mjs'
 
 const tokenise = definePolicy({

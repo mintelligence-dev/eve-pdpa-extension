@@ -8,7 +8,7 @@ export default defineConfig({
     // code as it is now, not whatever was built last.
     alias: [
       {
-        find: /^@thai-pdpa-guard\/core$/,
+        find: /^@eve-pdpa-extension\/core$/,
         replacement: fileURLToPath(new URL('packages/core/src/index.ts', import.meta.url)),
       },
     ],

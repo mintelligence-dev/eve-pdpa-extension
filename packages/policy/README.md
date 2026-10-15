@@ -1,4 +1,4 @@
-# @thai-pdpa-guard/policy
+# @eve-pdpa-extension/policy
 
 โหลดไฟล์ policy จากดิสก์ แปลง YAML และ validate เต็มรูปแบบด้วย ajv · Node เท่านั้น · **เริ่ม 0.2**
 

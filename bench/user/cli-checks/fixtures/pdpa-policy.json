@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/@thai-pdpa-guard/core/schema/policy.schema.json",
+  "$schema": "./node_modules/@eve-pdpa-extension/core/schema/policy.schema.json",
   "entitySet": "0.1",
   "onUnmapped": "redact",
   "placeholderLanguage": "th",

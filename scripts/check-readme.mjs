@@ -13,7 +13,7 @@
 //         package and real redis types
 //         the quick start runs, and every `expression // 'value'` comment in it
 //         is asserted (token ids, which are random, match by shape)
-//   cli   every `$ thai-pdpa-guard …` block prints exactly what it shows,
+//   cli   every `$ eve-pdpa …` block prints exactly what it shows,
 //         on this Node and on Node 18.18 (the oldest the README promises)
 //
 // Node 18 comes from `npx node@18.18.0`, downloaded once into npx's cache.
@@ -42,7 +42,7 @@ const tarballs = packAll()
 const app = mkdtempSync(join(tmpdir(), 'pdpa-readme-'))
 const modules = join(app, 'node_modules')
 for (const [name, tarball] of Object.entries(tarballs)) {
-  const dir = join(modules, '@thai-pdpa-guard', name)
+  const dir = join(modules, '@eve-pdpa-extension', name)
   mkdirSync(dir, { recursive: true })
   execFileSync('tar', ['-xzf', tarball, '-C', dir, '--strip-components=1'])
 }
@@ -79,9 +79,9 @@ function typecheck(file) {
 
 const ajv = new Ajv2020({ strict: false, validateFormats: false })
 const policySchema = JSON.parse(
-  readFileSync(join(modules, '@thai-pdpa-guard/core/schema/policy.schema.json'), 'utf8'),
+  readFileSync(join(modules, '@eve-pdpa-extension/core/schema/policy.schema.json'), 'utf8'),
 )
-const { parsePolicy } = await import(join(modules, '@thai-pdpa-guard/core/dist/index.js'))
+const { parsePolicy } = await import(join(modules, '@eve-pdpa-extension/core/dist/index.js'))
 
 /** `inbound.text   // 'value'` → an assertion. Token ids are random: matched by shape. */
 function withAssertions(code) {
@@ -160,7 +160,7 @@ for (const readme of ['packages/core/README.md', 'packages/core/README.th.md']) 
     join(app, 'redis.ts'),
     [
       ...imports,
-      "import { definePolicy } from '@thai-pdpa-guard/core'",
+      "import { definePolicy } from '@eve-pdpa-extension/core'",
       "const policy = definePolicy({ entitySet: '0.1', entities: {} })",
       'const onAudit = () => {}',
       "const text = ''",
@@ -198,7 +198,7 @@ writeFileSync(
   ].join('\r\n'),
 )
 
-const CLI = join(modules, '@thai-pdpa-guard/cli/dist/index.js')
+const CLI = join(modules, '@eve-pdpa-extension/cli/dist/index.js')
 const lines = (s) => s.split('\n').filter((l) => l.trim() !== '')
 
 function cli(node, args) {
@@ -214,7 +214,7 @@ for (const readme of ['packages/cli/README.md', 'packages/cli/README.th.md']) {
   writeFileSync(join(app, 'chats.csv'), bs.find((b) => b.lang === 'csv').code)
   for (const { lang, code } of bs) {
     if (lang !== '') continue
-    const parts = code.split(/^\$ (thai-pdpa-guard .*)$/m)
+    const parts = code.split(/^\$ (eve-pdpa .*)$/m)
     for (let i = 1; i < parts.length; i += 2) {
       const args = [...parts[i].matchAll(/"[^"]*"|\S+/g)]
         .map((m) => m[0].replace(/^"|"$/g, ''))

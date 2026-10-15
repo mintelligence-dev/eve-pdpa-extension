@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://thai-pdpa-guard.dev/schema/policy.schema.json",
-  "title": "thai-pdpa-guard policy",
+  "$id": "https://unpkg.com/@eve-pdpa-extension/core/schema/policy.schema.json",
+  "title": "eve-pdpa policy",
   "description": "What to do with each kind of personal data the guard finds. Point your editor at this file to get completion and errors while writing pdpa-policy.json or .yaml. definePolicy() and parsePolicy() enforce the same rules at load, and test/policy-schema.test.ts keeps the two in agreement.",
   "type": "object",
   "required": ["entitySet", "entities"],

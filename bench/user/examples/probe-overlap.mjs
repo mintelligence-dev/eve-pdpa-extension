@@ -7,7 +7,7 @@ import {
   createGuard,
   definePolicy,
   normalise,
-} from '@thai-pdpa-guard/core'
+} from '@eve-pdpa-extension/core'
 
 const engine = createEngine(BUILTIN_DETECTORS)
 const texts = [

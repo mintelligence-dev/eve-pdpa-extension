@@ -1,11 +1,11 @@
-# @thai-pdpa-guard/cli
+# @eve-pdpa-extension/cli
 
 Find out what Thai personal data is sitting in old chat exports — **without writing any code**. Run it before letting an AI read your chats, or before handing a file to someone else.
 
 - Reads JSONL · CSV · TSV · chat exports from LINE Official Account
 - Says what it found, how many, and on which line · given a policy, says what that policy would mask or block
 - **The report contains no personal data** · paste it into a ticket or pass it on
-- Uses the same detectors as [`@thai-pdpa-guard/core`](https://www.npmjs.com/package/@thai-pdpa-guard/core)
+- Uses the same detectors as [`@eve-pdpa-extension/core`](https://www.npmjs.com/package/@eve-pdpa-extension/core)
 
 > **This is a technical tool, not a certification of compliance with Thailand's Personal Data Protection Act (PDPA).**
 > A report that finds nothing does not mean the file holds no personal data — see [Limitations](#limitations).
@@ -19,14 +19,14 @@ Find out what Thai personal data is sitting in old chat exports — **without wr
 No install needed (Node.js 18.18 or later):
 
 ```bash
-npx @thai-pdpa-guard/cli scan chats.csv
+npx @eve-pdpa-extension/cli scan chats.csv
 ```
 
 Or install it for regular use:
 
 ```bash
-npm install -g @thai-pdpa-guard/cli
-thai-pdpa-guard scan chats.csv
+npm install -g @eve-pdpa-extension/cli
+eve-pdpa scan chats.csv
 ```
 
 ## Example
@@ -46,8 +46,8 @@ m7,สั่งเพิ่ม 2 ตัว, ส่งด่วน
 ```
 
 ```
-$ thai-pdpa-guard scan chats.csv
-thai-pdpa-guard scan  chats.csv
+$ eve-pdpa scan chats.csv
+eve-pdpa scan  chats.csv
 policy   none given — every entity reported, nothing rewritten  (fnv1a64:944707045e078ba4)
 messages 6 scanned · 4 with personal data · 1 line unreadable
 
@@ -83,7 +83,7 @@ Reading the report:
 ### See what a policy would do
 
 ```
-$ thai-pdpa-guard scan chats.csv --policy pdpa-policy.json
+$ eve-pdpa scan chats.csv --policy pdpa-policy.json
 ...
 found
   PHONE         1
@@ -98,12 +98,12 @@ the policy would
   2 messages would be blocked whole
 ```
 
-The shop's own number `02-123-4567` is on the allowlist, so it is not counted · this policy sets `minConfidence: 0.6` for credit cards, so the reference number in m5 is counted and would be blocked too · see how to write a policy in the [core README](https://www.npmjs.com/package/@thai-pdpa-guard/core#policy)
+The shop's own number `02-123-4567` is on the allowlist, so it is not counted · this policy sets `minConfidence: 0.6` for credit cards, so the reference number in m5 is counted and would be blocked too · see how to write a policy in the [core README](https://www.npmjs.com/package/@eve-pdpa-extension/core#policy)
 
 ### A report for machines
 
 ```bash
-thai-pdpa-guard scan chats.csv --json > report.json
+eve-pdpa scan chats.csv --json > report.json
 ```
 
 The same information as JSON, listing **every message** (the human report shows the first 20).
@@ -120,7 +120,7 @@ The same information as JSON, listing **every message** (the human report shows 
 Fields or columns named differently:
 
 ```bash
-thai-pdpa-guard scan export.csv --text-field message --id-field msg_id
+eve-pdpa scan export.csv --text-field message --id-field msg_id
 ```
 
 Extension says nothing about the format: `--format jsonl` · `csv` · `tsv` · `line-oa`
@@ -130,10 +130,10 @@ Extension says nothing about the format: `--format jsonl` · `csv` · `tsv` · `
 Thai Excel usually saves CSV as windows-874, not UTF-8:
 
 ```
-$ thai-pdpa-guard scan excel.csv
+$ eve-pdpa scan excel.csv
 scan stopped: excel.csv is not valid utf-8 — a CSV saved by Thai Excel is usually windows-874: try --encoding windows-874
 
-$ thai-pdpa-guard scan excel.csv --encoding windows-874
+$ eve-pdpa scan excel.csv --encoding windows-874
 ```
 
 The CLI **stops rather than reading on with garbled text**. Read in the wrong encoding, the digits survive but the Thai words do not — cue words such as "เลขบัญชี" (account number) vanish, and bank accounts are missed with nothing to say so.
@@ -143,8 +143,8 @@ The CLI **stops rather than reading on with garbled text**. Read in the wrong en
 In LINE OA Manager, download the chat history (needs a plan that includes this feature). You get a .zip holding one CSV per customer · **unzip it first**, then scan one file at a time:
 
 ```
-$ thai-pdpa-guard scan "3_20261001_20261007_สมชาย ตัวอย่าง.csv"
-thai-pdpa-guard scan  3_20261001_20261007_….csv
+$ eve-pdpa scan "3_20261001_20261007_สมชาย ตัวอย่าง.csv"
+eve-pdpa scan  3_20261001_20261007_….csv
 policy   none given — every entity reported, nothing rewritten  (fnv1a64:944707045e078ba4)
 messages 3 scanned · 2 with personal data
          from customers 1 of 2 · from the shop 1 of 1
@@ -165,7 +165,7 @@ messages with personal data
 ## Check a policy file
 
 ```
-$ thai-pdpa-guard policy validate pdpa-policy.json
+$ eve-pdpa policy validate pdpa-policy.json
 pdpa-policy.json  valid  fnv1a64:ee142dc8b1111706
 
   TH_NATIONAL_ID  redact
@@ -198,7 +198,7 @@ Branch on the exit code without reading the report:
 `policy validate`: `0` valid · `1` invalid · `2` could not run
 
 ```bash
-thai-pdpa-guard scan export.jsonl --policy pdpa-policy.json
+eve-pdpa scan export.jsonl --policy pdpa-policy.json
 case $? in
   0) echo "no personal data found" ;;
   1) echo "found — read the report before passing the file on" ;;
@@ -210,14 +210,14 @@ esac
 ## Limitations
 
 - **Names and addresses are not detected yet** (planned for 0.2)
-- Every detector limitation of core applies here, such as bank accounts needing a cue word · see [Known limitations](https://www.npmjs.com/package/@thai-pdpa-guard/core#known-limitations)
+- Every detector limitation of core applies here, such as bank accounts needing a cue word · see [Known limitations](https://www.npmjs.com/package/@eve-pdpa-extension/core#known-limitations)
 - One file at a time · does not read .zip
 - The LINE OA format comes from a Thai-language export seen in 2025 · if LINE changes it, the CLI stops and says it cannot find the column, rather than scanning the wrong one in silence
 - **Reports only, never rewrites the file** · there is no command yet that writes a protected copy
 
 ## Reporting a vulnerability
 
-**Do not open a public issue.** Email **kunlachat@m-intelligence.tech** with the subject line starting `[thai-pdpa-guard security]`. Reproduce with made-up values — never send real personal data.
+**Do not open a public issue.** Email **kunlachat@m-intelligence.tech** with the subject line starting `[eve-pdpa-extension security]`. Reproduce with made-up values — never send real personal data.
 
 ## License
 

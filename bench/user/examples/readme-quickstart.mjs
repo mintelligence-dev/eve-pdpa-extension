@@ -3,7 +3,7 @@
 //
 //   bench/user/run examples/readme-quickstart.mjs
 import { readFileSync } from 'node:fs'
-import { createGuard, parsePolicy } from '@thai-pdpa-guard/core'
+import { createGuard, parsePolicy } from '@eve-pdpa-extension/core'
 
 const events = []
 const guard = createGuard({

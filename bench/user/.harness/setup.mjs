@@ -1,4 +1,4 @@
-// Installs @thai-pdpa-guard/core and /cli into bench/user the way a user gets
+// Installs @eve-pdpa-extension/core and /cli into bench/user the way a user gets
 // them — from the packed tarballs — then takes out what a user never reads but
 // an agent could: the source maps, which carry the TypeScript, and comments.
 //
@@ -43,7 +43,7 @@ try {
 }
 
 for (const name of ['core', 'cli']) {
-  const dist = join(HERE, 'node_modules/@thai-pdpa-guard', name, 'dist')
+  const dist = join(HERE, 'node_modules/@eve-pdpa-extension', name, 'dist')
   for (const entry of readdirSync(dist, { recursive: true, withFileTypes: true })) {
     if (!entry.isFile()) continue
     const f = entry.name
@@ -68,6 +68,8 @@ for (const name of ['core', 'cli']) {
 }
 
 const version = JSON.parse(
-  readFileSync(join(HERE, 'node_modules/@thai-pdpa-guard/core/package.json'), 'utf8'),
+  readFileSync(join(HERE, 'node_modules/@eve-pdpa-extension/core/package.json'), 'utf8'),
 ).version
-console.log(`bench/user: installed @thai-pdpa-guard/core and cli ${version} — no maps, no comments`)
+console.log(
+  `bench/user: installed @eve-pdpa-extension/core and cli ${version} — no maps, no comments`,
+)

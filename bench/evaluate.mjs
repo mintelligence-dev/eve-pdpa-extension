@@ -143,8 +143,8 @@ const total = Object.values(byEntity).reduce((a, b) => {
 const L = []
 L.push(
   HOLDOUT
-    ? '# thai-pdpa-guard benchmark — holdout set'
-    : '# thai-pdpa-guard benchmark — development set',
+    ? '# eve-pdpa-extension benchmark — holdout set'
+    : '# eve-pdpa-extension benchmark — development set',
 )
 L.push('')
 L.push(

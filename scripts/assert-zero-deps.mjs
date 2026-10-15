@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// C1: @thai-pdpa-guard/core must have zero runtime dependencies.
+// C1: @eve-pdpa-extension/core must have zero runtime dependencies.
 //
 // Four independent representations are checked, because each can drift from
 // the others: the manifest states intent, the lockfile records what pnpm

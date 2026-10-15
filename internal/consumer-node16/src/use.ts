@@ -1,7 +1,7 @@
 // Resolves the "import" condition under moduleResolution: node16.
 // If exports/types are mismatched this fails in ~200ms with a readable error,
 // which beats debugging an attw problem code.
-import { type CompiledPolicy, createGuard, definePolicy } from '@thai-pdpa-guard/core'
+import { type CompiledPolicy, createGuard, definePolicy } from '@eve-pdpa-extension/core'
 
 const policy: CompiledPolicy = definePolicy({
   entitySet: '0.1',

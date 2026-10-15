@@ -1,6 +1,6 @@
 # Security Policy
 
-`thai-pdpa-guard` handles Thai personal data. A vulnerability here can expose
+`eve-pdpa-extension` handles Thai personal data. A vulnerability here can expose
 real people's national ID numbers, phone numbers and addresses.
 
 ## Reporting a vulnerability
@@ -8,7 +8,7 @@ real people's national ID numbers, phone numbers and addresses.
 **Do not open a public issue.**
 
 Email **kunlachat@m-intelligence.tech** with the subject line starting
-`[thai-pdpa-guard security]`. Include the version, the runtime, and the
+`[eve-pdpa-extension security]`. Include the version, the runtime, and the
 smallest input that reproduces the problem.
 
 We aim to acknowledge within 3 working days and to ship a fix or a mitigation

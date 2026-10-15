@@ -1,6 +1,6 @@
 // Which words count as a bank-account cue? (README: "a cue such as เลขบัญชี or โอนเข้า")
 //   bench/user/run examples/probe-bank-cues.mjs
-import { createGuard, definePolicy, ENTITY_TYPES } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy, ENTITY_TYPES } from '@eve-pdpa-extension/core'
 
 const guard = createGuard({
   policy: definePolicy({

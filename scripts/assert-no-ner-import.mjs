@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// core must not reference @thai-pdpa-guard/ner in any form. A bundler that
+// core must not reference @eve-pdpa-extension/ner in any form. A bundler that
 // follows the reference drags a 420 MB model into a customer's browser bundle.
 //
 // This is nearly redundant with the build's own dependency check — except for
@@ -25,7 +25,7 @@ walk(SRC)
 // Only real module specifiers count. Prose in a comment that names a sibling
 // package is documentation, not coupling.
 const SPECIFIER =
-  /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)(['"])(@thai-pdpa-guard\/[^'"]*)\1/
+  /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)(['"])(@eve-pdpa-extension\/[^'"]*)\1/
 
 const fail = []
 for (const file of files) {

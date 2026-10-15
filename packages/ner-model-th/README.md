@@ -1,4 +1,4 @@
-# @thai-pdpa-guard/ner-model-th
+# @eve-pdpa-extension/ner-model-th
 
 ตัว model artifact หรือ fetcher · **เริ่ม 0.3**
 

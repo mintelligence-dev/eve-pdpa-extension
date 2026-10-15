@@ -1,4 +1,4 @@
-# @thai-pdpa-guard/core
+# @eve-pdpa-extension/core
 
 ตรวจจับและปิดข้อมูลส่วนบุคคลไทยในข้อความ ก่อนส่งต่อให้ AI model, tool, log หรือคนรีวิว
 
@@ -16,7 +16,7 @@
 ## ติดตั้ง
 
 ```bash
-npm install @thai-pdpa-guard/core
+npm install @eve-pdpa-extension/core
 ```
 
 ## เริ่มใช้
@@ -27,7 +27,7 @@ npm install @thai-pdpa-guard/core
 
 ```ts
 import { readFileSync } from 'node:fs'
-import { createGuard, parsePolicy } from '@thai-pdpa-guard/core'
+import { createGuard, parsePolicy } from '@eve-pdpa-extension/core'
 
 // สร้างครั้งเดียวตอน server เริ่ม · รันฝั่ง server เท่านั้น
 const guard = createGuard({
@@ -92,7 +92,7 @@ await guard.process('123-4-56789-0', { sessionId: 'conv_8f2a', context: 'รบ�
 
 ```json
 {
-  "$schema": "./node_modules/@thai-pdpa-guard/core/schema/policy.schema.json",
+  "$schema": "./node_modules/@eve-pdpa-extension/core/schema/policy.schema.json",
   "entitySet": "0.1",
   "onUnmapped": "redact",
   "placeholderLanguage": "th",
@@ -113,7 +113,7 @@ await guard.process('123-4-56789-0', { sessionId: 'conv_8f2a', context: 'รบ�
 
 - `$schema` ทำให้ VS Code และ editor อื่นเติมคำและเตือนตอนพิมพ์
 - `parsePolicy` ตรวจทุกช่องตอนโหลด **ช่องที่สะกดผิดคือ error** ไม่ถูกข้ามเงียบ ๆ
-- เช็คไฟล์ก่อนใช้จริงได้ด้วย `npx @thai-pdpa-guard/cli policy validate pdpa-policy.json`
+- เช็คไฟล์ก่อนใช้จริงได้ด้วย `npx @eve-pdpa-extension/cli policy validate pdpa-policy.json`
 - เขียนใน code แทนไฟล์ได้ด้วย `definePolicy({ ... })`
 
 | ช่อง | ความหมาย |
@@ -167,7 +167,7 @@ await guard.process('123-4-56789-0', { sessionId: 'conv_8f2a', context: 'รบ�
   "outcome": "processed"
 }
 ```
-(ตัดบางช่องออกให้สั้น · หน้าตาเต็มอยู่ใน `@thai-pdpa-guard/core/schema/audit-event.schema.json` ใช้ตรวจ event ในระบบ log ของคุณได้)
+(ตัดบางช่องออกให้สั้น · หน้าตาเต็มอยู่ใน `@eve-pdpa-extension/core/schema/audit-event.schema.json` ใช้ตรวจ event ในระบบ log ของคุณได้)
 
 - เขียนเป็น NDJSON (1 event ต่อ 1 บรรทัด) ได้เลย
 - `onAudit` เป็นแบบ sync · ถ้าปลายทางเป็น async ให้เก็บเข้า buffer ก่อน · ถ้า `onAudit` พัง ข้อความยังผ่าน แต่ถูกนับใน `guard.stats.auditSinkErrors` และส่งให้ `onError(error, { source: 'audit_sink' })`
@@ -185,7 +185,7 @@ await guard.process('123-4-56789-0', { sessionId: 'conv_8f2a', context: 'รบ�
 token เก็บในหน่วยความจำของ process เดียวเป็นค่าเริ่มต้น ถ้ารันหลาย process หรือหลาย pod ต้องใช้ที่เก็บร่วมกัน ตัวอย่างกับ Redis ([node-redis](https://github.com/redis/node-redis) v4):
 
 ```ts
-import { createGuard, type TokenStore } from '@thai-pdpa-guard/core'
+import { createGuard, type TokenStore } from '@eve-pdpa-extension/core'
 import { createClient } from 'redis'
 
 const redis = await createClient({ url: process.env.REDIS_URL }).connect()
@@ -290,14 +290,14 @@ await guard.process(text, { sessionId })   // ที่เก็บแบบ asy
 ตรวจไฟล์แชทเก่าได้โดยไม่ต้องเขียนโค้ด (JSONL · CSV · ไฟล์ export จาก LINE OA):
 
 ```bash
-npx @thai-pdpa-guard/cli scan chats.csv --policy pdpa-policy.json
+npx @eve-pdpa-extension/cli scan chats.csv --policy pdpa-policy.json
 ```
 
-ดู [`@thai-pdpa-guard/cli`](https://www.npmjs.com/package/@thai-pdpa-guard/cli)
+ดู [`@eve-pdpa-extension/cli`](https://www.npmjs.com/package/@eve-pdpa-extension/cli)
 
 ## แจ้งช่องโหว่
 
-**อย่าเปิด issue สาธารณะ** · ส่งอีเมลถึง **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[thai-pdpa-guard security]` · ใช้ข้อมูลปลอมในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
+**อย่าเปิด issue สาธารณะ** · ส่งอีเมลถึง **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[eve-pdpa-extension security]` · ใช้ข้อมูลปลอมในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
 
 ## License
 

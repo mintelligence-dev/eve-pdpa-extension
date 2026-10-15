@@ -1,7 +1,7 @@
 // TS — token stores: a custom async store, a failing store, and the memory store's limits.
 //   bench/user/run features/token-store.check.mjs
 import assert from 'node:assert/strict'
-import { createGuard, createMemoryTokenStore, definePolicy } from '@thai-pdpa-guard/core'
+import { createGuard, createMemoryTokenStore, definePolicy } from '@eve-pdpa-extension/core'
 import { check, expectCode, expectCodeAsync, makeGuard, sleep, strings } from '../lib/kit.mjs'
 
 const TOK = /\[tok:([bcdfghjkmnpqrstv]{16})\]/

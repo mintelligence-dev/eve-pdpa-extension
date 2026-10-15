@@ -2,7 +2,7 @@
 // CHANGELOG "Detection", policy.schema.json entity descriptions).
 //   bench/user/run features/detection.check.mjs
 import assert from 'node:assert/strict'
-import { ENTITY_TYPES } from '@thai-pdpa-guard/core'
+import { ENTITY_TYPES } from '@eve-pdpa-extension/core'
 import { allRules, check, found, makeGuard } from '../lib/kit.mjs'
 import {
   dashId,

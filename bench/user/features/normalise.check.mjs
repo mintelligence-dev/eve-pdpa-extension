@@ -2,7 +2,7 @@
 // offsets into the original text, and the exported normalise()/toOriginal*() helpers.
 //   bench/user/run features/normalise.check.mjs
 import assert from 'node:assert/strict'
-import { normalise, toOriginalEnd, toOriginalSpan, toOriginalStart } from '@thai-pdpa-guard/core'
+import { normalise, toOriginalEnd, toOriginalSpan, toOriginalStart } from '@eve-pdpa-extension/core'
 import { allRules, check, found, makeGuard } from '../lib/kit.mjs'
 
 const { guard } = makeGuard({ entities: allRules({ action: 'redact' }) })

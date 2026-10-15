@@ -1,7 +1,7 @@
 // First look at what each action does to each entity, written while learning the API.
 //
 //   bench/user/run examples/explore.mjs
-import { createGuard, definePolicy, ENTITY_TYPES } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy, ENTITY_TYPES } from '@eve-pdpa-extension/core'
 
 const KEY = 'explore-key-0123456789abcdef0123456789'
 const samples = {

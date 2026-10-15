@@ -1,4 +1,4 @@
-// The complete set of host globals @thai-pdpa-guard/core is allowed to touch.
+// The complete set of host globals @eve-pdpa-extension/core is allowed to touch.
 //
 // core/tsconfig.json sets "types": [] and "lib": ["ES2022"], so nothing from
 // @types/node or the DOM is ambiently available. process, Buffer, __dirname,

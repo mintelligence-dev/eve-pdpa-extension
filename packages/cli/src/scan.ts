@@ -11,7 +11,7 @@ import {
   type EntityType,
   normalise,
   type TokenStore,
-} from '@thai-pdpa-guard/core'
+} from '@eve-pdpa-extension/core'
 
 /** What a reader hands the scanner: a message, or a line it could not read. */
 export type ReadItem =

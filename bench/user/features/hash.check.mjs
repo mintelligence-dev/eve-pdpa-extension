@@ -1,7 +1,7 @@
 // HS — the hash action: key rules, stability, and "recognise the same person".
 //   bench/user/run features/hash.check.mjs
 import assert from 'node:assert/strict'
-import { createGuard, definePolicy } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy } from '@eve-pdpa-extension/core'
 import { allRules, check, expectCode, KEY } from '../lib/kit.mjs'
 
 const policy = definePolicy({ entitySet: '0.1', entities: allRules({ action: 'hash' }) })

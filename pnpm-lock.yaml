@@ -217,7 +217,7 @@ importers:
 
   internal/consumer-bundler:
     dependencies:
-      '@thai-pdpa-guard/core':
+      '@eve-pdpa-extension/core':
         specifier: workspace:*
         version: link:../../packages/core
     devDependencies:
@@ -227,7 +227,7 @@ importers:
 
   internal/consumer-cjs:
     dependencies:
-      '@thai-pdpa-guard/core':
+      '@eve-pdpa-extension/core':
         specifier: workspace:*
         version: link:../../packages/core
     devDependencies:
@@ -237,7 +237,7 @@ importers:
 
   internal/consumer-node16:
     dependencies:
-      '@thai-pdpa-guard/core':
+      '@eve-pdpa-extension/core':
         specifier: workspace:*
         version: link:../../packages/core
     devDependencies:
@@ -247,7 +247,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@thai-pdpa-guard/core':
+      '@eve-pdpa-extension/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

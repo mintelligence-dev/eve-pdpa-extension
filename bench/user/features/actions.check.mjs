@@ -1,7 +1,7 @@
 // AC — the six actions, on the README's own sentence, then on every entity.
 //   bench/user/run features/actions.check.mjs
 import assert from 'node:assert/strict'
-import { ACTIONS } from '@thai-pdpa-guard/core'
+import { ACTIONS } from '@eve-pdpa-extension/core'
 import { check, makeGuard } from '../lib/kit.mjs'
 
 const TEXT = 'เบอร์ 091-888-7777 ค่ะ'

@@ -2,7 +2,7 @@
 //   bench/user/run features/context.check.mjs
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { parsePolicy } from '@thai-pdpa-guard/core'
+import { parsePolicy } from '@eve-pdpa-extension/core'
 import { allRules, check, found, makeGuard, strings } from '../lib/kit.mjs'
 
 const readmePolicy = () => parsePolicy(readFileSync('policies/readme-example.json', 'utf8'))

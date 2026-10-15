@@ -1,6 +1,6 @@
 // How does processing time grow with one long run of digits (no value found in it)?
 //   bench/user/run examples/probe-digit-runs.mjs
-import { createGuard, definePolicy, ENTITY_TYPES } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy, ENTITY_TYPES } from '@eve-pdpa-extension/core'
 
 const guard = createGuard({
   policy: definePolicy({

@@ -1,6 +1,6 @@
 // Common ways Thai shops and customers write phone numbers that are not in the benchmark data yet.
 //   bench/user/run examples/probe-phone-formats.mjs
-import { createGuard, definePolicy, ENTITY_TYPES } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy, ENTITY_TYPES } from '@eve-pdpa-extension/core'
 
 const guard = createGuard({
   policy: definePolicy({

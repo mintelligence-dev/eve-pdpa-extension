@@ -1,11 +1,16 @@
 {
-  "name": "@thai-pdpa-guard/cli",
+  "name": "@eve-pdpa-extension/cli",
   "version": "0.0.0",
   "description": "Scan JSONL, CSV and LINE Official Account exports for Thai personal data.",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mintelligence-dev/eve-pdpa-extension.git",
+    "directory": "packages/cli"
+  },
   "type": "module",
   "bin": {
-    "thai-pdpa-guard": "./dist/index.js"
+    "eve-pdpa": "./dist/index.js"
   },
   "exports": {
     ".": {
@@ -26,7 +31,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@thai-pdpa-guard/core": "workspace:*"
+    "@eve-pdpa-extension/core": "workspace:*"
   },
   "scripts": {
     "prepack": "node ../../scripts/copy-legal.mjs",

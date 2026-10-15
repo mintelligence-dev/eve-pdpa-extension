@@ -9,7 +9,7 @@ import {
   ENTITY_TYPES,
   parsePolicy,
   VERSION,
-} from '@thai-pdpa-guard/core'
+} from '@eve-pdpa-extension/core'
 import { loadSet } from '../lib/data.mjs'
 import { allRules, check, makeGuard, schemaErrors, sleep, strings } from '../lib/kit.mjs'
 import { onlyDigits, phoneNational } from '../lib/values.mjs'

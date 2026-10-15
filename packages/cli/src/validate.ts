@@ -4,7 +4,7 @@ import {
   type EntityRule,
   PdpaError,
   parsePolicy,
-} from '@thai-pdpa-guard/core'
+} from '@eve-pdpa-extension/core'
 
 export type Validation =
   | { readonly ok: true; readonly policy: CompiledPolicy }

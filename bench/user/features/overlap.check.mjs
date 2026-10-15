@@ -4,7 +4,7 @@
 // value is never partly protected."
 //   bench/user/run features/overlap.check.mjs
 import assert from 'node:assert/strict'
-import { BUILTIN_DETECTORS, createEngine, normalise } from '@thai-pdpa-guard/core'
+import { BUILTIN_DETECTORS, createEngine, normalise } from '@eve-pdpa-extension/core'
 import { check, makeGuard } from '../lib/kit.mjs'
 
 const SAME = 'โอนเข้าพร้อมเพย์ 0918887777 ค่ะ' // PHONE and BANK_ACCOUNT claim the same 10 digits

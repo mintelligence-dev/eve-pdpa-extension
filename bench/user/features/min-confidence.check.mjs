@@ -2,7 +2,7 @@
 //   bench/user/run features/min-confidence.check.mjs
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { parsePolicy } from '@thai-pdpa-guard/core'
+import { parsePolicy } from '@eve-pdpa-extension/core'
 import { check, makeGuard } from '../lib/kit.mjs'
 
 const REF = 'เลขอ้างอิง 9000123456789016 ค่ะ' // Luhn-valid, no known issuer (CLI README example m5)

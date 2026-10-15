@@ -218,7 +218,7 @@ export function createGuard(options: GuardOptions): Guard {
   if (onAudit === undefined && !warnedNoAuditSink) {
     warnedNoAuditSink = true
     console.warn(
-      '[thai-pdpa-guard] createGuard was given no onAudit: audit events are being discarded. ' +
+      '[eve-pdpa-extension] createGuard was given no onAudit: audit events are being discarded. ' +
         'Pass onAudit to keep them, or onAudit: () => {} to discard them on purpose.',
     )
   }

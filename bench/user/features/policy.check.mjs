@@ -3,8 +3,14 @@
 //   bench/user/run features/policy.check.mjs
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { actionFor, createGuard, definePolicy, PdpaError, parsePolicy } from '@thai-pdpa-guard/core'
-import policySchema from '@thai-pdpa-guard/core/schema/policy.schema.json' with { type: 'json' }
+import {
+  actionFor,
+  createGuard,
+  definePolicy,
+  PdpaError,
+  parsePolicy,
+} from '@eve-pdpa-extension/core'
+import policySchema from '@eve-pdpa-extension/core/schema/policy.schema.json' with { type: 'json' }
 import { check, expectCode } from '../lib/kit.mjs'
 import { validate } from '../lib/schema.mjs'
 

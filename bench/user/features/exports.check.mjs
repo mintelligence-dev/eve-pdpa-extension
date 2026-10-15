@@ -1,10 +1,12 @@
 // EX — exports and packaging, as the type declarations describe them.
 //   bench/user/run features/exports.check.mjs
 import assert from 'node:assert/strict'
-import * as core from '@thai-pdpa-guard/core'
-import * as data from '@thai-pdpa-guard/core/data'
-import auditSchema from '@thai-pdpa-guard/core/schema/audit-event.schema.json' with { type: 'json' }
-import policySchema from '@thai-pdpa-guard/core/schema/policy.schema.json' with { type: 'json' }
+import * as core from '@eve-pdpa-extension/core'
+import * as data from '@eve-pdpa-extension/core/data'
+import auditSchema from '@eve-pdpa-extension/core/schema/audit-event.schema.json' with {
+  type: 'json',
+}
+import policySchema from '@eve-pdpa-extension/core/schema/policy.schema.json' with { type: 'json' }
 import { check, makeGuard } from '../lib/kit.mjs'
 
 // Every runtime export the type declarations list (types-only exports are not runtime values).
@@ -92,8 +94,8 @@ check(
   () => {
     for (const s of [policySchema, auditSchema])
       assert.equal(s.$schema, 'https://json-schema.org/draft/2020-12/schema')
-    assert.equal(policySchema.title, 'thai-pdpa-guard policy')
-    assert.equal(auditSchema.title, 'thai-pdpa-guard audit event')
+    assert.equal(policySchema.title, 'eve-pdpa policy')
+    assert.equal(auditSchema.title, 'eve-pdpa-extension audit event')
   },
 )
 

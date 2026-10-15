@@ -1,9 +1,9 @@
 #!/bin/sh
-# The installed thai-pdpa-guard CLI, in the same sandbox as ./run.
+# The installed eve-pdpa CLI, in the same sandbox as ./run.
 #
 #   bench/user/cli scan cli/fixtures/chat.csv --json
 dir=$(cd "$(dirname "$0")" && pwd)
 cd "$dir" || exit 1
 mkdir -p out
 exec node --permission --allow-fs-read="$dir/*" --allow-fs-write="$dir/out/*" -- \
-  node_modules/@thai-pdpa-guard/cli/dist/index.js "$@"
+  node_modules/@eve-pdpa-extension/cli/dist/index.js "$@"

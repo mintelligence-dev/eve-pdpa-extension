@@ -1,7 +1,7 @@
 // BD — boundaries: inbound by default, all five recorded, detection the same everywhere.
 //   bench/user/run features/boundaries.check.mjs
 import assert from 'node:assert/strict'
-import { BOUNDARIES } from '@thai-pdpa-guard/core'
+import { BOUNDARIES } from '@eve-pdpa-extension/core'
 import { allRules, check, makeGuard, schemaErrors } from '../lib/kit.mjs'
 
 check('BD1 the default boundary is inbound', () => {

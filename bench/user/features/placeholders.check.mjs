@@ -1,7 +1,7 @@
 // PH — redact placeholders in Thai and English, and the hash label.
 //   bench/user/run features/placeholders.check.mjs
 import assert from 'node:assert/strict'
-import { ENTITY_TYPES } from '@thai-pdpa-guard/core'
+import { ENTITY_TYPES } from '@eve-pdpa-extension/core'
 import { allRules, check, makeGuard } from '../lib/kit.mjs'
 
 const SAMPLES = {

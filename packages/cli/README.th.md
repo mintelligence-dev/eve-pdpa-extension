@@ -1,11 +1,11 @@
-# @thai-pdpa-guard/cli
+# @eve-pdpa-extension/cli
 
 ตรวจไฟล์แชทเก่าว่ามีข้อมูลส่วนบุคคลไทยอะไรอยู่บ้าง **โดยไม่ต้องเขียนโค้ด** · ใช้ก่อนเปิดให้ AI อ่านแชท หรือก่อนส่งไฟล์ให้คนอื่น
 
 - อ่าน JSONL · CSV · TSV · ไฟล์แชทที่ export จาก LINE Official Account
 - บอกว่าเจออะไร กี่ค่า อยู่บรรทัดไหน · ใส่ policy แล้วบอกได้ว่า policy จะปิดหรือ block อะไรบ้าง
 - **รายงานไม่มีข้อมูลส่วนบุคคลอยู่ข้างใน** · แปะลง ticket หรือส่งต่อได้
-- ใช้ตัวตรวจชุดเดียวกับ [`@thai-pdpa-guard/core`](https://www.npmjs.com/package/@thai-pdpa-guard/core)
+- ใช้ตัวตรวจชุดเดียวกับ [`@eve-pdpa-extension/core`](https://www.npmjs.com/package/@eve-pdpa-extension/core)
 
 > **เป็นเครื่องมือทางเทคนิค ไม่ใช่ใบรับรองการปฏิบัติตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล**
 > รายงานที่ไม่เจออะไร ไม่ได้แปลว่าไฟล์ไม่มีข้อมูลส่วนบุคคล — ดู [ข้อจำกัด](#ข้อจำกัด)
@@ -19,14 +19,14 @@
 ไม่ต้องติดตั้ง (ต้องมี Node.js 18.18 ขึ้นไป):
 
 ```bash
-npx @thai-pdpa-guard/cli scan chats.csv
+npx @eve-pdpa-extension/cli scan chats.csv
 ```
 
 หรือติดตั้งไว้ใช้บ่อย ๆ:
 
 ```bash
-npm install -g @thai-pdpa-guard/cli
-thai-pdpa-guard scan chats.csv
+npm install -g @eve-pdpa-extension/cli
+eve-pdpa scan chats.csv
 ```
 
 ## ตัวอย่าง
@@ -46,8 +46,8 @@ m7,สั่งเพิ่ม 2 ตัว, ส่งด่วน
 ```
 
 ```
-$ thai-pdpa-guard scan chats.csv
-thai-pdpa-guard scan  chats.csv
+$ eve-pdpa scan chats.csv
+eve-pdpa scan  chats.csv
 policy   none given — every entity reported, nothing rewritten  (fnv1a64:944707045e078ba4)
 messages 6 scanned · 4 with personal data · 1 line unreadable
 
@@ -83,7 +83,7 @@ unreadable lines — not scanned
 ### ดูว่า policy จะทำอะไร
 
 ```
-$ thai-pdpa-guard scan chats.csv --policy pdpa-policy.json
+$ eve-pdpa scan chats.csv --policy pdpa-policy.json
 ...
 found
   PHONE         1
@@ -98,12 +98,12 @@ the policy would
   2 messages would be blocked whole
 ```
 
-เบอร์ร้าน `02-123-4567` อยู่ใน allowlist จึงไม่นับ · policy ตัวนี้ตั้ง `minConfidence: 0.6` ให้บัตรเครดิต เลขอ้างอิงใน m5 จึงถูกนับและจะถูก block ด้วย · ดูวิธีเขียน policy ใน [README ของ core](https://www.npmjs.com/package/@thai-pdpa-guard/core#policy)
+เบอร์ร้าน `02-123-4567` อยู่ใน allowlist จึงไม่นับ · policy ตัวนี้ตั้ง `minConfidence: 0.6` ให้บัตรเครดิต เลขอ้างอิงใน m5 จึงถูกนับและจะถูก block ด้วย · ดูวิธีเขียน policy ใน [README ของ core](https://www.npmjs.com/package/@eve-pdpa-extension/core#policy)
 
 ### รายงานให้เครื่องอ่าน
 
 ```bash
-thai-pdpa-guard scan chats.csv --json > report.json
+eve-pdpa scan chats.csv --json > report.json
 ```
 
 ได้ข้อมูลเดียวกันเป็น JSON และมี**ทุกข้อความ** (แบบคนอ่านแสดง 20 ข้อความแรก)
@@ -120,7 +120,7 @@ thai-pdpa-guard scan chats.csv --json > report.json
 ชื่อฟิลด์หรือคอลัมน์ไม่ตรง:
 
 ```bash
-thai-pdpa-guard scan export.csv --text-field message --id-field msg_id
+eve-pdpa scan export.csv --text-field message --id-field msg_id
 ```
 
 นามสกุลไม่บอกชนิด: `--format jsonl` · `csv` · `tsv` · `line-oa`
@@ -130,10 +130,10 @@ thai-pdpa-guard scan export.csv --text-field message --id-field msg_id
 Excel ภาษาไทยมักบันทึก CSV เป็น windows-874 ไม่ใช่ UTF-8:
 
 ```
-$ thai-pdpa-guard scan excel.csv
+$ eve-pdpa scan excel.csv
 scan stopped: excel.csv is not valid utf-8 — a CSV saved by Thai Excel is usually windows-874: try --encoding windows-874
 
-$ thai-pdpa-guard scan excel.csv --encoding windows-874
+$ eve-pdpa scan excel.csv --encoding windows-874
 ```
 
 CLI **หยุดแทนที่จะอ่านต่อแบบเพี้ยน** · ถ้าอ่านผิด encoding ตัวเลขยังอยู่แต่คำไทยหาย คำบอกใบ้อย่าง "เลขบัญชี" หายไปด้วย แล้วเลขบัญชีจะหลุดโดยไม่มีอะไรเตือน
@@ -143,8 +143,8 @@ CLI **หยุดแทนที่จะอ่านต่อแบบเพ�
 ใน LINE OA Manager ดาวน์โหลดประวัติแชท (ต้องใช้แพ็กเกจที่มีฟีเจอร์นี้) จะได้ไฟล์ .zip ที่มี CSV แยกไฟล์ละ 1 ลูกค้า · **แตก zip ก่อน** แล้วสแกนทีละไฟล์:
 
 ```
-$ thai-pdpa-guard scan "3_20261001_20261007_สมชาย ตัวอย่าง.csv"
-thai-pdpa-guard scan  3_20261001_20261007_….csv
+$ eve-pdpa scan "3_20261001_20261007_สมชาย ตัวอย่าง.csv"
+eve-pdpa scan  3_20261001_20261007_….csv
 policy   none given — every entity reported, nothing rewritten  (fnv1a64:944707045e078ba4)
 messages 3 scanned · 2 with personal data
          from customers 1 of 2 · from the shop 1 of 1
@@ -165,7 +165,7 @@ messages with personal data
 ## เช็คไฟล์ policy
 
 ```
-$ thai-pdpa-guard policy validate pdpa-policy.json
+$ eve-pdpa policy validate pdpa-policy.json
 pdpa-policy.json  valid  fnv1a64:ee142dc8b1111706
 
   TH_NATIONAL_ID  redact
@@ -198,7 +198,7 @@ note: uses tokenise: every process and resolve call needs a sessionId
 `policy validate`: `0` ถูก · `1` ผิด · `2` รันไม่ได้
 
 ```bash
-thai-pdpa-guard scan export.jsonl --policy pdpa-policy.json
+eve-pdpa scan export.jsonl --policy pdpa-policy.json
 case $? in
   0) echo "ไม่เจอข้อมูลส่วนบุคคล" ;;
   1) echo "เจอ — ดูรายงานก่อนส่งต่อ" ;;
@@ -210,14 +210,14 @@ esac
 ## ข้อจำกัด
 
 - **ยังไม่จับชื่อคนและที่อยู่** (วางแผนไว้ 0.2)
-- ข้อจำกัดของตัวตรวจทั้งหมดเหมือน core เช่น เลขบัญชีต้องมีคำบอกใบ้ · ดู [ข้อจำกัดที่รู้อยู่](https://www.npmjs.com/package/@thai-pdpa-guard/core#known-limitations)
+- ข้อจำกัดของตัวตรวจทั้งหมดเหมือน core เช่น เลขบัญชีต้องมีคำบอกใบ้ · ดู [ข้อจำกัดที่รู้อยู่](https://www.npmjs.com/package/@eve-pdpa-extension/core#known-limitations)
 - สแกนทีละไฟล์ · ไม่อ่าน .zip
 - รูปแบบไฟล์ LINE OA ได้จาก export ภาษาไทยปี 2025 · ถ้า LINE เปลี่ยนรูปแบบ CLI จะหยุดพร้อมบอกว่าหาคอลัมน์ไม่เจอ ไม่สแกนผิดคอลัมน์เงียบ ๆ
 - **ตรวจอย่างเดียว ไม่แก้ไฟล์** · ยังไม่มีคำสั่งสร้างไฟล์ที่ปิดข้อมูลแล้ว
 
 ## แจ้งช่องโหว่
 
-**อย่าเปิด issue สาธารณะ** · ส่งอีเมลถึง **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[thai-pdpa-guard security]` · ใช้ข้อมูลปลอมในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
+**อย่าเปิด issue สาธารณะ** · ส่งอีเมลถึง **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[eve-pdpa-extension security]` · ใช้ข้อมูลปลอมในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
 
 ## License
 

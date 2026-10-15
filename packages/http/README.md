@@ -1,4 +1,4 @@
-# @thai-pdpa-guard/http
+# @eve-pdpa-extension/http
 
 Middleware สำหรับ Express, Hono และ Next.js · **เริ่ม 0.2**
 

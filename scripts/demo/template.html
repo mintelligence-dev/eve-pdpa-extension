@@ -1,4 +1,4 @@
-<title>thai-pdpa-guard Live Demo</title>
+<title>eve-pdpa-extension Live Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -196,7 +196,7 @@ pre.json {
 </style>
 
 <header class="bar">
-  <div class="brand"><b>thai-pdpa-guard</b><span id="libinfo">กำลังโหลด library…</span></div>
+  <div class="brand"><b>eve-pdpa-extension</b><span id="libinfo">กำลังโหลด library…</span></div>
   <nav class="steps" id="steps" aria-label="ขั้นตอนของ demo"></nav>
   <div class="nav">
     <button class="btn small" id="prev" type="button" aria-label="ก่อนหน้า">←</button>
@@ -1031,7 +1031,7 @@ pre.json {
     document.getElementById('libinfo').textContent = 'โหลด library ไม่สำเร็จ'
     return
   }
-  document.getElementById('libinfo').textContent = 'รัน @thai-pdpa-guard/core v' + P.VERSION + ' ตัวจริงในเบราว์เซอร์นี้ · ไม่มีข้อมูลส่งออกไปไหน'
+  document.getElementById('libinfo').textContent = 'รัน @eve-pdpa-extension/core v' + P.VERSION + ' ตัวจริงในเบราว์เซอร์นี้ · ไม่มีข้อมูลส่งออกไปไหน'
   const m = /^#s(\d+)$/.exec(location.hash)
   show(m ? Number(m[1]) - 1 : 0)
 })()

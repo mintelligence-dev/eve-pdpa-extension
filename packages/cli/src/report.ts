@@ -27,7 +27,7 @@ function where(h: Hit, all: readonly Hit[]): string {
 /** For a person at a terminal. Types, counts, line numbers and ids — no values. */
 export function formatHuman(r: ScanReport): string {
   const out: string[] = []
-  out.push(`thai-pdpa-guard scan  ${r.file}`)
+  out.push(`eve-pdpa scan  ${r.file}`)
   out.push(
     r.policy.source === 'default'
       ? `policy   none given — every entity reported, nothing rewritten  (${r.policy.hash})`

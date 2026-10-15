@@ -2,7 +2,7 @@
 // The schema documents the rule; this tries the obvious readings of it per entry.
 //   bench/user/run examples/probe-digest.mjs
 import { createHash } from 'node:crypto'
-import { createGuard, definePolicy } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy } from '@eve-pdpa-extension/core'
 
 const sha = (s) => `sha256:${createHash('sha256').update(s, 'utf8').digest('hex')}`
 const digestOf = (entry) => {

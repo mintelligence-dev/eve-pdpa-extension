@@ -106,7 +106,7 @@ jobs:
         node: ['18.18.0', '18', '20', '22', '24', '26']
     steps:
       # Checkout only for the package.json files: Node needs core's exports map
-      # to resolve the cli's import of @thai-pdpa-guard/core.
+      # to resolve the cli's import of @eve-pdpa-extension/core.
       - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with: { name: core-dist, path: packages/core }
@@ -116,8 +116,8 @@ jobs:
         with: { node-version: '${{ matrix.node }}' }
       # No install. The link pnpm would make, so the cli finds core.
       - run: |
-          mkdir -p packages/cli/node_modules/@thai-pdpa-guard
-          ln -s ../../../core packages/cli/node_modules/@thai-pdpa-guard/core
+          mkdir -p packages/cli/node_modules/@eve-pdpa-extension
+          ln -s ../../../core packages/cli/node_modules/@eve-pdpa-extension/core
       - run: node packages/cli/smoke/run.mjs
 
   smoke-deno:

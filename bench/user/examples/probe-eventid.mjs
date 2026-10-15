@@ -1,6 +1,6 @@
 // Are audit eventIds unique? Within one guard, across guards, with a fixed randomSource.
 //   bench/user/run examples/probe-eventid.mjs
-import { createGuard, definePolicy } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy } from '@eve-pdpa-extension/core'
 
 const policy = definePolicy({
   entitySet: '0.1',

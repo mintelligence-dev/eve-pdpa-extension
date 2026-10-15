@@ -4,8 +4,8 @@
     "args": ["--help"],
     "exit": 0,
     "stdoutIncludes": [
-      "thai-pdpa-guard scan <file> [options]",
-      "thai-pdpa-guard policy validate <file>",
+      "eve-pdpa scan <file> [options]",
+      "eve-pdpa policy validate <file>",
       "--text-field <name>",
       "--encoding <name>",
       "It never\ncontains the personal data itself"
@@ -381,7 +381,7 @@
     "args": ["scan", "cli-checks/fixtures/3_20261001_20261007_SomchaiTuayang.csv"],
     "exit": 1,
     "stdoutIncludes": [
-      "thai-pdpa-guard scan  3_20261001_20261007_….csv",
+      "eve-pdpa scan  3_20261001_20261007_….csv",
       "messages 3 scanned · 2 with personal data",
       "from customers 1 of 2 · from the shop 1 of 1",
       "line 6  customer  PHONE",

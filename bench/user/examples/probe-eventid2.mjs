@@ -1,6 +1,6 @@
 // eventId under policies that do not tokenise, and with custom detectors.
 //   bench/user/run examples/probe-eventid2.mjs
-import { BUILTIN_DETECTORS, createGuard, definePolicy } from '@thai-pdpa-guard/core'
+import { BUILTIN_DETECTORS, createGuard, definePolicy } from '@eve-pdpa-extension/core'
 
 const show = (label, policyInput, extra = {}) => {
   const events = []

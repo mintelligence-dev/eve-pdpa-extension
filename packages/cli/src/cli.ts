@@ -1,7 +1,7 @@
 import { readFile, stat } from 'node:fs/promises'
 import { extname } from 'node:path'
 import { parseArgs } from 'node:util'
-import { type CompiledPolicy, PdpaError, parsePolicy, VERSION } from '@thai-pdpa-guard/core'
+import { type CompiledPolicy, PdpaError, parsePolicy, VERSION } from '@eve-pdpa-extension/core'
 import { readCsv } from './readers/csv.js'
 import { InputError } from './readers/decode.js'
 import { readJsonl } from './readers/jsonl.js'
@@ -25,13 +25,13 @@ import { describePolicy, validatePolicy } from './validate.js'
  */
 export const EXIT = { CLEAN: 0, FOUND: 1, USAGE: 2, UNREADABLE: 3 } as const
 
-const USAGE = `thai-pdpa-guard ${VERSION}
+const USAGE = `eve-pdpa ${VERSION}
 
 Find Thai personal data in chat exports before they reach an AI model.
 
 Usage:
-  thai-pdpa-guard scan <file> [options]
-  thai-pdpa-guard policy validate <file>
+  eve-pdpa scan <file> [options]
+  eve-pdpa policy validate <file>
 
 scan options:
   --policy <file>       Also show what this policy would do with each value
@@ -215,7 +215,7 @@ function whyStopped(error: unknown): string {
     return error.message
   }
   const name = error instanceof Error ? error.name : typeof error
-  return `${INTERNAL_ERROR} (${name}) — please report it to the thai-pdpa-guard maintainers`
+  return `${INTERNAL_ERROR} (${name}) — please report it to the eve-pdpa-extension maintainers`
 }
 
 function parse(argv: readonly string[]) {

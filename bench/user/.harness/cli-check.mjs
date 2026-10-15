@@ -12,7 +12,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const DIR = resolve(import.meta.dirname, '..')
-const CLI = 'node_modules/@thai-pdpa-guard/cli/dist/index.js'
+const CLI = 'node_modules/@eve-pdpa-extension/cli/dist/index.js'
 const SANDBOX = ['--permission', `--allow-fs-read=${DIR}/*`, `--allow-fs-write=${DIR}/out/*`]
 
 const parsed = JSON.parse(readFileSync(resolve(DIR, 'cli-checks/cases.json'), 'utf8'))

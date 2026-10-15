@@ -1,4 +1,4 @@
-# @thai-pdpa-guard/core
+# @eve-pdpa-extension/core
 
 ## 0.1.0
 

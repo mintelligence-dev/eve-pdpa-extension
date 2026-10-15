@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://thai-pdpa-guard.dev/schema/audit-event.schema.json",
-  "title": "thai-pdpa-guard audit event",
+  "$id": "https://unpkg.com/@eve-pdpa-extension/core/schema/audit-event.schema.json",
+  "title": "eve-pdpa-extension audit event",
   "description": "One record passed to onAudit, written one per line as NDJSON. Three types: policy.loaded (once, when a guard is built), scan (once per process/processSync call) and token.resolve (once per resolve attempt, allowed or refused). No record ever carries a real value, the text around one, or an unkeyed hash of one. Offsets plus the original message give the value back, so keep audit logs apart from message logs. Shape is fixed for schemaVersion 1.0: a new field or enum value means a new schemaVersion. test/audit-schema.test.ts checks every event the guard emits against this file. D2.",
   "oneOf": [
     { "$ref": "#/$defs/policyLoaded" },
@@ -75,7 +75,7 @@
         "version": {
           "type": "string",
           "minLength": 1,
-          "description": "@thai-pdpa-guard/core version."
+          "description": "@eve-pdpa-extension/core version."
         },
         "detectors": {
           "$ref": "#/$defs/detectorIds",

@@ -1,4 +1,4 @@
-# @thai-pdpa-guard/mcp
+# @eve-pdpa-extension/mcp
 
 MCP tools `pdpa.scan` และ `pdpa.redact` · **เริ่ม 0.2**
 

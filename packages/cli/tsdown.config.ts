@@ -10,7 +10,7 @@ export default defineConfig({
   target: 'es2022',
   dts: true,
   clean: true,
-  deps: { neverBundle: ['@thai-pdpa-guard/core'] },
+  deps: { neverBundle: ['@eve-pdpa-extension/core'] },
   // The package is type: module, so .js is already ESM. Keep the extension
   // explicit so package.json "bin" cannot drift from what is emitted.
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),

@@ -1,4 +1,4 @@
-# thai-pdpa-guard
+# eve-pdpa-extension
 
 ตรวจจับและปิดข้อมูลส่วนบุคคลไทยในข้อความ ก่อนส่งต่อให้ AI model, tool, log หรือคนรีวิว · Apache-2.0
 
@@ -10,8 +10,8 @@
 
 | แพ็กเกจ | ใช้ทำอะไร | วิธีใช้ |
 |---|---|---|
-| [`@thai-pdpa-guard/core`](packages/core) | ไลบรารีที่แอปเรียกทุกข้อความ · ตรวจ 6 ประเภท · ปิด 6 แบบตาม policy · audit ที่ไม่มีค่าจริง · zero dependency · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser | [ไทย](packages/core/README.th.md) · [English](packages/core/README.md) |
-| [`@thai-pdpa-guard/cli`](packages/cli) | ตรวจไฟล์แชทเก่าโดยไม่ต้องเขียนโค้ด · JSONL · CSV · ไฟล์ export จาก LINE OA · `policy validate` | [ไทย](packages/cli/README.th.md) · [English](packages/cli/README.md) |
+| [`@eve-pdpa-extension/core`](packages/core) | ไลบรารีที่แอปเรียกทุกข้อความ · ตรวจ 6 ประเภท · ปิด 6 แบบตาม policy · audit ที่ไม่มีค่าจริง · zero dependency · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser | [ไทย](packages/core/README.th.md) · [English](packages/core/README.md) |
+| [`@eve-pdpa-extension/cli`](packages/cli) | ตรวจไฟล์แชทเก่าโดยไม่ต้องเขียนโค้ด · JSONL · CSV · ไฟล์ export จาก LINE OA · `policy validate` | [ไทย](packages/cli/README.th.md) · [English](packages/cli/README.md) |
 
 วิธีใช้ ตัวอย่าง ข้อควรรู้ และข้อจำกัด อยู่ใน README ของแต่ละแพ็กเกจ ซึ่งเป็นหน้าเดียวกับที่ขึ้นบน npm · ไฟล์นี้ไม่เขียนซ้ำ จะได้ไม่มีสองที่ที่ต้องแก้ให้ตรงกัน
 
@@ -20,8 +20,8 @@
 ## โครง repo
 
 ```
-packages/core/       @thai-pdpa-guard/core   zero deps · ทุก runtime · งบขนาด 150 KB
-packages/cli/        @thai-pdpa-guard/cli    Node เท่านั้น
+packages/core/       @eve-pdpa-extension/core   zero deps · ทุก runtime · งบขนาด 150 KB
+packages/cli/        @eve-pdpa-extension/cli    Node เท่านั้น
 packages/{policy,ner,ner-model-th,http,mcp,eve}/   มีแต่ README · ยังไม่เริ่ม (หลัง 0.1)
 examples/            ไฟล์ policy ตัวอย่าง (มีเทสบังคับว่าโหลดผ่าน)
 bench/               แม่แบบแชทและโปรแกรมวัดความแม่นยำ · ข้อมูลที่สร้างแล้วไม่ขึ้น git

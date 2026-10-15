@@ -1,5 +1,5 @@
 {
-  "name": "thai-pdpa-guard-workspace",
+  "name": "eve-pdpa-extension-workspace",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.4.2",
@@ -17,7 +17,7 @@
     "gate:deps": "node scripts/assert-zero-deps.mjs",
     "gate:builtins": "node scripts/assert-no-node-builtins.mjs",
     "gate:ner": "node scripts/assert-no-ner-import.mjs",
-    "gate:pack": "pnpm --filter @thai-pdpa-guard/core exec publint --strict && pnpm --filter @thai-pdpa-guard/core exec attw --pack --profile node16",
+    "gate:pack": "pnpm --filter @eve-pdpa-extension/core exec publint --strict && pnpm --filter @eve-pdpa-extension/core exec attw --pack --profile node16",
     "gate:tarballs": "node scripts/assert-tarballs.mjs",
     "gate:attestation": "node scripts/assert-attestation.mjs",
     "demo": "pnpm build && node scripts/demo/build.mjs",

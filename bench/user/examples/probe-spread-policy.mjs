@@ -1,6 +1,6 @@
 // What happens when a developer tweaks a loaded policy with object spread?
 //   bench/user/run examples/probe-spread-policy.mjs
-import { createGuard, definePolicy } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy } from '@eve-pdpa-extension/core'
 
 const loaded = definePolicy({ entitySet: '0.1', entities: { PHONE: { action: 'redact' } } })
 const events = []

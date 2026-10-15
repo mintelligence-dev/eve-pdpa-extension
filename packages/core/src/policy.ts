@@ -217,7 +217,7 @@ export function definePolicy(input: PolicyInput): CompiledPolicy {
  * symbol, so the ESM and CommonJS builds loaded side by side share it: a
  * policy from one is still accepted by the other's createGuard.
  */
-const REGISTRY = Symbol.for('thai-pdpa-guard.compiled-policies')
+const REGISTRY = Symbol.for('eve-pdpa-extension.compiled-policies')
 const COMPILED: WeakSet<object> = ((globalThis as Record<symbol, unknown>)[REGISTRY] ??=
   new WeakSet<object>()) as WeakSet<object>
 
@@ -226,7 +226,7 @@ export function isCompiledPolicy(policy: unknown): policy is CompiledPolicy {
   return typeof policy === 'object' && policy !== null && COMPILED.has(policy)
 }
 
-/** core does no file or YAML handling — that lives in @thai-pdpa-guard/policy. */
+/** core does no file or YAML handling — that lives in @eve-pdpa-extension/policy. */
 export function parsePolicy(json: string): CompiledPolicy {
   let parsed: unknown
   try {

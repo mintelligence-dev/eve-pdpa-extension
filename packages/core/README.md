@@ -1,4 +1,4 @@
-# @thai-pdpa-guard/core
+# @eve-pdpa-extension/core
 
 Detect and protect Thai personal data in text before it reaches an AI model, a tool, a log or a human reviewer.
 
@@ -16,7 +16,7 @@ Detect and protect Thai personal data in text before it reaches an AI model, a t
 ## Install
 
 ```bash
-npm install @thai-pdpa-guard/core
+npm install @eve-pdpa-extension/core
 ```
 
 ## Quick start
@@ -27,7 +27,7 @@ You need two things first:
 
 ```ts
 import { readFileSync } from 'node:fs'
-import { createGuard, parsePolicy } from '@thai-pdpa-guard/core'
+import { createGuard, parsePolicy } from '@eve-pdpa-extension/core'
 
 // Create once at server start · run on the server only
 const guard = createGuard({
@@ -92,7 +92,7 @@ A JSON file that says what to do with each type of data:
 
 ```json
 {
-  "$schema": "./node_modules/@thai-pdpa-guard/core/schema/policy.schema.json",
+  "$schema": "./node_modules/@eve-pdpa-extension/core/schema/policy.schema.json",
   "entitySet": "0.1",
   "onUnmapped": "redact",
   "placeholderLanguage": "th",
@@ -113,7 +113,7 @@ A JSON file that says what to do with each type of data:
 
 - `$schema` gives you completion and warnings in VS Code and other editors
 - `parsePolicy` checks every field on load · **a misspelled field is an error**, never silently skipped
-- Check a file before using it with `npx @thai-pdpa-guard/cli policy validate pdpa-policy.json`
+- Check a file before using it with `npx @eve-pdpa-extension/cli policy validate pdpa-policy.json`
 - Or write the policy in code with `definePolicy({ ... })`
 
 | Field | Meaning |
@@ -167,7 +167,7 @@ Every time the guard runs, it calls `onAudit` with one event:
   "outcome": "processed"
 }
 ```
-(Some fields left out for brevity · the full shape is in `@thai-pdpa-guard/core/schema/audit-event.schema.json`, which you can use to validate events in your log pipeline)
+(Some fields left out for brevity · the full shape is in `@eve-pdpa-extension/core/schema/audit-event.schema.json`, which you can use to validate events in your log pipeline)
 
 - Write events as NDJSON (one event per line) as they are
 - `onAudit` is sync · if your destination is async, buffer first · if `onAudit` throws, the message still goes through, but it is counted in `guard.stats.auditSinkErrors` and passed to `onError(error, { source: 'audit_sink' })`
@@ -185,7 +185,7 @@ Every time the guard runs, it calls `onAudit` with one event:
 By default, tokens live in the memory of a single process. If you run several processes or pods, they need a shared store. Example with Redis ([node-redis](https://github.com/redis/node-redis) v4):
 
 ```ts
-import { createGuard, type TokenStore } from '@thai-pdpa-guard/core'
+import { createGuard, type TokenStore } from '@eve-pdpa-extension/core'
 import { createClient } from 'redis'
 
 const redis = await createClient({ url: process.env.REDIS_URL }).connect()
@@ -290,14 +290,14 @@ Holdout set of 3,435 messages, not used to tune the detectors:
 Scan old chat exports without writing code (JSONL · CSV · LINE OA exports):
 
 ```bash
-npx @thai-pdpa-guard/cli scan chats.csv --policy pdpa-policy.json
+npx @eve-pdpa-extension/cli scan chats.csv --policy pdpa-policy.json
 ```
 
-See [`@thai-pdpa-guard/cli`](https://www.npmjs.com/package/@thai-pdpa-guard/cli)
+See [`@eve-pdpa-extension/cli`](https://www.npmjs.com/package/@eve-pdpa-extension/cli)
 
 ## Reporting a vulnerability
 
-**Do not open a public issue.** Email **kunlachat@m-intelligence.tech** with the subject line starting `[thai-pdpa-guard security]`. Reproduce with made-up values — never send real personal data.
+**Do not open a public issue.** Email **kunlachat@m-intelligence.tech** with the subject line starting `[eve-pdpa-extension security]`. Reproduce with made-up values — never send real personal data.
 
 ## License
 

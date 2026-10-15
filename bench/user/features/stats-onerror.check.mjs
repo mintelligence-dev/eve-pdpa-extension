@@ -1,7 +1,7 @@
 // ST — guard.stats and onError when the audit sink fails, and the missing-onAudit warning.
 //   bench/user/run features/stats-onerror.check.mjs
 import assert from 'node:assert/strict'
-import { createGuard, definePolicy } from '@thai-pdpa-guard/core'
+import { createGuard, definePolicy } from '@eve-pdpa-extension/core'
 import { allRules, check, sleep } from '../lib/kit.mjs'
 
 const policy = definePolicy({ entitySet: '0.1', entities: allRules({ action: 'redact' }) })

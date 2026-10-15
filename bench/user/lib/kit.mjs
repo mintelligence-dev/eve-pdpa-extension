@@ -3,8 +3,10 @@
 import { writeFileSync } from 'node:fs'
 import { basename } from 'node:path'
 import { test } from 'node:test'
-import { createGuard, definePolicy, ENTITY_TYPES, PdpaError } from '@thai-pdpa-guard/core'
-import auditSchema from '@thai-pdpa-guard/core/schema/audit-event.schema.json' with { type: 'json' }
+import { createGuard, definePolicy, ENTITY_TYPES, PdpaError } from '@eve-pdpa-extension/core'
+import auditSchema from '@eve-pdpa-extension/core/schema/audit-event.schema.json' with {
+  type: 'json',
+}
 import { validate } from './schema.mjs'
 
 /** 44 bytes, random-looking, only for tests. */

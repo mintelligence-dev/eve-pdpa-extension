@@ -8,7 +8,7 @@
 ## วิธีสร้างข้อมูลสังเคราะห์
 
 ```ts
-import { makeThaiId } from '@thai-pdpa-guard/core/test/helpers/make-thai-id'
+import { makeThaiId } from '@eve-pdpa-extension/core/test/helpers/make-thai-id'
 ```
 
 เลขบัตรทุกตัวใน fixture ต้องคำนวณหลักตรวจให้ถูก มิฉะนั้น detector จะปฏิเสธและ

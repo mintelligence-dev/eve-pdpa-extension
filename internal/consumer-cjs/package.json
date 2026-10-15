@@ -1,10 +1,10 @@
 {
-  "name": "@thai-pdpa-guard/consumer-cjs",
+  "name": "@eve-pdpa-extension/consumer-cjs",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@thai-pdpa-guard/core": "workspace:*"
+    "@eve-pdpa-extension/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "5.9.3"
