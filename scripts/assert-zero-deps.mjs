@@ -101,7 +101,16 @@ try {
   // SHA-256/HMAC landed (unpacked ~404 KB). Over half of that is source maps,
   // kept on purpose so a stack trace in a user's app points at our TypeScript.
   // If this trips again, check what grew before raising it: `npm pack --dry-run`.
-  const MAX_UNPACKED = 600 * 1024
+  //
+  // Raised to 700 KB on 2026-10-13 for the two-pass phone detector (D17): 599,598
+  // → 629,729 bytes, all of it our own code — maps +18.6 KB, dist +10 KB, READMEs
+  // +1.3 KB. No file outside dist/ and the docs changed.
+  //
+  // Raised to 800 KB the same day: 629,729 → 735,381 bytes, again only dist/ and
+  // its maps — the shared digit-run reading behind four detectors (edge cases),
+  // then settle.ts (D18). Comments ship four times over (.js, .cjs and both
+  // maps), so every 1 KB of explanation in the source costs about 4 KB here.
+  const MAX_UNPACKED = 800 * 1024
   if (meta.unpackedSize > MAX_UNPACKED) {
     note(`tarball: unpacked ${meta.unpackedSize} bytes exceeds the ${MAX_UNPACKED} byte tripwire`)
   }

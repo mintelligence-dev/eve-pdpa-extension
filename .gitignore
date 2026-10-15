@@ -20,3 +20,6 @@ bench/out/
 # Copied from the root by scripts/copy-legal.mjs on pack
 packages/*/LICENSE
 packages/*/NOTICE
+
+# Claude Code agents, hooks and skills for this machine (edge-loop, user-bench) — kept local
+.claude/

@@ -1,8 +1,15 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
-  "vcs": { "enabled": false, "clientKind": "git", "useIgnoreFile": true },
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
-    "includes": ["**", "!**/dist", "!**/.size", "!**/node_modules", "!**/coverage"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/.size",
+      "!**/node_modules",
+      "!**/coverage",
+      "!bench/user/cli-checks/fixtures"
+    ]
   },
   "formatter": {
     "enabled": true,
