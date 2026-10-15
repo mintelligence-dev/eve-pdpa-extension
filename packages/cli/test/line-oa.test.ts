@@ -159,3 +159,32 @@ describe('LINE OA chat export', () => {
     expect(r).not.toHaveProperty('senders')
   })
 })
+
+// D17.3: the other side's last message is passed as `context`, so a reply that
+// is only a number is read against the question it answers.
+describe('a reply read against the question it answers', () => {
+  const asked = (question: string, answer: string, who = 'Account') =>
+    exportFile([...PREAMBLE, HEADER, row(who, 'แอดมินเอ', question), row('User', CUSTOMER, answer)])
+
+  it('reads a number that lost its 0 as a phone when the shop asked for one', async () => {
+    const r = await report('scan', asked('ขอเบอร์ติดต่อหน่อยค่ะ', '918887777'))
+    expect(r.hits).toEqual([{ line: 6, id: null, entities: ['PHONE'], sender: 'customer' }])
+  })
+
+  it('reads ten digits as an account when the shop asked for an account', async () => {
+    const r = await report('scan', asked('ขอเลขบัญชีสำหรับคืนเงินค่ะ', '0918887777'))
+    expect(r.hits).toEqual([{ line: 6, id: null, entities: ['BANK_ACCOUNT'], sender: 'customer' }])
+  })
+
+  it('borrows a cue only from the other side', async () => {
+    // The customer asked, then answered nothing the shop asked for.
+    const r = await report('scan', asked('ขอเบอร์ร้านหน่อยครับ', '918887777', 'User'))
+    expect(r.hits).toEqual([])
+  })
+
+  it('borrows nothing in a file that does not say who wrote what', async () => {
+    const plain = join(dir, 'asked.csv')
+    writeFileSync(plain, 'id,text\nm1,ขอเบอร์ติดต่อหน่อยค่ะ\nm2,918887777\n')
+    expect((await report('scan', plain)).hits).toEqual([])
+  })
+})

@@ -280,3 +280,31 @@ describe('on a runtime without globalThis.crypto (stock Node 18)', () => {
     }
   })
 })
+
+// D19: an export keyed by phone number or LINE userId (user benchmark, 13 Oct).
+describe('an id that is itself personal data', () => {
+  const KEYED = file(
+    [
+      jsonl({ id: '0891234567', text: 'เบอร์ 091-888-7777 นะครับ' }),
+      jsonl({ id: 'U4af4980629a2b4c7e8f9d0a1b2c3d4e5', text: 'โทร 0918887777' }),
+      jsonl({ id: 'order-1001', text: 'เบอร์ 0918887777' }),
+    ].join('\n'),
+  )
+
+  it('is left out of the report and named by what it was read as', async () => {
+    const r = await report('scan', KEYED)
+    expect(r.hits.map((h) => [h.id, h.idHidden])).toEqual([
+      [null, ['PHONE']],
+      [null, ['LINE_USER_ID']],
+      ['order-1001', undefined],
+    ])
+  })
+
+  it('never appears in the text report either', async () => {
+    const { stdout } = await cli('scan', KEYED)
+    expect(stdout).not.toContain('0891234567')
+    expect(stdout).not.toContain('U4af4980629a2b4c7e8f9d0a1b2c3d4e5')
+    expect(stdout).toContain('(id hidden: PHONE)')
+    expect(stdout).toContain('order-1001')
+  })
+})

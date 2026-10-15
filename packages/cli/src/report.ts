@@ -15,7 +15,13 @@ function table(rows: readonly (readonly [string, string])[]): string[] {
 function where(h: Hit, all: readonly Hit[]): string {
   const width = Math.max(...all.map((x) => String(x.line).length))
   const who = h.sender === undefined ? '' : `  ${h.sender === 'shop' ? 'shop    ' : 'customer'}`
-  return `line ${String(h.line).padEnd(width)}${who}${h.id === null ? '' : `  ${h.id}`}`
+  const id =
+    h.idHidden !== undefined
+      ? `  (id hidden: ${h.idHidden.join(', ')})`
+      : h.id === null
+        ? ''
+        : `  ${h.id}`
+  return `line ${String(h.line).padEnd(width)}${who}${id}`
 }
 
 /** For a person at a terminal. Types, counts, line numbers and ids — no values. */

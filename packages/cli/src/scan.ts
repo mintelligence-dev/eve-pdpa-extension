@@ -31,7 +31,14 @@ export type Sender = 'customer' | 'shop'
 /** One message that held personal data. Where it is and what kinds — never the values. */
 export interface Hit {
   readonly line: number
+  /** null when the record has no id, or when the id itself is personal data (`idHidden`). */
   readonly id: string | null
+  /**
+   * What the id was read as, when it was not printed. An export keyed by phone
+   * number or LINE userId would otherwise put the data the report promises to
+   * leave out into every line of it (user benchmark, 13 Oct, D19).
+   */
+  readonly idHidden?: readonly EntityType[]
   readonly entities: readonly EntityType[]
   readonly sender?: Sender
   readonly blocked?: true
@@ -152,6 +159,18 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
   // The guard drops a candidate under the threshold before anything else sees
   // it. The same detectors, run again here, show what was dropped.
   const engine = createEngine(BUILTIN_DETECTORS)
+
+  // The id goes into the report as written only if no detector reads personal
+  // data in it at the guard's default threshold — whatever the policy does
+  // with that entity, since the report promises to hold no values at all.
+  const shownId = (id: string | null): Pick<Hit, 'id' | 'idHidden'> => {
+    if (id === null) return { id }
+    const read = engine
+      .runSync(normalise(id), { sessionId: 'scan:id', boundary: 'inbound' })
+      .raw.filter((c) => c.confidence >= DEFAULT_MIN_CONFIDENCE)
+    if (read.length === 0) return { id }
+    return { id: null, idHidden: [...new Set(read.map((c) => c.entity))] }
+  }
   const weak: Partial<Record<EntityType, ThresholdCount>> = {}
   const weakHits: Hit[] = []
 
@@ -167,6 +186,11 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
     shop: { scanned: 0, withFindings: 0, values: 0 },
   }
   let sawSender = false
+  // The other side's last message, passed as `context` (D10.11, D17.3): a reply
+  // that is only a number is read in the light of the question it answers.
+  // LINE OA only — elsewhere nobody knows who wrote which line, and borrowing
+  // a cue from the wrong side reads the customer's answer as the shop's.
+  const lastFrom: Partial<Record<Sender, string>> = {}
 
   for await (const item of items) {
     if (item.kind === 'bad') {
@@ -177,7 +201,15 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
     // One session per message, ended straight after: a tokenising policy
     // needs one (D10.4), and the tokeniser's index must not grow with the file.
     const sessionId = `scan:${item.line}`
-    const result = await guard.process(item.text, { sessionId })
+    const previous =
+      item.sender === undefined
+        ? undefined
+        : lastFrom[item.sender === 'customer' ? 'shop' : 'customer']
+    if (item.sender !== undefined) lastFrom[item.sender] = item.text
+    const result = await guard.process(item.text, {
+      sessionId,
+      ...(previous === undefined ? {} : { context: previous }),
+    })
     await guard.endSession(sessionId)
 
     const side = item.sender === undefined ? undefined : senders[item.sender]
@@ -201,7 +233,11 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
     if (result.outcome === 'blocked') blocked++
 
     const weakKinds: EntityType[] = []
-    const detected = await engine.run(normalise(item.text), { sessionId, boundary: 'inbound' })
+    const detected = await engine.run(normalise(item.text), {
+      sessionId,
+      boundary: 'inbound',
+      ...(previous === undefined ? {} : { previous }),
+    })
     for (const c of detected.candidates) {
       // An entity the policy ignores is ignored at any confidence.
       if (actionFor(policy, c.entity) === null) continue
@@ -216,14 +252,15 @@ export async function scan(items: AsyncIterable<ReadItem>, opts: ScanOptions): P
       }
       if (!weakKinds.includes(c.entity)) weakKinds.push(c.entity)
     }
+    const id = shownId(item.id)
     if (weakKinds.length > 0) {
-      weakHits.push({ line: item.line, id: item.id, entities: weakKinds, ...from })
+      weakHits.push({ line: item.line, ...id, entities: weakKinds, ...from })
     }
     if (kinds.length > 0) {
       if (side !== undefined) side.withFindings++
       hits.push({
         line: item.line,
-        id: item.id,
+        ...id,
         entities: kinds,
         ...from,
         ...(result.outcome === 'blocked' ? { blocked: true as const } : {}),

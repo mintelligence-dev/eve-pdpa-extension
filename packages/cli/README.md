@@ -76,7 +76,7 @@ Reading the report:
 | Section | Meaning |
 |---|---|
 | `found` | Values found, by type |
-| `messages with personal data` | Which message holds what · the **line number in the file** (a message over several lines counts from its first) and the id from the `id` column |
+| `messages with personal data` | Which message holds what · the **line number in the file** (a message over several lines counts from its first) and the id from the `id` column — unless the id is itself personal data (a phone number, a LINE userId), which shows as `(id hidden: PHONE)` |
 | `below the confidence threshold` | Found by a detector, but not with enough confidence to count — such as a number that passes the card checksum but matches no card issuer · usually not personal data, but worth a look |
 | `unreadable lines` | Lines that could not be read and **were not scanned** · here m7 has a comma in its text without quotes around it, so its columns shift |
 
@@ -159,6 +159,7 @@ messages with personal data
 
 - **No customer names in the report** · LINE names each file after the customer's LINE name, so the report keeps only its number and dates · the sender shows only as `customer` or `shop`
 - **Both sides are scanned** · staff type customers' data too, like line 7 above
+- **A reply is read against the question it answers** · when the shop asks "ขอเบอร์ติดต่อหน่อยค่ะ" and the customer sends only `918887777` (Excel drops the 0), it counts as a phone number · asked for an account number, a ten-digit answer such as `0918887777` counts as an account (an account number is 10–12 digits, so `918887777` alone does not) · JSONL and CSV do not say who wrote each line, so they are read one message at a time
 - A LINE OA account set to another language writes different headers · use `--format line-oa --text-field <message column>`
 
 ## Check a policy file
