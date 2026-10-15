@@ -7,13 +7,15 @@ reports, not in commit messages.
 
 Every file under `fixtures/` must be listed in `fixtures/ATTESTATION.md` by
 someone who confirmed it is synthetic. CI enforces the register
-(`pnpm gate:attestation`); from week 5 it will also scan fixtures with our own
-detectors.
+(`pnpm gate:attestation`). Scanning the fixtures with our own detectors is
+planned but not switched on yet, so the register is the only check today.
 
-Need a Thai national ID for a test? Generate one:
+Need a Thai national ID for a test? Generate one with a valid check digit.
+The helper lives with core's tests and is not part of the published package,
+so import it by path from a test in `packages/core/test/`:
 
 ```ts
-import { makeThaiId } from '@eve-pdpa-extension/core/test/helpers/make-thai-id'
+import { makeThaiId } from './helpers/make-thai-id.js'
 ```
 
 ## Constraints you cannot negotiate around
