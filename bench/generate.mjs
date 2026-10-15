@@ -95,6 +95,10 @@ const FIRST = [
 ]
 const LAST = ['ใจดี', 'รักไทย', 'ศรีสุข', 'บุญมา', 'แก้วประเสริฐ', 'ทองดี', 'สายสุวรรณ', 'วงศ์ใหญ่']
 const TITLE = ['นาย', 'นาง', 'นางสาว', 'คุณ']
+// Real area codes: Chonburi, Khon Kaen, Nakhon Ratchasima, Chiang Mai, Songkhla, Phuket.
+const AREA_CODES = ['038', '043', '044', '053', '074', '076']
+// Public numbers — police, emergency medical, a pizza chain, social help, Bangkok. Identify no one.
+const SHORT_CODES = ['191', '1669', '1112', '1300', '1555']
 const PROVINCE = ['กรุงเทพฯ', 'เชียงใหม่', 'ขอนแก่น', 'ชลบุรี', 'สงขลา', 'นนทบุรี']
 const PLATE_CHARS = 'กขคงจฉชซฒณดตถทธนบปผพภมยรลวศษสหฬอฮ'
 const MONTHS = [
@@ -115,8 +119,12 @@ const MONTHS = [
 /** A canonical value for one slot. The same {X:n} in a conversation reuses it. */
 function makeValue(entity) {
   switch (entity) {
-    case 'PHONE':
-      return chance(0.85) ? `0${pick(['6', '8', '9'])}${digits(8)}` : `02${digits(7)}`
+    case 'PHONE': {
+      const r = rand()
+      if (r < 0.8) return `0${pick(['6', '8', '9'])}${digits(8)}`
+      if (r < 0.9) return `02${digits(7)}`
+      return `${pick(AREA_CODES)}${digits(6)}`
+    }
     case 'TH_NATIONAL_ID': {
       const body = `${1 + Math.floor(rand() * 8)}${digits(11)}`
       return body + thaiIdCheckDigit(body)
@@ -139,6 +147,16 @@ function makeValue(entity) {
       return chance(0.5)
         ? `${1 + Math.floor(rand() * 28)} ${pick(MONTHS)} ${2500 + Math.floor(rand() * 50)}`
         : `${String(1 + Math.floor(rand() * 28)).padStart(2, '0')}/${String(1 + Math.floor(rand() * 12)).padStart(2, '0')}/${1960 + Math.floor(rand() * 45)}`
+    // Decoys: not personal data, labelled so a find there counts as an FP (D17).
+    case 'ORDER_NO':
+      // Nine digits from 6, 8 or 9: a mobile number that lost its 0, to the eye.
+      return `${pick(['6', '8', '9'])}${digits(8)}`
+    case 'AMOUNT':
+      return `${1 + Math.floor(rand() * 9)}.${digits(3)}.${digits(3)}`
+    case 'DATE_DOTS':
+      return `${String(1 + Math.floor(rand() * 28)).padStart(2, '0')}.${String(1 + Math.floor(rand() * 12)).padStart(2, '0')}.${2560 + Math.floor(rand() * 10)}`
+    case 'SHORT_CODE':
+      return pick(SHORT_CODES)
     default:
       throw new Error(`unknown slot ${entity}`)
   }
@@ -156,19 +174,53 @@ const groups = (s, sizes, sep) => {
   return out.join(sep)
 }
 
+/**
+ * Phone formats, in two groups. `known` are the shapes the 0.1 detector was
+ * written for. `added` are how people also write a number (D17): dots, an en
+ * dash pasted from Word, spaces round the hyphen, brackets round the area code,
+ * the leading 0 lost to Excel, 66 without the plus. They are here so the report
+ * shows what is missed. The 70 / 30 split between the groups is invented, not
+ * measured — read the per-format table, not the total.
+ */
+function phoneFormat(v) {
+  const mobile = v.length === 10
+  const sizes = mobile ? [3, 3, 4] : v.startsWith('02') ? [2, 3, 4] : [3, 3, 3]
+  const known = [
+    ['plain', v],
+    ['hyphen', groups(v, sizes, '-')],
+    ['space', groups(v, sizes, ' ')],
+  ]
+  if (mobile) {
+    known.push(
+      ['hyphen-3-7', groups(v, [3, 7], '-')],
+      ['hyphen-2-4-4', groups(v, [2, 4, 4], '-')],
+      ['+66-space', `+66 ${groups(v.slice(1), [2, 3, 4], ' ')}`],
+      ['+66', `+66${v.slice(1)}`],
+    )
+  }
+  const area = v.slice(0, sizes[0])
+  const added = [
+    ['dot', groups(v, sizes, '.')],
+    ['en-dash', groups(v, sizes, '–')],
+    ['spaced-hyphen', groups(v, sizes, ' - ')],
+    ['no-leading-zero', v.slice(1)],
+    mobile
+      ? ['66-no-plus', `66${v.slice(1)}`]
+      : ['brackets', `(${area}) ${groups(v.slice(area.length), sizes.slice(1), '-')}`],
+  ]
+  const group = chance(0.7) ? 'known' : 'added'
+  const [style, text] = pick(group === 'known' ? known : added)
+  return { text, style, group }
+}
+
 /** How a person might type this value. Each occurrence picks again. */
 function format(entity, v) {
+  if (entity === 'PHONE') return phoneFormat(v)
+  return { text: formatOther(entity, v) }
+}
+
+function formatOther(entity, v) {
   switch (entity) {
-    case 'PHONE':
-      if (v.startsWith('02')) return pick([v, groups(v, [2, 3, 4], '-'), groups(v, [2, 3, 4], ' ')])
-      return pick([
-        v,
-        groups(v, [3, 3, 4], '-'),
-        groups(v, [3, 3, 4], ' '),
-        groups(v, [3, 7], '-'),
-        `+66 ${groups(v.slice(1), [2, 3, 4], ' ')}`,
-        `+66${v.slice(1)}`,
-      ])
     case 'TH_NATIONAL_ID':
       return pick([v, groups(v, [1, 4, 5, 2, 1], '-'), groups(v, [1, 4, 5, 2, 1], ' ')])
     case 'BANK_ACCOUNT':
@@ -222,6 +274,8 @@ function disguise(entity, s) {
 // ---------------------------------------------------------------- fill
 
 const SLOT = /\{([A-Z_]+)(?::(\d+))?\}/g
+/** Slots that look like personal data and are not. Labelled DECOY, never measured. */
+const DECOYS = ['ORDER_NO', 'AMOUNT', 'DATE_DOTS', 'SHORT_CODE']
 const KNOWN = new Set([
   'PHONE',
   'TH_NATIONAL_ID',
@@ -233,6 +287,7 @@ const KNOWN = new Set([
   'ADDRESS',
   'LICENSE_PLATE',
   'DATE_OF_BIRTH',
+  ...DECOYS,
 ])
 
 /** Text written before a slot that means only part of the value is meant. */
@@ -261,8 +316,29 @@ function fill(text, values) {
       continue
     }
 
-    const { text: typed, applied } = disguise(entity, format(entity, value))
-    spans.push({ entity, start: out.length, end: out.length + typed.length, transforms: applied })
+    if (DECOYS.includes(entity)) {
+      spans.push({
+        entity: 'DECOY',
+        kind: entity,
+        start: out.length,
+        end: out.length + value.length,
+      })
+      out += value
+      continue
+    }
+
+    const { text: formatted, style, group } = format(entity, value)
+    const { text: typed, applied } = disguise(entity, formatted)
+    // A bracket opening the value is punctuation, not part of the number.
+    const lead = typed.startsWith('(') ? 1 : 0
+    const span = {
+      entity,
+      start: out.length + lead,
+      end: out.length + typed.length,
+      transforms: applied,
+    }
+    if (style !== undefined) Object.assign(span, { style, group })
+    spans.push(span)
     out += typed
   }
   out += text.slice(at)

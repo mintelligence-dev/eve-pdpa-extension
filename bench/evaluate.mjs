@@ -45,6 +45,11 @@ const byTransform = {}
 const byBoundary = { inbound: blank(), outbound: blank() }
 const bySet = {}
 const valueOnly = blank()
+/** PHONE by how it was written: `known` shapes the detector was built for, `added` ones from D17. */
+const byStyle = {}
+/** Values that are not personal data. Anything found on one is an FP (D17). */
+const decoys = {}
+const decoyExamples = []
 const fpExamples = Object.fromEntries(MEASURED.map((e) => [e, []]))
 const fnExamples = Object.fromEntries(MEASURED.map((e) => [e, []]))
 
@@ -71,6 +76,10 @@ for (const row of rows) {
       byTransform[t] ??= blank()
       buckets.push(byTransform[t])
     }
+    if (g.style !== undefined) {
+      byStyle[g.style] ??= { ...blank(), group: g.group }
+      buckets.push(byStyle[g.style])
+    }
     for (const b of buckets) bump(b, 'gold')
 
     const same = found.filter((p) => p.entity === g.entity && overlaps(p, g))
@@ -88,6 +97,21 @@ for (const row of rows) {
     const why = same.length > 0 ? 'partial' : 'missed'
     if (fnExamples[g.entity].length < 8) {
       fnExamples[g.entity].push(`${why} · ${row.text.slice(Math.max(0, g.start - 30), g.end + 15)}`)
+    }
+  }
+
+  for (const d of row.spans.filter((s) => s.entity === 'DECOY')) {
+    decoys[d.kind] ??= { count: 0, flagged: 0, as: {} }
+    const bucket = decoys[d.kind]
+    bucket.count++
+    const hit = found.find((p) => MEASURED.includes(p.entity) && overlaps(p, d))
+    if (!hit) continue
+    bucket.flagged++
+    bucket.as[hit.entity] = (bucket.as[hit.entity] ?? 0) + 1
+    if (decoyExamples.length < 8) {
+      decoyExamples.push(
+        `${d.kind} → ${hit.entity} · ${row.text.slice(Math.max(0, d.start - 30), d.end + 15)}`,
+      )
     }
   }
 
@@ -163,6 +187,37 @@ L.push('|---|---:|---:|')
 for (const [t, b] of Object.entries(byTransform).sort())
   L.push(`| ${t} | ${b.gold} | ${recall(b)} |`)
 L.push('')
+L.push('## PHONE recall by format')
+L.push('')
+L.push(
+  '`known`: shapes the 0.1 detector was written for. `added`: other ways people write a number (D17). The share of each group in the data is invented — compare rows, not the total.',
+)
+L.push('')
+L.push('| format | group | values | recall |')
+L.push('|---|---|---:|---:|')
+for (const [k, b] of Object.entries(byStyle).sort(
+  ([a, x], [c, y]) => x.group.localeCompare(y.group) || a.localeCompare(c),
+))
+  L.push(`| ${k} | ${b.group} | ${b.gold} | ${recall(b)} |`)
+L.push('')
+L.push('## Decoys')
+L.push('')
+L.push(
+  'Values that look like personal data and are not. Each one flagged is also counted as an FP above.',
+)
+L.push('')
+L.push('| decoy | values | flagged | flagged as |')
+L.push('|---|---:|---:|---|')
+for (const [k, b] of Object.entries(decoys).sort())
+  L.push(
+    `| ${k} | ${b.count} | ${b.flagged} | ${
+      Object.entries(b.as)
+        .map(([e, n]) => `${e} ${n}`)
+        .join(', ') || '—'
+    } |`,
+  )
+for (const x of decoyExamples) L.push(`- ${x.replace(/\n/g, ' ')}`)
+L.push('')
 L.push('## Recall when the message is only the value')
 L.push('')
 L.push(
@@ -205,4 +260,21 @@ for (const e of MEASURED) {
   )
 }
 console.log(`value-only replies: ${valueOnly.gold} · recall ${recall(valueOnly)}`)
+const group = (name) =>
+  Object.values(byStyle)
+    .filter((b) => b.group === name)
+    .reduce((a, b) => ({ tp: a.tp + b.tp, fn: a.fn + b.fn, gold: a.gold + b.gold }), {
+      tp: 0,
+      fn: 0,
+      gold: 0,
+    })
+for (const name of ['known', 'added']) {
+  const b = group(name)
+  console.log(`PHONE ${name} formats: ${b.gold} · recall ${recall(b)}`)
+}
+const d = Object.values(decoys).reduce(
+  (a, b) => ({ count: a.count + b.count, flagged: a.flagged + b.flagged }),
+  { count: 0, flagged: 0 },
+)
+console.log(`decoys: ${d.count} · flagged ${d.flagged}`)
 console.log(`→ bench/out/${REPORT}`)
