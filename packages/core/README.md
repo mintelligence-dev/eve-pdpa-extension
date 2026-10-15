@@ -41,7 +41,7 @@ const inbound = await guard.process('เบอร์ ๐๙๑-๘๘๘-๗๗�
   sessionId: 'conv_8f2a',   // chat id · required if the policy uses tokenise
   ref: 'msg_10293',         // the message id in your system · lets you trace an audit event back
 })
-inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← all the AI sees · a fresh random token each time
+inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← all the AI sees · a random token · the same number in the same chat gets the same token again
 
 // 2. The AI calls a send-OTP tool with the token it saw · the tool exchanges it for the real value
 //    In production the token comes from the AI's tool call · here it is taken from step 1 so the example runs
@@ -59,6 +59,7 @@ out.text   // 'ส่ง OTP ไปที่ xxx-xxx-๗๗๗๗ แล้ว�
 
 - `process` returns a Promise · with a sync token store (the default) you can use `processSync`
 - Returned text **keeps the customer's own formatting**: Thai digits stay Thai digits, and characters that are not personal data are left untouched
+- A token lasts `ttlSec` (300 s by default, at most 3600) · after that `resolve` returns `{ ok: false, reason: 'expired' }` and an outbound reply shows `[ข้อมูลที่ปิดไว้]` · have the tool tell the AI to ask the customer for the value again, and set `ttlSec` to fit how long your flow takes
 
 ### `context` — when the customer replies with just a number
 
@@ -81,7 +82,7 @@ await guard.process('123-4-56789-0', { sessionId: 'conv_8f2a', context: 'รบ�
 | `inbound` (default) | Messages from the customer |
 | `prompt` | The assembled prompt before it goes to the model |
 | `tool_input` · `tool_output` | What goes into a tool and what comes back |
-| `outbound` | The reply on its way to the customer · **tokens are turned into their protected display** · a token from another chat, or one the guard does not hold (expired · deleted · invented in the same shape), becomes `[ข้อมูลที่ปิดไว้]` · text that only resembles a token but does not match its format, such as `[tok:abc]`, is sent as written |
+| `outbound` | The reply on its way to the customer · **tokens are turned into their protected display** · a token from another chat, or one the guard does not hold (expired · deleted · invented in the same shape), becomes `[ข้อมูลที่ปิดไว้]` · text that only resembles a token but does not match its format, such as `[tok:abc]`, is sent as written · a real token is rewritten wherever it appears, with its brackets dropped or with spaces inside them |
 
 ---
 
@@ -131,8 +132,9 @@ Result for the text `เบอร์ 091-888-7777 ค่ะ`:
 | Action | Result | Use when |
 |---|---|---|
 | `redact` | `เบอร์ [เบอร์โทร] ค่ะ` | The AI does not need the value |
-| `mask` | `เบอร์ xxx-xxx-xxxx ค่ะ` | It should see that there is a number, but not the digits |
+| `mask` | `เบอร์ xxx-xxx-xxxx ค่ะ` | It should see that there is a number, but not the digits · spaces, dashes and brackets stay; an email or LINE id has none, so all of it is hidden, `@` and dots included |
 | `mask` + `keep: "last4"` | `เบอร์ xxx-xxx-7777 ค่ะ` | The customer needs to confirm which number it is |
+| `mask` + `keep: "first2last4"` | `เบอร์ 09x-xxx-7777 ค่ะ` | As above, and the AI should see it is a mobile · six of ten digits are shown, so the rest is far easier to guess |
 | `tokenise` | `เบอร์ [tok:ppfcrdqbdkttndvp] ค่ะ` | A tool needs the real value later · exchangeable only for `allowedPurposes` · expires after `ttlSec` (max 3600) |
 | `hash` | `เบอร์ [PHONE:nmdfpsvvprsnpfgc] ค่ะ` | You need to recognise the same person without knowing the value, e.g. counting repeat customers · the same value always gives the same result · needs `hmacKey` |
 | `flag` | `เบอร์ 091-888-7777 ค่ะ` | **The value reaches the AI as typed** · only recorded in audit |
@@ -233,6 +235,7 @@ All are `PdpaError`; check `error.code` · error messages never contain real val
 | `ERR_PDPA_INVALID_POLICY` | The policy is wrong · names the bad field |
 | `ERR_PDPA_HMAC_KEY` | The policy uses `hash` but there is no `hmacKey`, or it is shorter than 32 bytes · raised by `createGuard` |
 | `ERR_PDPA_NO_SESSION` | The policy uses `tokenise` but no `sessionId` was passed |
+| `ERR_PDPA_INVALID_INPUT` | `boundary` is not one of the five, `ref` is not 1–256 characters, or `context` is not a string |
 | `ERR_PDPA_ASYNC_STORE` | `processSync` / `resolveSync` called with an async token store **under a policy that tokenises** · a policy without tokenise never uses the token store, so there is no error |
 | `ERR_PDPA_NO_CSPRNG` | The runtime has no secure random source (Node 18) · see below |
 
@@ -257,6 +260,8 @@ All are `PdpaError`; check `error.code` · error messages never contain real val
 
 - **Names and addresses are not detected yet** (planned for 0.2) · audit events carry `engine.entitiesSupported`, listing what was checked, so a report with no names in it does not mean there were none
 - **Bank accounts need a cue** such as "เลขบัญชี" (account number) or "โอนเข้า" (transfer to), or pass `context` · a bare 10-digit number cannot be told apart from an order number
+- **A phone number with no leading 0 needs a cue** such as "เบอร์" or "โทร", or pass `context` · `918887777` (Excel drops the 0) and `66918887777` (66 without the +) alone cannot be told apart from an order number · the same goes for a landline written with dots, `02.123.4567`
+- **Short public numbers are not detected, on purpose** · `191`, `1669` and the like identify no one, and hiding them would stop a bot from saying "call 1669"
 - **Phone numbers inside parcel tracking numbers are caught too**, e.g. `TH0956318274` · this is deliberate: if letters before the digits stopped detection, anyone could hide a real number by typing `x0918887777`
 - **Credit cards from an unknown issuer** get confidence 0.6, below the default 0.95 · to protect them too, set `minConfidence: 0.6`
 - **Confidence values and cues were set by reasoning**, not yet tuned on real customer data
@@ -265,12 +270,12 @@ All are `PdpaError`; check `error.code` · error messages never contain real val
 
 Measured strictly: a value not caught in full (for example 12 of 13 digits hidden) counts as **missed**, not half a point.
 
-Holdout set of 3,380 messages, not used to tune the detectors:
+Holdout set of 3,435 messages, not used to tune the detectors:
 
 | Type | Values | Precision | Recall | Recall with `context` |
 |---|---|---|---|---|
 | Thai national ID | 25 | 100% | 100% | 100% |
-| Phone number | 160 | 98.2% | 100% | 100% |
+| Phone number | 165 | 99.4% | 96.4% | 100% |
 | Email | 65 | 100% | 100% | 100% |
 | Bank account | 50 | 100% | 80% | 100% |
 | Credit card | 15 | 100% | 100% | 100% |

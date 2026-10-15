@@ -72,6 +72,45 @@ describe('leaves alone', () => {
   })
 })
 
+// Edge cases, 13 Oct: banner@2x.png was flagged as an address.
+describe('filenames', () => {
+  it('leaves an image named for a high-density screen alone', () => {
+    expect(detect('รูป hero@3x.jpg ไม่ขึ้นค่ะ')).toEqual([])
+    expect(detect('icon@2X.WEBP')).toEqual([])
+  })
+
+  it('leaves any name ending in a file extension that is not a TLD alone', () => {
+    expect(detect('แนบ quote@v2.pdf ให้แล้ว')).toEqual([])
+  })
+
+  it('still finds an address under a real TLD that is also an extension', () => {
+    expect(spans('somchai@example.zip')).toEqual(['somchai@example.zip'])
+    expect(spans('somchai@example.ai')).toEqual(['somchai@example.ai'])
+  })
+})
+
+// User benchmark, 14 Oct: `=` is atext, so "email=" was read as the start of
+// the local part and the key went into the span (D20 item 26).
+describe('a key typed in front of the address', () => {
+  it('starts the span after an email, mail or e-mail key joined with =', () => {
+    expect(spans('form: email=narin.k@example.co.th')).toEqual(['narin.k@example.co.th'])
+    expect(spans('MAIL=narin@example.com')).toEqual(['narin@example.com'])
+    expect(spans('E-Mail=narin@example.com ค่ะ')).toEqual(['narin@example.com'])
+  })
+
+  it('reads a key joined with a colon the same way', () => {
+    expect(spans('e-mail:narin@example.com')).toEqual(['narin@example.com'])
+  })
+
+  it('leaves a key with any other name in the span, as before', () => {
+    expect(spans('contact_email=narin@example.com')).toEqual(['contact_email=narin@example.com'])
+  })
+
+  it('finds nothing when the key is all there is before the @', () => {
+    expect(detect('email=@example.com')).toEqual([])
+  })
+})
+
 describe('what it does not claim to cover', () => {
   it('skips a quoted local part rather than spanning the spaces inside it', () => {
     // A miss, and the right kind: the alternative is a span that starts in the
@@ -87,5 +126,40 @@ describe('what it does not claim to cover', () => {
 describe('confidence', () => {
   it('is above the default threshold, so a policy acts without being told to', () => {
     expect(detect('a@example.com')[0]?.confidence).toBeGreaterThan(0.95)
+  })
+})
+
+// Code review, 14 Oct: the pattern was tried at every position of a long run
+// and read the rest of the run from each, so 50,000 digits took 1.1 s (D20).
+describe('cost', () => {
+  it('reads a long run with no @ in it in linear time', () => {
+    for (const unit of ['7', 'a', 'a.']) {
+      const text = unit.repeat(Math.ceil((20 * 1024) / unit.length))
+      const started = performance.now()
+      detect(text)
+      expect(performance.now() - started).toBeLessThan(100)
+    }
+  })
+
+  it('reads a long run with an @ at either end, or many of them, in linear time', () => {
+    const digits = '7'.repeat(20 * 1024)
+    for (const text of [
+      `${digits}@`,
+      `@${digits}`,
+      `${digits}@example.com`,
+      'a@'.repeat(10 * 1024),
+    ]) {
+      const started = performance.now()
+      detect(text)
+      expect(performance.now() - started).toBeLessThan(100)
+    }
+  })
+
+  it('finds the same addresses it found when the whole text was scanned', () => {
+    // The search resumes after each match, so two addresses never share
+    // characters, and the leftmost start still wins.
+    expect(spans('a@example.com@example.net')).toEqual([])
+    expect(spans('x..somchai@example.com')).toEqual([])
+    expect(spans('@@somchai@example.com')).toEqual([])
   })
 })

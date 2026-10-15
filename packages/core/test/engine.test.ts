@@ -130,6 +130,17 @@ describe('overlaps — longest wins', () => {
     expect(only?.detector).toBe('long')
   })
 
+  it('keeps every candidate unmerged as raw, for the guard to settle with policy (D18)', () => {
+    const engine = createEngine([
+      fixed('short', [{ start: 2, end: 6 }]),
+      fixed('long', [{ start: 0, end: 10 }]),
+    ])
+    const r = engine.runSync(normalise('0812345678'), CTX)
+
+    expect(r.raw.map((c) => c.detector)).toEqual(['short', 'long'])
+    expect(r.candidates).toHaveLength(1)
+  })
+
   it('keeps candidates that only touch at the edge', () => {
     const engine = createEngine([
       fixed('a', [

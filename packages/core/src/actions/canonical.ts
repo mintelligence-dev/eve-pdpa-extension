@@ -38,6 +38,10 @@ export function canonicalValue(entity: EntityType, folded: string): string {
     case 'TH_NATIONAL_ID':
     case 'CREDIT_CARD':
     case 'BANK_ACCOUNT':
-      return folded.replace(SEPARATORS, '')
+      // Digits are all these values are. Every non-digit in the span is a
+      // separator the detector read past, and a dot is one since 13 Oct
+      // (`detectors/digit-run.ts`) without being a separator anywhere else:
+      // `mask` keeps a separator, and keeping the dots in an email would be wrong.
+      return folded.replace(/\D/g, '')
   }
 }

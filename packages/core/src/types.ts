@@ -48,6 +48,14 @@ export interface Candidate {
   readonly end: number
   readonly confidence: number
   readonly detector: string
+  /**
+   * The entity the sentence says these characters are, when it is not this
+   * one. Where both are claimed and the policy acts on them alike, this claim
+   * gives way; where the policy hides this one more, it still wins (D19). A
+   * phone-shaped run after บัญชี yields to BANK_ACCOUNT, yet stays hidden under
+   * a policy that redacts phones and only flags accounts.
+   */
+  readonly yieldsTo?: EntityType
 }
 
 export interface DetectContext {
@@ -69,7 +77,7 @@ export interface Detector {
 export interface EntityRule {
   readonly action: Action
   readonly minConfidence?: number
-  readonly keep?: 'last4'
+  readonly keep?: 'last4' | 'first2last4'
   readonly ttlSec?: number
   readonly allowedPurposes?: readonly string[]
   /**

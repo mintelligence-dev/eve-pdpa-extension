@@ -19,13 +19,30 @@ describe('every way of writing a value collapses to one form', () => {
       '+66 91 888 7777',
       '091 888 7777',
       '091​8887777',
+      // D17: the shapes the detector reads since 13 Oct.
+      '091.888.7777',
+      '091–888–7777',
+      '091 - 888 - 7777',
+      '918887777',
+      '66918887777',
     ]
     for (const f of forms) expect(canon('PHONE', f)).toBe('0918887777')
+    expect(canon('PHONE', '(02) 123-4567')).toBe('021234567')
+    expect(canon('PHONE', '(+662) 123 4567')).toBe('021234567')
+    expect(canon('PHONE', 'O91-888-7777')).toBe('0918887777')
   })
 
   it('national id: dashes and Thai numerals', () => {
     expect(canon('TH_NATIONAL_ID', '3-1005-00123-45-8')).toBe('3100500123458')
     expect(canon('TH_NATIONAL_ID', '๓-๑๐๐๕-๐๐๑๒๓-๔๕-๘')).toBe('3100500123458')
+  })
+
+  it('id, card and account: every separator the detectors read, dots and line breaks too', () => {
+    expect(canon('TH_NATIONAL_ID', '3.1005.00123.45.8')).toBe('3100500123458')
+    expect(canon('TH_NATIONAL_ID', '3–1005–00123–45–8')).toBe('3100500123458')
+    expect(canon('CREDIT_CARD', '4111.1111.1111.1111')).toBe('4111111111111111')
+    expect(canon('CREDIT_CARD', '4111 1111\n1111 1111')).toBe('4111111111111111')
+    expect(canon('BANK_ACCOUNT', '123.4.56789.0')).toBe('1234567890')
   })
 
   it('card: the grouping people type', () => {

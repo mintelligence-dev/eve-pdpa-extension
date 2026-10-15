@@ -6,10 +6,10 @@ First release. Not yet published.
 
 ### Detection
 
-- Six entity types: `TH_NATIONAL_ID` (mod-11 check digit) · `PHONE` (mobile and landline, national or +66) · `EMAIL` · `BANK_ACCOUNT` (only with a cue word nearby) · `CREDIT_CARD` (Luhn, issuer prefix) · `LINE_USER_ID`.
+- Six entity types: `TH_NATIONAL_ID` (mod-11 check digit) · `PHONE` (mobile and landline, national or +66; separated by spaces, any dash, dots or brackets round the area code; with no leading 0 or as 66 without the +, only beside a cue word) · `EMAIL` · `BANK_ACCOUNT` (only with a cue word nearby) · `CREDIT_CARD` (Luhn, issuer prefix) · `LINE_USER_ID`.
 - Text is normalised before detection — Thai and full-width digits, the space family, invisible characters — while the text returned keeps the customer's original characters.
 - `context`: the other side's last message, read for cue words only, so a reply that is just a number is still recognised. Never scanned, rewritten or logged.
-- Overlapping matches resolve to the longest; a partly covered value is never partly protected.
+- Overlapping matches are settled after the policy has judged each one: a match under its threshold never hides another, matches the policy acts on are hidden together as one span under one action — `block` first, then `tokenise` so the value stays usable, then `redact`, `hash`, `mask` — and one that is only flagged never leaves another in the clear. A partly covered value is never partly protected.
 - Linear in the number of values found: a message with 40,000 phone numbers takes about 60 ms.
 
 ### Actions and policy

@@ -5,6 +5,7 @@ export type PdpaErrorCode =
   | 'ERR_PDPA_HMAC_KEY'
   | 'ERR_PDPA_TOKEN_STORE_FULL'
   | 'ERR_PDPA_NO_SESSION'
+  | 'ERR_PDPA_INVALID_INPUT'
 
 export class PdpaError extends Error {
   readonly code: PdpaErrorCode

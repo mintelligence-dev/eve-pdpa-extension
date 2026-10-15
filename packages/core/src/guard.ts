@@ -15,8 +15,9 @@ import { BUILTIN_DETECTORS } from './detectors/index.js'
 import { createEngine, type EngineResult } from './engine.js'
 import { PdpaError } from './errors.js'
 import { normalise, toOriginalSpan } from './normalise.js'
-import { actionFor, definePolicy } from './policy.js'
+import { actionFor, definePolicy, isCompiledPolicy } from './policy.js'
 import { resolveRandomSource, tokenId } from './random.js'
+import { type Claim, settleOverlaps } from './settle.js'
 import { createMemoryTokenStore } from './tokens/memory-store.js'
 import type {
   AuditEvent,
@@ -41,7 +42,7 @@ import type {
   TokenResolveEvent,
   TokenStore,
 } from './types.js'
-import { ENTITY_TYPES, type EntityType } from './types.js'
+import { BOUNDARIES, ENTITY_TYPES, type EntityType } from './types.js'
 import { VERSION } from './version.js'
 
 const PLACEHOLDER_TH: Readonly<Record<EntityType, string>> = {
@@ -115,7 +116,10 @@ const MAX_REF_LENGTH = 256
 function checkRef(ref: unknown): string | undefined {
   if (ref === undefined) return undefined
   if (typeof ref !== 'string' || ref.length === 0 || ref.length > MAX_REF_LENGTH) {
-    throw new TypeError(`ref must be a string of 1 to ${MAX_REF_LENGTH} characters`)
+    throw new PdpaError(
+      'ERR_PDPA_INVALID_INPUT',
+      `ref must be a string of 1 to ${MAX_REF_LENGTH} characters`,
+    )
   }
   return ref
 }
@@ -129,8 +133,26 @@ const MAX_CONTEXT_LENGTH = 500
  */
 function checkContext(context: unknown): string | undefined {
   if (context === undefined || context === null) return undefined
-  if (typeof context !== 'string') throw new TypeError('context must be a string')
+  if (typeof context !== 'string') {
+    throw new PdpaError('ERR_PDPA_INVALID_INPUT', 'context must be a string')
+  }
   return context.slice(-MAX_CONTEXT_LENGTH).toLowerCase()
+}
+
+/**
+ * A boundary outside the five is refused. Taken as written, `'Outbound'` went
+ * into the audit event and the reply went out without its tokens turned back
+ * into their display (user benchmark, 13 Oct, D20).
+ */
+function checkBoundary(boundary: unknown): Boundary {
+  if (boundary === undefined) return 'inbound'
+  if (!(BOUNDARIES as readonly unknown[]).includes(boundary)) {
+    throw new PdpaError(
+      'ERR_PDPA_INVALID_INPUT',
+      `boundary must be one of ${BOUNDARIES.join(', ')}`,
+    )
+  }
+  return boundary as Boundary
 }
 
 function nowIso(): string {
@@ -143,8 +165,11 @@ let warnedNoAuditSink = false
 
 export function createGuard(options: GuardOptions): Guard {
   const policy = options.policy
-  if (policy === undefined || typeof policy.hash !== 'string') {
-    throw new TypeError('createGuard requires a policy built by definePolicy() or parsePolicy()')
+  if (!isCompiledPolicy(policy)) {
+    throw new PdpaError(
+      'ERR_PDPA_INVALID_POLICY',
+      'createGuard requires a policy built by definePolicy() or parsePolicy(), used as returned',
+    )
   }
 
   // Resolve the CSPRNG eagerly, but only when the policy actually needs one.
@@ -232,7 +257,8 @@ export function createGuard(options: GuardOptions): Guard {
     }
   }
 
-  // The engine owns detector failure, overlap and async; guard keeps policy.
+  // The engine owns detector failure and async; guard keeps policy, and settles
+  // overlaps once the policy has judged each candidate (settle.ts, D18).
   // Its detectorIds and entitiesSupported describe the detectors really loaded,
   // so the audit event cannot claim cover this build does not have.
   const engine = createEngine(options.detectors ?? BUILTIN_DETECTORS)
@@ -258,16 +284,29 @@ export function createGuard(options: GuardOptions): Guard {
     return sessionId ?? 'anonymous'
   }
 
+  // Event ids come from the random source even when the policy does not
+  // tokenise. They were the time alone then, and a hundred calls in a busy
+  // millisecond shared three ids (user benchmark, 13 Oct, D20). Where no source
+  // exists — Node 18 with none passed in — a counter keeps them apart.
+  let eventRandom: RandomSource | null = random
+  if (eventRandom === null) {
+    try {
+      eventRandom = resolveRandomSource(options.randomSource)
+    } catch {}
+  }
+  let eventSeq = 0
+
   function newEventId(startedAt: number): string {
     // An event id only has to be unique enough to tell events apart. If the
     // random source has broken, the message has already been blocked by the
     // action that needed it; recording that must not fail as well.
-    if (random !== null) {
+    if (eventRandom !== null) {
       try {
-        return tokenId(random)
+        return tokenId(eventRandom)
       } catch {}
     }
-    return `t${startedAt.toString(36)}`
+    eventSeq++
+    return `t${startedAt.toString(36)}-${eventSeq.toString(36)}`
   }
 
   // D10.7: one event that says what this guard's policy hash means, so the log
@@ -361,7 +400,7 @@ export function createGuard(options: GuardOptions): Guard {
   ): Generator<Step, ProcessResult, unknown> {
     const startedAt = Date.now()
     const sessionId = sessionFor(opts?.sessionId, 'process')
-    const boundary: Boundary = opts?.boundary ?? 'inbound'
+    const boundary = checkBoundary(opts?.boundary)
     const ref = checkRef(opts?.ref)
     const previous = checkContext(opts?.context)
 
@@ -374,12 +413,28 @@ export function createGuard(options: GuardOptions): Guard {
       previous === undefined ? { sessionId, boundary } : { sessionId, boundary, previous }
     const detected = (yield { op: 'detect', input: norm, ctx }) as EngineResult
 
+    // D18: threshold, action and allowlist are decided for each candidate on
+    // its own value, before any overlap is settled. Settled first, a reading
+    // the policy was about to drop could take the span from one it would hide.
+    // The allowlist comes after the threshold on purpose: a candidate too weak
+    // to act on is not a finding, allowlisted or not (D1). The folded slice is
+    // what it compares, so ๐๙๑ and 091 are the same digits.
+    const claims: Claim[] = []
+    for (const c of detected.raw) {
+      if (c.confidence < (policy.entities[c.entity]?.minConfidence ?? 0.95)) continue
+      const action = actionFor(policy, c.entity)
+      if (action === null) continue
+      const allowlisted =
+        !allowlist.isEmpty &&
+        allowlist.allows(c.entity, canonicalValue(c.entity, norm.text.slice(c.start, c.end)))
+      claims.push({ ...c, action, allowlisted })
+    }
+
     // Translating after the merge is safe: the map only ever moves offsets
     // forward, so two spans that did not overlap in the folded text cannot
     // start overlapping in the original.
-    // The folded slice is kept alongside: comparing values (allowlist, and
-    // later hash and token reuse) must see ๐๙๑ and 091 as the same digits.
-    const candidates = detected.candidates.map((c) => {
+    // The folded slice is kept alongside for hash and token reuse.
+    const candidates = settleOverlaps(claims, norm.text.length).map((c) => {
       const [start, end] = toOriginalSpan(norm, c.start, c.end)
       return { ...c, start, end, folded: norm.text.slice(c.start, c.end) }
     })
@@ -401,11 +456,9 @@ export function createGuard(options: GuardOptions): Guard {
 
     for (const c of ordered) {
       const rule = policy.entities[c.entity]
-      const minConfidence = rule?.minConfidence ?? 0.95
-      if (c.confidence < minConfidence) continue
-
-      const action = actionFor(policy, c.entity)
-      if (action === null) continue
+      // A span widened over other values hands nothing back (D18): the token
+      // would return them to whoever may resolve this one.
+      const action = c.widened && c.action === 'tokenise' ? 'redact' : c.action
 
       let finding: AuditFinding = {
         entity: c.entity,
@@ -419,9 +472,7 @@ export function createGuard(options: GuardOptions): Guard {
 
       // D1: found, and allowed through. Reported so the audit shows the value
       // was seen and deliberately let pass, rather than never found at all.
-      // Checked after the threshold on purpose — a candidate too weak to act on
-      // is not a finding, allowlisted or not.
-      if (!allowlist.isEmpty && allowlist.allows(c.entity, canonicalValue(c.entity, c.folded))) {
+      if (c.allowlisted) {
         findings.push({ ...finding, allowlisted: true })
         continue
       }
@@ -433,7 +484,8 @@ export function createGuard(options: GuardOptions): Guard {
       if (action === 'redact') {
         replacement = placeholder
       } else if (action === 'mask') {
-        replacement = maskValue(original.slice(c.start, c.end), rule?.keep)
+        // Widened, it keeps nothing: the last four may be another value's (D18).
+        replacement = maskValue(original.slice(c.start, c.end), c.widened ? undefined : rule?.keep)
       } else if (action === 'tokenise') {
         // onUnmapped cannot be tokenise, so a tokenise finding always has a rule.
         if (tokeniser === null || rule === undefined) {
@@ -551,6 +603,11 @@ export function createGuard(options: GuardOptions): Guard {
         } else if (rec.sessionId !== sessionId) {
           rendered.push({ kind: 'token', tokenId, entity: null, as: 'foreign' })
           rewritten += unknownText
+        } else if (rec.expiresAt <= Date.now()) {
+          // Expired but not yet swept from the store: the guard no longer holds
+          // it for anyone, so it reads as one it does not hold (D20).
+          rendered.push({ kind: 'token', tokenId, entity: null, as: 'unknown' })
+          rewritten += unknownText
         } else if (rec.display !== undefined) {
           rendered.push({ kind: 'token', tokenId, entity: rec.entity, as: 'masked' })
           rewritten += rec.display
@@ -607,6 +664,52 @@ export function createGuard(options: GuardOptions): Guard {
     }
 
     return { text: out, findings, outcome, skippedDetectors: detected.skippedDetectors }
+  }
+
+  /**
+   * A call that throws is on record too, as outcome "error": the schema has
+   * had it from the start and nothing wrote it, so a refused call left no trace
+   * at all (user benchmark, 13 Oct, D20). Only what can be written truthfully
+   * goes in — no text, no values, and no event at all when the boundary itself
+   * was the mistake, since the event could not say where the call was made.
+   */
+  function recordError(text: unknown, opts: ProcessOptions | undefined, startedAt: number): void {
+    if (onAudit === undefined) return
+    let boundary: Boundary
+    try {
+      boundary = checkBoundary(opts?.boundary)
+    } catch {
+      return
+    }
+    let ref: string | undefined
+    try {
+      ref = checkRef(opts?.ref)
+    } catch {}
+    const given = opts?.sessionId
+    const event: AuditEvent = {
+      schemaVersion: '1.0',
+      eventId: newEventId(startedAt),
+      type: 'scan',
+      at: nowIso(),
+      sessionId: typeof given === 'string' && given !== '' ? given : 'anonymous',
+      ...(ref === undefined ? {} : { ref }),
+      boundary,
+      policy: { hash: policy.hash, entitySet: policy.entitySet },
+      engine: {
+        version: VERSION,
+        detectors: engine.detectorIds,
+        entitiesSupported: engine.entitiesSupported,
+        nerAvailable: false,
+      },
+      input: { chars: typeof text === 'string' ? text.length : 0 },
+      findings: [],
+      skippedDetectors: [],
+      degradedDetectors: [],
+      outcome: 'error',
+      durationMs: Date.now() - startedAt,
+      prevHash: null,
+    }
+    emit(event)
   }
 
   /** Runs scan to completion, performing each step synchronously. */
@@ -731,21 +834,31 @@ export function createGuard(options: GuardOptions): Guard {
     },
 
     processSync(text, opts): ProcessResult {
-      // D6: never skip tokenise and carry on — that would let the value through
-      // under a policy that said to hide it.
-      if (store !== null && !store.sync) {
-        throw new PdpaError(
-          'ERR_PDPA_ASYNC_STORE',
-          'this policy tokenises and the token store is async; processSync cannot wait for it — use process',
-        )
+      const startedAt = Date.now()
+      try {
+        // D6: never skip tokenise and carry on — that would let the value
+        // through under a policy that said to hide it.
+        if (store !== null && !store.sync) {
+          throw new PdpaError(
+            'ERR_PDPA_ASYNC_STORE',
+            'this policy tokenises and the token store is async; processSync cannot wait for it — use process',
+          )
+        }
+        return driveSync(scan(text, opts))
+      } catch (error) {
+        recordError(text, opts, startedAt)
+        throw error
       }
-      return driveSync(scan(text, opts))
     },
 
     // Same rules as processSync. Also runs async detectors, which processSync
     // can only report as skipped, and waits on an async token store.
     process(text, opts): Promise<ProcessResult> {
-      return driveAsync(scan(text, opts))
+      const startedAt = Date.now()
+      return driveAsync(scan(text, opts)).catch((error: unknown) => {
+        recordError(text, opts, startedAt)
+        throw error
+      })
     },
   }
 }

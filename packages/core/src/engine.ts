@@ -27,9 +27,29 @@ function priorityOf(entity: EntityType): number {
   return i === -1 ? MERGE_PRIORITY.length : i
 }
 
+/** Strongest first: the longer span, then the reading the sentence names, then MERGE_PRIORITY. */
+export function rank(a: Candidate, b: Candidate): number {
+  const byLength = b.end - b.start - (a.end - a.start)
+  if (byLength !== 0) return byLength
+  if (a.yieldsTo === b.entity) return 1
+  if (b.yieldsTo === a.entity) return -1
+  const byPriority = priorityOf(a.entity) - priorityOf(b.entity)
+  if (byPriority !== 0) return byPriority
+  // Everything below only exists so two runs over the same input agree.
+  if (a.start !== b.start) return a.start - b.start
+  return a.detector < b.detector ? -1 : a.detector > b.detector ? 1 : 0
+}
+
 export interface EngineResult {
-  /** Merged, non-overlapping, ordered by position. Offsets index the NORMALISED text. */
+  /**
+   * Merged with no policy in hand — the longest wins — non-overlapping, ordered
+   * by position. The guard does not read this: it settles overlaps itself, once
+   * the policy has dropped what it will not act on (D18). Offsets index the
+   * NORMALISED text.
+   */
   readonly candidates: readonly Candidate[]
+  /** Every usable candidate, before any overlap is settled. Offsets index the NORMALISED text. */
+  readonly raw: readonly Candidate[]
   /** Ran and threw. The scan still produced a result. D4 level 1. */
   readonly degradedDetectors: readonly string[]
   /** Never ran — an async detector inside a sync call. */
@@ -72,17 +92,12 @@ function isUsableSpan(c: Candidate, length: number): boolean {
  * Measurement is a different question: precision and recall count overlapping
  * entities separately and do not cancel out (D5). That happens on the benchmark's
  * own records, not here.
+ *
+ * No policy is in hand here, so a candidate the policy would drop can still win.
+ * The guard does not use this merge for that reason (`settle.ts`, D18).
  */
 function mergeOverlaps(candidates: readonly Candidate[], length: number): Candidate[] {
-  const ranked = [...candidates].sort((a, b) => {
-    const byLength = b.end - b.start - (a.end - a.start)
-    if (byLength !== 0) return byLength
-    const byPriority = priorityOf(a.entity) - priorityOf(b.entity)
-    if (byPriority !== 0) return byPriority
-    // Everything below only exists so two runs over the same input agree.
-    if (a.start !== b.start) return a.start - b.start
-    return a.detector < b.detector ? -1 : a.detector > b.detector ? 1 : 0
-  })
+  const ranked = [...candidates].sort(rank)
 
   // Kept spans never overlap one another, so marking the characters each one
   // covers answers "is this stretch still free?" by reading that stretch alone.
@@ -131,7 +146,17 @@ export function createEngine(detectors: readonly Detector[]): Engine {
     degradedDetectors: string[],
     skippedDetectors: string[],
   ): EngineResult {
-    return { candidates: mergeOverlaps(raw, length), degradedDetectors, skippedDetectors }
+    let merged: Candidate[] | undefined
+    return {
+      // Only merged when asked: the guard, which runs on every message, never asks.
+      get candidates() {
+        merged ??= mergeOverlaps(raw, length)
+        return merged
+      },
+      raw,
+      degradedDetectors,
+      skippedDetectors,
+    }
   }
 
   return {

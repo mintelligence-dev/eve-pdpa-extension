@@ -93,8 +93,8 @@
           "description": "Findings below this are ignored. Lower it to act on weaker matches, such as a Luhn-valid number with an unknown card issuer (0.6)."
         },
         "keep": {
-          "const": "last4",
-          "description": "mask only. Leave the last four characters visible. Without it, mask hides everything except separators. D8.1."
+          "enum": ["last4", "first2last4"],
+          "description": "mask only. last4: leave the last four characters visible. first2last4: the first two as well, so 0918887777 reads 09xxxx7777 (D20). Without it, mask hides everything except separators. D8.1."
         },
         "ttlSec": {
           "type": "integer",

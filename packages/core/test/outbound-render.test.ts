@@ -221,10 +221,10 @@ describe('D10.9 — ref points the log back at the app', () => {
   it('must be a short string', () => {
     const { guard } = setup()
     const opts = { sessionId: 'conv_a' }
-    expect(() => guard.processSync('x', { ...opts, ref: '' })).toThrow(TypeError)
-    expect(() => guard.processSync('x', { ...opts, ref: 'a'.repeat(257) })).toThrow(TypeError)
-    expect(() => guard.processSync('x', { ...opts, ref: 42 as unknown as string })).toThrow(
-      TypeError,
-    )
+    // A PdpaError like every other refusal (D20), so callers catch one kind.
+    const invalid = expect.objectContaining({ code: 'ERR_PDPA_INVALID_INPUT' })
+    expect(() => guard.processSync('x', { ...opts, ref: '' })).toThrow(invalid)
+    expect(() => guard.processSync('x', { ...opts, ref: 'a'.repeat(257) })).toThrow(invalid)
+    expect(() => guard.processSync('x', { ...opts, ref: 42 as unknown as string })).toThrow(invalid)
   })
 })

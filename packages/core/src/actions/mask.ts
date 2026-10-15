@@ -3,8 +3,9 @@ import { SEPARATOR } from './separators.js'
 
 const MASK_CHAR = 'x'
 
-/** Visible characters kept when `keep: 'last4'` is set. */
+/** Visible characters kept at the end by `keep: 'last4'`, and at the start by `first2last4`. */
 const LAST = 4
+const FIRST = 2
 
 /**
  * Hides a value while keeping what the policy explicitly allows.
@@ -30,20 +31,21 @@ export function maskValue(span: string, keep: EntityRule['keep']): string {
   const chars = Array.from(span)
   const content = chars.filter((ch) => !SEPARATOR.test(ch)).length
 
-  let reveal = 0
-  if (keep === 'last4' && content > LAST) reveal = LAST
+  // `first2last4` also keeps the first two (D20): 0918887777 → 09xxxx7777, as
+  // the Notion example has it — the reader sees it is a mobile. Only when at
+  // least one character would still be hidden; otherwise everything is.
+  const first = keep === 'first2last4' && content > FIRST + LAST ? FIRST : 0
+  const last = (keep === 'last4' && content > LAST) || first > 0 ? LAST : 0
 
-  let hideUntil = content - reveal
+  let seen = 0
   let out = ''
   for (const ch of chars) {
     if (SEPARATOR.test(ch)) {
       out += ch
-    } else if (hideUntil > 0) {
-      out += MASK_CHAR
-      hideUntil--
-    } else {
-      out += ch
+      continue
     }
+    out += seen < first || seen >= content - last ? ch : MASK_CHAR
+    seen++
   }
   return out
 }

@@ -63,6 +63,8 @@ describe('context: the other side’s last message', () => {
 
   it('must be a string', () => {
     const { guard } = build()
-    expect(() => guard.processSync('x', { context: 42 as unknown as string })).toThrow(TypeError)
+    expect(() => guard.processSync('x', { context: 42 as unknown as string })).toThrow(
+      expect.objectContaining({ code: 'ERR_PDPA_INVALID_INPUT' }),
+    )
   })
 })

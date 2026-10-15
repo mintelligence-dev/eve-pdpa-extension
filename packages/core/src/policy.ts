@@ -68,8 +68,8 @@ function checkRule(entity: string, rule: EntityRule): void {
   ) {
     fail(`entities.${entity}.minConfidence`, 'expected a number between 0 and 1')
   }
-  if (rule.keep !== undefined && rule.keep !== 'last4') {
-    fail(`entities.${entity}.keep`, 'expected "last4"')
+  if (rule.keep !== undefined && rule.keep !== 'last4' && rule.keep !== 'first2last4') {
+    fail(`entities.${entity}.keep`, 'expected "last4" or "first2last4"')
   }
   // Cross-field rules — mirrored by the if/then blocks in policy.schema.json.
   if (rule.keep !== undefined && rule.action !== 'mask') {
@@ -181,10 +181,23 @@ export function definePolicy(input: PolicyInput): CompiledPolicy {
   // not the first message it meets. The guard compiles its own copy.
   compileAllowlist(input.allowlist)
 
+  // Copied and frozen, rules and all: holding the caller's object let a change
+  // made after loading reach the guard under the hash of the old policy (D20).
+  const entities: Record<string, EntityRule> = {}
+  for (const [entity, rule] of Object.entries(input.entities)) {
+    if (rule === undefined) continue
+    entities[entity] = Object.freeze({
+      ...rule,
+      ...(rule.allowedPurposes === undefined
+        ? {}
+        : { allowedPurposes: Object.freeze([...rule.allowedPurposes]) }),
+    })
+  }
+
   const out = {
     entitySet: input.entitySet,
     onUnmapped: input.onUnmapped ?? 'redact',
-    entities: input.entities,
+    entities: Object.freeze(entities),
     placeholderLanguage: input.placeholderLanguage ?? 'th',
     allowlist: Object.freeze({
       exact: Object.freeze([...(input.allowlist?.exact ?? [])]),
@@ -192,7 +205,25 @@ export function definePolicy(input: PolicyInput): CompiledPolicy {
     }),
     hash: hashPolicy(input),
   }
-  return Object.freeze(out) as unknown as CompiledPolicy
+  const policy = Object.freeze(out) as unknown as CompiledPolicy
+  COMPILED.add(policy)
+  return policy
+}
+
+/**
+ * Policies definePolicy built. A copy made with `{ ...policy }` keeps the
+ * compiled marker and whatever was changed in it, so the marker alone could
+ * not tell one from the other (D20). Kept on globalThis under a registered
+ * symbol, so the ESM and CommonJS builds loaded side by side share it: a
+ * policy from one is still accepted by the other's createGuard.
+ */
+const REGISTRY = Symbol.for('thai-pdpa-guard.compiled-policies')
+const COMPILED: WeakSet<object> = ((globalThis as Record<symbol, unknown>)[REGISTRY] ??=
+  new WeakSet<object>()) as WeakSet<object>
+
+/** True only for the object definePolicy or parsePolicy returned. */
+export function isCompiledPolicy(policy: unknown): policy is CompiledPolicy {
+  return typeof policy === 'object' && policy !== null && COMPILED.has(policy)
 }
 
 /** core does no file or YAML handling — that lives in @thai-pdpa-guard/policy. */

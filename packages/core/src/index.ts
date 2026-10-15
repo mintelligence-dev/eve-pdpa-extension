@@ -1,3 +1,4 @@
+export { allowlistDigestForm } from './allowlist.js'
 export { isValidLuhn } from './detectors/credit-card.js'
 export {
   BUILTIN_DETECTORS,
