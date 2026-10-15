@@ -1,0 +1,84 @@
+{
+  "conversations": [
+    {
+      "id": "open-kyc-01",
+      "turns": [
+        { "from": "customer", "text": "เช่ากล้อง [[~MODEL:Sony A7 IV]] 3 วัน ต้องใช้อะไรบ้างคะ" },
+        {
+          "from": "shop",
+          "text": "ใช้สำเนาบัตรประชาชนกับมัดจำ [[~AMOUNT:5,000]] บาทค่ะ แจ้งเลขบัตรก่อนได้เลยค่ะ"
+        },
+        { "from": "customer", "text": "[[TH_NATIONAL_ID:6453573817845]] ค่ะ ชื่อ ชุติมา วงศ์ใหญ่" },
+        {
+          "from": "tool",
+          "text": "kyc_check(citizen_id=[[TH_NATIONAL_ID:6453573817845]]) → blacklist=false prior_rentals=[[~QTY:2]]"
+        },
+        {
+          "from": "shop",
+          "text": "ผ่านการตรวจสอบค่ะ รับกล้องได้วันที่ [[~DATE:18 ต.ค.]] [[~TIME:10:00]] น.นะคะ"
+        }
+      ]
+    },
+    {
+      "id": "open-kyc-02",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "เช่าเต็นท์ไปเขาใหญ่ [[~QTY:3]] หลังค่ะ ผู้เช่า 3 คน\n1. [[TH_NATIONAL_ID:4-8054-66507-61-5]]\n2. [[TH_NATIONAL_ID:2223893713497]]\n3. [[TH_NATIONAL_ID:๒ ๐๘๘๒ ๘๔๐๓๙ ๕๓ ๙]]"
+        },
+        { "from": "shop", "text": "ขอบคุณค่ะ ครบ 3 ท่านนะคะ" },
+        {
+          "from": "tool",
+          "text": "kyc_batch → [[TH_NATIONAL_ID:4805466507615]]:ok, [[TH_NATIONAL_ID:2223893713497]]:ok, [[TH_NATIONAL_ID:2088284039539]]:ok"
+        },
+        { "from": "shop", "text": "ตรวจสอบผ่านทั้ง 3 ท่านค่ะ 🏕️" }
+      ]
+    },
+    {
+      "id": "open-kyc-03",
+      "turns": [
+        { "from": "shop", "text": "ขอเลขบัตรประชาชนของผู้รับสินค้าด้วยค่ะ (สินค้ามูลค่าสูงต้องแสดงบัตรตอนรับ)" },
+        { "from": "customer", "text": "[[TH_NATIONAL_ID:4741587551639]]" },
+        {
+          "from": "customer",
+          "text": "ID card no.[[TH_NATIONAL_ID:3876837756769]] (สามี รับแทนได้ไหมคะ)"
+        },
+        { "from": "shop", "text": "ได้ค่ะ ผู้รับต้องแสดงบัตรตัวจริงนะคะ" }
+      ]
+    },
+    {
+      "id": "open-kyc-04",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ซื้อประกันจอแตกค่ะ เลขบัตร [[TH_NATIONAL_ID:20833 23638 294]] เบอร์ [[PHONE:066-713-6837]] เมล [[EMAIL:naruemol.j@gmail.com]]"
+        },
+        {
+          "from": "tool",
+          "text": "policy_issue(holder_id=[[TH_NATIONAL_ID:2083323638294]], serial=[[~SERIAL:F2LXK0ABC123]], plan=[[~SKU:SCR-12M]]) → policy_no=[[~REF:PH-2568-118204]]"
+        },
+        {
+          "from": "shop",
+          "text": "ออกกรมธรรม์เรียบร้อยค่ะ เลขที่ [[~REF:PH-2568-118204]] ส่งไปที่ [[EMAIL:naruemol.j@gmail.com]] แล้วนะคะ"
+        },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "open-kyc-05",
+      "turns": [
+        { "from": "customer", "text": "จองพระเครื่องรุ่นพิเศษค่ะ จำกัดคนละองค์ใช่ไหม" },
+        { "from": "shop", "text": "ใช่ค่ะ จำกัด 1 องค์ต่อเลขบัตรประชาชน 1 ใบค่ะ" },
+        {
+          "from": "customer",
+          "text": "จองของแม่ [[TH_NATIONAL_ID:2698131665934]] และของตัวเอง [[TH_NATIONAL_ID:1258455705996]] ค่ะ"
+        },
+        {
+          "from": "tool",
+          "text": "preorder_check ids=([[TH_NATIONAL_ID:2698131665934]], [[TH_NATIONAL_ID:1258455705996]]) → both eligible, queue=[[~QTY:1532]],[[~QTY:1533]]"
+        },
+        { "from": "shop", "text": "จองให้ทั้ง 2 ท่านแล้วค่ะ คิวที่ [[~QTY:1532]] และ [[~QTY:1533]] นะคะ" }
+      ]
+    }
+  ]
+}

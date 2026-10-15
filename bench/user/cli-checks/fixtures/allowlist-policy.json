@@ -1,0 +1,9 @@
+{
+  "entitySet": "0.1",
+  "placeholderLanguage": "en",
+  "entities": { "PHONE": { "action": "redact" }, "EMAIL": { "action": "mask", "keep": "last4" } },
+  "allowlist": {
+    "exact": ["02-123-4567", "owner.nok@gmail.com"],
+    "pattern": ["0891234567|0812345678"]
+  }
+}

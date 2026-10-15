@@ -1,0 +1,4 @@
+#!/bin/sh
+# Runs cli-checks/cases.json against the installed CLI. See .harness/cli-check.mjs.
+dir=$(cd "$(dirname "$0")" && pwd)
+exec node "$dir/.harness/cli-check.mjs"

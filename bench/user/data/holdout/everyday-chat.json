@@ -1,0 +1,75 @@
+{
+  "conversations": [
+    {
+      "id": "hold-day-01",
+      "turns": [
+        { "from": "customer", "text": "สวัสดีค่า ขอสอบถามหน่อยค่ะ" },
+        { "from": "shop", "text": "สวัสดีค่ะ ยินดีให้บริการค่ะ 😊" },
+        { "from": "customer", "text": "รองเท้าเบอร์ [[~QTY:38]] มีสีครีมไหมคะ" },
+        { "from": "shop", "text": "มีค่ะ เหลือ [[~QTY:2]] คู่ ราคา [[~AMOUNT:1,290]] บาทค่ะ" },
+        { "from": "customer", "text": "งั้นเอาค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-day-02",
+      "turns": [
+        { "from": "customer", "text": "เลขพัสดุ [[~TRACKING:TH0896412305]] ขึ้นว่าตีกลับค่ะ" },
+        { "from": "shop", "text": "ขออภัยค่ะ จะจัดส่งใหม่ให้ เลขใหม่ [[~TRACKING:KEX7710293846]] ค่ะ" },
+        { "from": "customer", "text": "ok" }
+      ]
+    },
+    {
+      "id": "hold-day-03",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "จองคิวรับของหน้าร้าน [[~DATE:วันเสาร์ที่ 18]] เวลา [[~TIME:11.30]] ได้ไหมคะ"
+        },
+        {
+          "from": "shop",
+          "text": "ได้ค่ะ คิวที่ [[~QTY:7]] นะคะ ยอดชำระหน้าร้าน [[~AMOUNT:2,340]] บาทค่ะ"
+        },
+        { "from": "customer", "text": "จ่ายเงินสดได้ไหม" },
+        { "from": "shop", "text": "ได้ค่ะ 💵" }
+      ]
+    },
+    {
+      "id": "hold-day-04",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ไลน์กลุ่มลูกค้าประจำ เพิ่มเพื่อนผ่านเบอร์ได้ไหมคะ 📱[[PHONE:0620776469]]📱"
+        },
+        { "from": "shop", "text": "ได้ค่ะ แอดมินเพิ่มให้แล้วนะคะ" },
+        {
+          "from": "tool",
+          "text": "add_to_vip(user=[[LINE_USER_ID:U187f474123dfe1ca2a7ee9948b044d97]], phone=[[PHONE:0620776469]]) → ok"
+        },
+        { "from": "customer", "text": "ขอบคุณค่ะ 😊" }
+      ]
+    },
+    {
+      "id": "hold-day-05",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ใช้โค้ด [[~PROMO:PAYDAY25]] ไม่ได้ค่ะ ออเดอร์ลาซาด้า [[~ORDER:471033719014893]]"
+        },
+        { "from": "shop", "text": "โค้ดนี้ใช้ได้ถึง [[~DATE:25 ต.ค.]] ค่ะ ขั้นต่ำ [[~AMOUNT:599]] บาทนะคะ" },
+        { "from": "customer", "text": "อ๋อ ยอดไม่ถึง" },
+        { "from": "shop", "text": "เพิ่มอีก [[~AMOUNT:50]] บาทก็ใช้ได้แล้วค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-day-06",
+      "turns": [
+        { "from": "customer", "text": "ลืมรหัสผ่านค่ะ สมัครไว้ด้วยเมล [[EMAIL:nuttida.w@icloud.com]]" },
+        {
+          "from": "shop",
+          "text": "ส่งลิงก์รีเซ็ตไปที่ [[EMAIL:nuttida.w@icloud.com]] แล้วค่ะ 🔑 ถ้าไม่ได้รับ ติดต่อ [[~SHORTNUM:1175]] ได้ค่ะ"
+        },
+        { "from": "customer", "text": "ได้แล้วค่ะ" }
+      ]
+    }
+  ]
+}

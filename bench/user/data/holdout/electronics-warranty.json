@@ -1,0 +1,102 @@
+{
+  "conversations": [
+    {
+      "id": "hold-war-01",
+      "turns": [
+        { "from": "customer", "text": "ลงทะเบียนรับประกันหูฟังค่ะ S/N [[~SERIAL:HP7K2M90314]]" },
+        { "from": "shop", "text": "ขอชื่อ เลขบัตรประชาชน และอีเมลค่ะ" },
+        {
+          "from": "customer",
+          "text": "ชาตรี ศักดิ์ดี / [[TH_NATIONAL_ID:8820355704879]] / [[EMAIL:chatree.sakdee@gmail.com]]"
+        },
+        {
+          "from": "tool",
+          "text": "warranty_register(serial=[[~SERIAL:HP7K2M90314]], owner_id=[[TH_NATIONAL_ID:8820355704879]], email=[[EMAIL:chatree.sakdee@gmail.com]]) → until [[~DATE:2027-10-14]]"
+        },
+        { "from": "shop", "text": "ลงทะเบียนเรียบร้อยค่ะ รับประกันถึง [[~DATE:14 ต.ค. 2570]] ค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-war-02",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "เคลมพัดลมค่ะ ไม่หมุน เลขบัตรที่ลงทะเบียนไว้ [[TH_NATIONAL_ID:8 1911 19667 30 0]]"
+        },
+        {
+          "from": "tool",
+          "text": "warranty_lookup(owner_id=[[TH_NATIONAL_ID:8191119667300]]) → product=[[~MODEL:Hatari HT-S16M3]] valid=true phone=[[PHONE:066-736-6153]]"
+        },
+        {
+          "from": "shop",
+          "text": "พบข้อมูลรับประกันค่ะ จะให้ช่างโทรนัดรับเครื่องที่เบอร์ [[PHONE:066-736-6153]] นะคะ"
+        },
+        { "from": "customer", "text": "เปลี่ยนเป็นเบอร์นี้แทนค่ะ [[PHONE:062 054 9958]]" },
+        { "from": "shop", "text": "รับทราบค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-war-03",
+      "turns": [
+        { "from": "shop", "text": "ขอเลขประจำตัวประชาชนผู้ซื้อเพื่อลงทะเบียนค่ะ" },
+        { "from": "customer", "text": "[[TH_NATIONAL_ID:๓-๐๒๐๘-๖๐๓๗๖-๔๘-๑]]" },
+        { "from": "shop", "text": "ขอบคุณค่ะ ลงทะเบียนเรียบร้อย" },
+        { "from": "customer", "text": "อีกเครื่องเป็นของพ่อ [[TH_NATIONAL_ID:877-147-607-660-9]]" },
+        { "from": "shop", "text": "ลงทะเบียนให้ทั้งสองเครื่องแล้วค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-war-04",
+      "turns": [
+        { "from": "customer", "text": "ศูนย์ซ่อมที่หาดใหญ่ติดต่อใครคะ" },
+        {
+          "from": "shop",
+          "text": "ช่างประจำหาดใหญ่ คุณเอก โทร [[PHONE:083-801-1039]] เปิด [[~TIME:08:30-17:30]] ค่ะ"
+        },
+        { "from": "customer", "text": "ส่งเครื่องทางไปรษณีย์ได้ไหม" },
+        {
+          "from": "shop",
+          "text": "ได้ค่ะ ส่งไปที่ศูนย์ [[~HOUSE:1/1]] ถ.ราษฎร์อุทิศ [[~POSTCODE:90110]] ค่ะ"
+        },
+        { "from": "customer", "text": "โอเคค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-war-05",
+      "turns": [
+        { "from": "customer", "text": "ส่งเครื่องไปซ่อมนานแล้ว ยังไม่ได้คืนเลย" },
+        {
+          "from": "tool",
+          "text": "{\"rma\":\"[[~REF:RMA-68-02214]]\",\"customer\":{\"citizen_id\":\"[[TH_NATIONAL_ID:8524728810454]]\",\"phone\":\"[[PHONE:+66658743147]]\",\"email\":\"[[EMAIL:benjamas.t@hotmail.com]]\"},\"status\":\"waiting_parts\",\"eta\":\"[[~DATE:2025-10-21]]\"}"
+        },
+        { "from": "shop", "text": "เครื่องรออะไหล่อยู่ค่ะ คาดว่าจะเสร็จ [[~DATE:21 ต.ค.]] นะคะ" },
+        { "from": "customer", "text": "โอเคค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-war-06",
+      "turns": [
+        { "from": "customer", "text": "ทีวี 55 นิ้ว รุ่น [[~MODEL:UA55DU7700]] กินไฟกี่วัตต์คะ" },
+        { "from": "shop", "text": "ประมาณ [[~QTY:120 วัตต์]]ค่ะ รับประกัน [[~QTY:3 ปี]]ค่ะ" },
+        { "from": "customer", "text": "ติดผนังได้ไหม" },
+        { "from": "shop", "text": "ได้ค่ะ ขาแขวน VESA [[~QTY:300x300]] ค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-war-07",
+      "turns": [
+        { "from": "customer", "text": "เช่าเลนส์ [[~MODEL:RF 70-200 f/2.8]] 2 วันค่ะ" },
+        { "from": "shop", "text": "ได้ค่ะ ขอเลขบัตรประชาชนและอีเมลสำหรับส่งสัญญาเช่าค่ะ" },
+        {
+          "from": "customer",
+          "text": "เลขบัตร: [[TH_NATIONAL_ID:6341444935506]]\nemail: [[EMAIL:pongsakorn.photo@gmail.com]]"
+        },
+        {
+          "from": "tool",
+          "text": "rental_contract(id_no=[[TH_NATIONAL_ID:6341444935506]], email=[[EMAIL:pongsakorn.photo@gmail.com]]) → contract=[[~REF:RT-6810-118]]"
+        },
+        { "from": "shop", "text": "ส่งสัญญาเช่าแล้วค่ะ 📄" }
+      ]
+    }
+  ]
+}

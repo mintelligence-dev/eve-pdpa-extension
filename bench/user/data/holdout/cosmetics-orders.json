@@ -1,0 +1,80 @@
+{
+  "conversations": [
+    {
+      "id": "hold-cos-01",
+      "turns": [
+        { "from": "customer", "text": "เซรั่มวิตซีเหลือไหมคะ เอา 3 ขวด" },
+        {
+          "from": "shop",
+          "text": "เหลือค่ะ 3 ขวดรวม [[~AMOUNT:1,047]] บาท ส่งฟรีค่ะ แจ้งชื่อที่อยู่เบอร์ได้เลยค่ะ 💕"
+        },
+        {
+          "from": "customer",
+          "text": "ส่ง กัญญารัตน์ พรหมมา\n[[~HOUSE:5/77]] ซ.เพชรเกษม 48 แขวงบางหว้า เขตภาษีเจริญ กทม [[~POSTCODE:10160]]\nTel.[[PHONE:065-209-5058]]"
+        },
+        { "from": "shop", "text": "รับออเดอร์แล้วค่ะ เลขออเดอร์ [[~ORDER:CS-25-10-0193]] นะคะ" },
+        { "from": "customer", "text": "ขอบคุณค่า 💖" }
+      ]
+    },
+    {
+      "id": "hold-cos-02",
+      "turns": [
+        { "from": "shop", "text": "รบกวนขอเบอร์โทรผู้รับค่ะ" },
+        { "from": "customer", "text": "[[PHONE:90 204 4931]]" },
+        { "from": "shop", "text": "เบอร์ [[PHONE:090-204-4931]] ใช่ไหมคะ" },
+        { "from": "customer", "text": "ใช่ค่า ลืมใส่ 0" }
+      ]
+    },
+    {
+      "id": "hold-cos-03",
+      "turns": [
+        { "from": "customer", "text": "ที่อยู่เดิมนะคะ เปลี่ยนแค่เบอร์ ➡️ [[PHONE:๐๖๓-๕๓๓-๗๑๓๐]]" },
+        { "from": "shop", "text": "อัปเดตแล้วค่ะ" },
+        { "from": "customer", "text": "เบอร์สำรอง [[PHONE:096 7486170]] ค่ะ" },
+        {
+          "from": "tool",
+          "text": "update_order([[~ORDER:CS-25-10-0211]], phone=[[PHONE:0635337130]], alt_phone=[[PHONE:0967486170]]) → ok"
+        },
+        { "from": "shop", "text": "บันทึกเบอร์สำรองให้แล้วค่ะ ✨" }
+      ]
+    },
+    {
+      "id": "hold-cos-04",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ขอใบเสร็จส่งเมลค่ะ (คุณแอน: [[EMAIL:Ann.Pattra@Outlook.co.th]])"
+        },
+        { "from": "shop", "text": "ส่งแล้วค่ะ เช็คที่ [[EMAIL:ann.pattra@outlook.co.th]] นะคะ" },
+        { "from": "customer", "text": "ได้รับแล้วค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-cos-05",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ครีมกันแดด SPF [[~QTY:50]] PA++++ กับตัว SPF [[~QTY:30]] ต่างกันยังไงคะ"
+        },
+        {
+          "from": "shop",
+          "text": "SPF [[~QTY:50]] กันได้นานกว่าค่ะ ขนาด [[~QTY:30 ml]] ราคา [[~AMOUNT:390]] บาท ล็อตผลิต [[~REF:LOT 2509A]] หมดอายุ [[~DATE:09/2027]] ค่ะ"
+        },
+        { "from": "customer", "text": "เอาตัว [[~QTY:50]] ค่ะ" },
+        { "from": "shop", "text": "จัดให้ค่ะ 🧴" }
+      ]
+    },
+    {
+      "id": "hold-cos-06",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ร้านทำเล็บค่ะ สั่งน้ำยาเยอะ ติดต่อร้านได้ที่ [[PHONE:+66 2 304 8706]] ค่ะ"
+        },
+        { "from": "shop", "text": "ขอบคุณค่ะ ส่วนลดร้านค้า 15% นะคะ" },
+        { "from": "customer", "text": "ถ้าโทรไม่ติดโทรเบอร์เจ้าของ [[PHONE:0631027648]] ค่ะ" },
+        { "from": "shop", "text": "รับทราบค่ะ" }
+      ]
+    }
+  ]
+}

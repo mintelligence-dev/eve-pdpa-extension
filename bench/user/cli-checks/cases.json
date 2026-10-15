@@ -1,0 +1,575 @@
+[
+  {
+    "id": "CL-help",
+    "args": ["--help"],
+    "exit": 0,
+    "stdoutIncludes": [
+      "thai-pdpa-guard scan <file> [options]",
+      "thai-pdpa-guard policy validate <file>",
+      "--text-field <name>",
+      "--encoding <name>",
+      "It never\ncontains the personal data itself"
+    ],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-help-short",
+    "args": ["-h"],
+    "exit": 0,
+    "stdoutIncludes": ["Usage:"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-version",
+    "args": ["--version"],
+    "exit": 0,
+    "stdoutIncludes": ["0.1.0"],
+    "note": "CHANGELOG: 0.1.0 is the first release. manual run: FAIL — prints 0.0.0 (help header too)"
+  },
+  {
+    "id": "CL-version-short",
+    "args": ["-v"],
+    "exit": 0,
+    "note": "manual run: PASS (prints 0.0.0)"
+  },
+  {
+    "id": "CL-noargs",
+    "args": [],
+    "exit": 2,
+    "note": "manual run: PASS — usage, exit 2"
+  },
+  {
+    "id": "CL-unknown-cmd",
+    "args": ["scna", "cli-checks/fixtures/chats.csv"],
+    "exit": 2,
+    "stderrIncludes": ["unknown command: scna"],
+    "note": "manual run: PASS (stream assumed stderr — the manual runs could not tell stdout from stderr)"
+  },
+  {
+    "id": "CL-unknown-flag",
+    "args": [
+      "scan",
+      "cli-checks/fixtures/chats.csv",
+      "--polciy",
+      "cli-checks/fixtures/pdpa-policy.json"
+    ],
+    "exit": 2,
+    "stderrIncludes": ["--polciy"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-readme",
+    "args": ["scan", "cli-checks/fixtures/chats.csv"],
+    "exit": 1,
+    "stdoutIncludes": [
+      "policy   none given — every entity reported, nothing rewritten  (fnv1a64:944707045e078ba4)",
+      "messages 6 scanned · 4 with personal data · 1 line unreadable",
+      "  PHONE         2\n  BANK_ACCOUNT  1\n  CREDIT_CARD   1",
+      "line 3  m2  PHONE",
+      "line 4  m3  BANK_ACCOUNT",
+      "line 6  m4  CREDIT_CARD",
+      "line 8  m6  PHONE",
+      "below the confidence threshold — found, but the policy does nothing with them",
+      "CREDIT_CARD  1  (confidence 0.6, threshold 0.95)",
+      "line 7  m5  CREDIT_CARD",
+      "lower minConfidence in the policy to act on them",
+      "unreadable lines — not scanned",
+      "line 9  3 fields, header has 2"
+    ],
+    "stdoutExcludes": [
+      "091-888-7777",
+      "0918887777",
+      "123-4-56789-0",
+      "1234567890",
+      "4111 1111 1111 1111",
+      "4111111111111111",
+      "9000123456789016",
+      "02-123-4567",
+      "021234567",
+      "xxx-",
+      "ส่งด่วน"
+    ],
+    "note": "README example, verbatim fixture. manual run: PASS"
+  },
+  {
+    "id": "CL-readme-policy",
+    "args": [
+      "scan",
+      "cli-checks/fixtures/chats.csv",
+      "--policy",
+      "cli-checks/fixtures/pdpa-policy.json"
+    ],
+    "exit": 1,
+    "stdoutIncludes": [
+      "policy   fnv1a64:ee142dc8b1111706",
+      "  PHONE         1\n  BANK_ACCOUNT  1\n  CREDIT_CARD   2\n  (and 1 let through by the allowlist)",
+      "the policy would\n  tokenise  1\n  mask      1\n  block     2\n  2 messages would be blocked whole"
+    ],
+    "stdoutExcludes": [
+      "091-888-7777",
+      "123-4-56789-0",
+      "4111",
+      "9000123456789016",
+      "02-123-4567",
+      "support@myshop",
+      "[tok:"
+    ],
+    "note": "README --policy example. manual run: PASS"
+  },
+  {
+    "id": "CL-readme-json",
+    "args": ["scan", "cli-checks/fixtures/chats.csv", "--json"],
+    "exit": 1,
+    "stdoutIncludes": [
+      "\"format\": \"csv\"",
+      "\"hash\": \"fnv1a64:944707045e078ba4\"",
+      "\"id\": \"m2\"",
+      "\"line\": 9",
+      "\"problem\": \"3 fields, header has 2\""
+    ],
+    "stdoutExcludes": ["091-888-7777", "123-4-56789-0", "4111", "9000123456789016", "02-123-4567"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-readme-policy-json",
+    "args": [
+      "scan",
+      "cli-checks/fixtures/chats.csv",
+      "--json",
+      "--policy",
+      "cli-checks/fixtures/pdpa-policy.json"
+    ],
+    "exit": 1,
+    "stdoutIncludes": [
+      "\"blocked\": 2",
+      "\"allowlisted\": 1",
+      "\"tokenise\": 1",
+      "\"blocked\": true"
+    ],
+    "stdoutExcludes": ["091-888-7777", "02-123-4567", "4111"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-first20",
+    "args": ["scan", "out/cli-fixtures/first20.csv"],
+    "exit": 1,
+    "stdoutIncludes": ["first 20 of 25 — use --json for all", "f20  PHONE"],
+    "stdoutExcludes": ["f21", "f25", "0810000000"],
+    "note": "fixture made by cli-checks/make-fixtures.mjs. manual run: PASS"
+  },
+  {
+    "id": "CL-first20-json",
+    "args": ["scan", "out/cli-fixtures/first20.csv", "--json"],
+    "exit": 1,
+    "stdoutIncludes": ["\"id\": \"f21\"", "\"id\": \"f25\""],
+    "stdoutExcludes": ["0810000000"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-jsonl",
+    "args": ["scan", "cli-checks/fixtures/chats.jsonl"],
+    "exit": 1,
+    "stdoutIncludes": [
+      "line 2  j2  PHONE",
+      "line 3  j3  EMAIL",
+      "line 5  j4  TH_NATIONAL_ID",
+      "line 6  j5  LINE_USER_ID"
+    ],
+    "stdoutExcludes": [
+      "089-123-4567",
+      "nok.pattra",
+      "1-1037-02071-81-1",
+      "U4af4980629f1ae0b2b5c2f7a7b2e9c3d"
+    ],
+    "note": "a blank line is counted in line numbers. manual run: PASS"
+  },
+  {
+    "id": "CL-ndjson",
+    "args": ["scan", "cli-checks/fixtures/chats.ndjson"],
+    "exit": 1,
+    "stdoutIncludes": ["line 2  n2  PHONE", "line 3  n3  CREDIT_CARD"],
+    "stdoutExcludes": ["๐๘๙", "4111"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-tsv",
+    "args": ["scan", "out/cli-fixtures/chats.tsv"],
+    "exit": 1,
+    "stdoutIncludes": ["line 2  t1  PHONE", "line 4  t3  EMAIL"],
+    "stdoutExcludes": ["089-123-4567", "nok.pattra"],
+    "note": "manual run: PASS (a comma inside a TSV field is fine)"
+  },
+  {
+    "id": "CL-csv-noid",
+    "args": ["scan", "cli-checks/fixtures/noid.csv"],
+    "exit": 1,
+    "stdoutIncludes": ["line 2  PHONE"],
+    "stdoutExcludes": ["089-123-4567"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-fields-missing",
+    "args": ["scan", "cli-checks/fixtures/export.csv"],
+    "exit": 2,
+    "stderrIncludes": ["no column \"text\""],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-fields",
+    "args": [
+      "scan",
+      "cli-checks/fixtures/export.csv",
+      "--text-field",
+      "message",
+      "--id-field",
+      "msg_id"
+    ],
+    "exit": 1,
+    "stdoutIncludes": ["line 3  A-2  PHONE"],
+    "stdoutExcludes": ["089-123-4567"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-textfield-absent",
+    "args": ["scan", "cli-checks/fixtures/chats.jsonl", "--text-field", "message"],
+    "exit": 3,
+    "stdoutIncludes": ["5 lines unreadable", "no string field \"message\""],
+    "note": "a wrong field name reads as 'nothing found but unreadable lines'. manual run: PASS"
+  },
+  {
+    "id": "CL-format-unknown",
+    "args": ["scan", "cli-checks/fixtures/chats.txt"],
+    "exit": 2,
+    "stderrIncludes": ["cannot tell the format"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-format-txt",
+    "args": ["scan", "cli-checks/fixtures/chats.txt", "--format", "jsonl"],
+    "exit": 1,
+    "stdoutIncludes": ["line 2  t2  PHONE"],
+    "stdoutExcludes": ["089-123-4567"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-format-bad",
+    "args": ["scan", "cli-checks/fixtures/chats.txt", "--format", "xml"],
+    "exit": 2,
+    "stderrIncludes": ["unsupported format: xml"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-874-stop",
+    "args": ["scan", "out/cli-fixtures/excel-874.csv"],
+    "exit": 2,
+    "stderrIncludes": [
+      "is not valid utf-8 — a CSV saved by Thai Excel is usually windows-874: try --encoding windows-874"
+    ],
+    "note": "README wording. manual run: PASS"
+  },
+  {
+    "id": "CL-874-read",
+    "args": ["scan", "out/cli-fixtures/excel-874.csv", "--encoding", "windows-874"],
+    "exit": 1,
+    "stdoutIncludes": ["line 2  w1  BANK_ACCOUNT"],
+    "stdoutExcludes": ["123-4-56789-0"],
+    "note": "the Thai cue word survives, so the account is found. manual run: PASS"
+  },
+  {
+    "id": "CL-encoding-bad",
+    "args": ["scan", "cli-checks/fixtures/chats.csv", "--encoding", "klingon"],
+    "exit": 2,
+    "stderrIncludes": ["unknown encoding: klingon"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-binary-jsonl",
+    "args": ["scan", "out/cli-fixtures/binary.jsonl"],
+    "exit": 2,
+    "stderrIncludes": ["is not valid utf-8"],
+    "note": "manual run: PASS — the hint talks about CSV and Thai Excel for a .jsonl file"
+  },
+  {
+    "id": "CL-bom",
+    "args": ["scan", "out/cli-fixtures/bom.csv"],
+    "exit": 1,
+    "stdoutIncludes": ["line 2  b1  PHONE"],
+    "note": "a UTF-8 BOM does not hide the id column. manual run: PASS"
+  },
+  {
+    "id": "CL-crlf",
+    "args": ["scan", "out/cli-fixtures/crlf.csv"],
+    "exit": 1,
+    "stdoutIncludes": ["line 2  c1  PHONE", "line 3  c2  PHONE"],
+    "stdoutExcludes": ["089-123-4567", "02-123-4567"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-multiline",
+    "args": ["scan", "cli-checks/fixtures/multiline.csv"],
+    "exit": 1,
+    "stdoutIncludes": ["line 2  x1  PHONE"],
+    "note": "the value is on the field's third line; the report counts from the first. manual run: PASS"
+  },
+  {
+    "id": "CL-exit0",
+    "args": ["scan", "cli-checks/fixtures/clean.csv"],
+    "exit": 0,
+    "stdoutIncludes": ["messages 4 scanned · 0 with personal data", "found    nothing"],
+    "note": "dates, times, amounts, a tracking number. manual run: PASS"
+  },
+  {
+    "id": "CL-exit3",
+    "args": ["scan", "cli-checks/fixtures/unreadable-only.csv"],
+    "exit": 3,
+    "stdoutIncludes": ["found    nothing", "line 3  3 fields, header has 2"],
+    "stdoutExcludes": ["ส่งด่วน"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-missing",
+    "args": ["scan", "cli-checks/fixtures/no-such-file.csv"],
+    "exit": 2,
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-scan-nofile",
+    "args": ["scan"],
+    "exit": 2,
+    "stderrIncludes": ["scan needs a file"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-policy-missing",
+    "args": [
+      "scan",
+      "cli-checks/fixtures/chats.csv",
+      "--policy",
+      "cli-checks/fixtures/no-such-policy.json"
+    ],
+    "exit": 2,
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-policy-invalid",
+    "args": [
+      "scan",
+      "cli-checks/fixtures/chats.csv",
+      "--policy",
+      "cli-checks/fixtures/bad-policy.json"
+    ],
+    "exit": 2,
+    "stderrIncludes": ["entities.PHONE.allowedPurposes: required for tokenise"],
+    "stdoutExcludes": ["0891234567"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-policy-broken",
+    "args": [
+      "scan",
+      "cli-checks/fixtures/chats.csv",
+      "--policy",
+      "cli-checks/fixtures/broken-policy.json"
+    ],
+    "exit": 2,
+    "stderrIncludes": ["not valid JSON"],
+    "stdoutExcludes": ["0891234567"],
+    "note": "manual run: PASS — the JSON error does not echo the allowlist value next to it"
+  },
+  {
+    "id": "CL-lineoa",
+    "args": ["scan", "cli-checks/fixtures/3_20261001_20261007_SomchaiTuayang.csv"],
+    "exit": 1,
+    "stdoutIncludes": [
+      "thai-pdpa-guard scan  3_20261001_20261007_….csv",
+      "messages 3 scanned · 2 with personal data",
+      "from customers 1 of 2 · from the shop 1 of 1",
+      "line 6  customer  PHONE",
+      "line 7  shop      PHONE"
+    ],
+    "stdoutExcludes": ["SomchaiTuayang", "สมชาย", "091-888-7777", "081-234-5678"],
+    "note": "sender types User/Account are a guess — the docs do not list them. manual run: PASS"
+  },
+  {
+    "id": "CL-lineoa-thai-name",
+    "args": ["scan", "cli-checks/fixtures/3_20261001_20261007_สมชาย_ตัวอย่าง.csv"],
+    "exit": 1,
+    "stdoutIncludes": ["3_20261001_20261007_….csv", "line 6  customer  PHONE"],
+    "stdoutExcludes": ["สมชาย", "091-888-7777"],
+    "note": "NOT run by hand: the bench shell refuses Thai characters in arguments"
+  },
+  {
+    "id": "CL-lineoa-context",
+    "args": ["scan", "cli-checks/fixtures/5_20261002_20261002_ManeeJaidee.csv"],
+    "exit": 1,
+    "stdoutIncludes": [
+      "line 6   customer  PHONE",
+      "line 10  customer  BANK_ACCOUNT",
+      "line 12  customer  BANK_ACCOUNT",
+      "from customers 3 of 4 · from the shop 0 of 4"
+    ],
+    "stdoutExcludes": ["918887777", "1234567890", "มานี"],
+    "note": "a reply is read against the question: 918887777 after 'ขอเบอร์' → PHONE; ten digits after 'ขอเลขบัญชี' → BANK_ACCOUNT. manual run: PASS"
+  },
+  {
+    "id": "CL-lineoa-readme-9digits",
+    "args": ["scan", "cli-checks/fixtures/5_20261002_20261002_ManeeJaidee.csv"],
+    "exit": 1,
+    "stdoutIncludes": ["line 8   customer  BANK_ACCOUNT"],
+    "note": "README: '918887777 … asked for an account number, the same ten digits count as an account'. manual run: FAIL — the README's own 9-digit example after an account question is reported as nothing at all"
+  },
+  {
+    "id": "CL-lineoa-otherlang-noflags",
+    "args": ["scan", "cli-checks/fixtures/line-otherlang.csv"],
+    "exit": 2,
+    "stderrIncludes": ["--text-field"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-lineoa-otherlang",
+    "args": [
+      "scan",
+      "cli-checks/fixtures/line-otherlang.csv",
+      "--format",
+      "line-oa",
+      "--text-field",
+      "Message"
+    ],
+    "exit": 1,
+    "stdoutIncludes": ["line 5  PHONE"],
+    "stdoutExcludes": ["089-123-4567", "Nok P."],
+    "note": "manual run: PASS — no customer/shop split for an English export (not promised)"
+  },
+  {
+    "id": "CL-lineoa-nocol",
+    "args": ["scan", "cli-checks/fixtures/line-nocol.csv"],
+    "exit": 2,
+    "stderrIncludes": ["no \"ข้อความ\" column"],
+    "note": "manual run: PASS — but the message adds 'the file has no header', which is wrong: it has one"
+  },
+  {
+    "id": "CL-lineoa-senders",
+    "args": ["scan", "cli-checks/fixtures/line-senders.csv"],
+    "exit": 1,
+    "stdoutIncludes": ["line 7  customer  EMAIL"],
+    "stdoutExcludes": ["แอดมินนก", "นก พัทธา", "ระบบอัตโนมัติ", "081-234-5678", "nok.pattra"],
+    "note": "Bot/Admin sender types: shown with no sender, and left out of 'from customers … from the shop …'. manual run: PASS (behaviour described in the findings report)"
+  },
+  {
+    "id": "CL-validate-ok",
+    "args": ["policy", "validate", "cli-checks/fixtures/pdpa-policy.json"],
+    "exit": 0,
+    "stdoutIncludes": [
+      "valid  fnv1a64:ee142dc8b1111706",
+      "  TH_NATIONAL_ID  redact",
+      "  PHONE           tokenise · purposes: otp_send · ttl 300s · reply shows masked value",
+      "  EMAIL           hash",
+      "  BANK_ACCOUNT    mask · last 4 shown",
+      "  CREDIT_CARD     block · minConfidence 0.6",
+      "  LINE_USER_ID    redact",
+      "allowlist   2 exact · 1 pattern (values not shown)",
+      "placeholders [เบอร์โทร]",
+      "note: uses hash: createGuard needs an hmacKey of at least 32 bytes",
+      "note: uses tokenise: every process and resolve call needs a sessionId"
+    ],
+    "stdoutExcludes": ["support@myshop.co.th", "02-123-4567", "myshop"],
+    "note": "README example. manual run: PASS"
+  },
+  {
+    "id": "CL-validate-bad",
+    "args": ["policy", "validate", "cli-checks/fixtures/bad-policy.json"],
+    "exit": 1,
+    "stdoutIncludes": ["invalid", "entities.PHONE.allowedPurposes: required for tokenise"],
+    "stdoutExcludes": ["0891234567"],
+    "note": "manual run: PASS (stream assumed stdout)"
+  },
+  {
+    "id": "CL-validate-json",
+    "args": ["policy", "validate", "cli-checks/fixtures/broken-policy.json"],
+    "exit": 1,
+    "stdoutIncludes": ["not valid JSON"],
+    "stdoutExcludes": ["0891234567"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-validate-allowlist",
+    "args": ["policy", "validate", "cli-checks/fixtures/allowlist-policy.json"],
+    "exit": 0,
+    "stdoutIncludes": [
+      "allowlist   2 exact · 1 pattern (values not shown)",
+      "placeholders [phone]",
+      "not in the policy → redact (onUnmapped)"
+    ],
+    "stdoutExcludes": ["02-123-4567", "owner.nok", "0891234567", "0812345678"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-validate-missing",
+    "args": ["policy", "validate", "cli-checks/fixtures/no-such-policy.json"],
+    "exit": 2,
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-validate-nofile",
+    "args": ["policy", "validate"],
+    "exit": 2,
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-policy-nosub",
+    "args": ["policy"],
+    "exit": 2,
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-leak-badline",
+    "args": ["scan", "cli-checks/fixtures/bad-line.jsonl"],
+    "exit": 3,
+    "stdoutIncludes": ["line 2  not valid JSON", "line 4  no string field \"text\""],
+    "stdoutExcludes": ["0891234567", "nok.pattra"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-leak-badrow",
+    "args": ["scan", "cli-checks/fixtures/bad-row.csv"],
+    "exit": 3,
+    "stdoutIncludes": ["line 3  3 fields, header has 2", "line 4  quoted field never closed"],
+    "stdoutExcludes": ["089-123-4567", "0812345678"],
+    "note": "manual run: PASS"
+  },
+  {
+    "id": "CL-leak-id",
+    "args": ["scan", "cli-checks/fixtures/id-is-personal.jsonl"],
+    "exit": 1,
+    "stdoutExcludes": ["0891234567"],
+    "note": "the id field holds a phone number. manual run: FAIL — 'line 1  0891234567  PHONE'"
+  },
+  {
+    "id": "CL-leak-id-json",
+    "args": ["scan", "cli-checks/fixtures/id-is-personal.jsonl", "--json"],
+    "exit": 1,
+    "stdoutExcludes": ["0891234567"],
+    "note": "manual run: FAIL — \"id\": \"0891234567\""
+  },
+  {
+    "id": "CL-leak-userid",
+    "args": ["scan", "cli-checks/fixtures/webhook-log.jsonl", "--id-field", "userId"],
+    "exit": 1,
+    "stdoutExcludes": ["U4af4980629f1ae0b2b5c2f7a7b2e9c3d", "Uc0ffee0c0ffee0c0ffee0c0ffee0c0ff"],
+    "note": "a LINE webhook log keyed by userId. manual run: FAIL — both LINE user ids printed"
+  },
+  {
+    "id": "CL-leak-noheader",
+    "args": ["scan", "cli-checks/fixtures/noheader.csv"],
+    "exit": 2,
+    "stdoutExcludes": ["089-123-4567", "somchai.k@gmail.com"],
+    "note": "a CSV with no header row. manual run: FAIL — 'columns are: m1, เบอร์ 089-123-4567 ค่ะ, somchai.k@gmail.com'. If that line goes to stderr this case cannot catch it (the case format has no stderrExcludes)"
+  },
+  {
+    "id": "CL-zip",
+    "args": ["scan", "out/cli-fixtures/chats.zip"],
+    "exit": 2,
+    "stderrIncludes": ["cannot tell the format"],
+    "note": "manual run: PASS — but the hint says to pass --format, not to unzip first as the README does"
+  }
+]

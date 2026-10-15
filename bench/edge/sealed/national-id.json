@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "id": "nid-sealed-en-dash",
+      "text": "เลข ปชช [[TH_NATIONAL_ID:2–1008–00765–43–1]] นะคะ",
+      "note": "en dash separators"
+    },
+    {
+      "id": "nid-sealed-full-width-emoji",
+      "text": "บัตรประชาชนค่ะ👉[[TH_NATIONAL_ID:５１０２０３０４０５０７８]]🙏",
+      "note": "full-width digits with emoji glued on both sides"
+    },
+    {
+      "id": "nid-sealed-split-across-lines",
+      "text": "เลขบัตรค่ะ [[TH_NATIONAL_ID:3100600\n123450]]",
+      "note": "id broken by a line break mid-value"
+    },
+    {
+      "id": "nid-sealed-wrong-check-after-amount",
+      "text": "โอนไป [[~AMOUNT:1,250]] บาท เลขบัตร [[~INVALID_ID:3650100234567]]",
+      "note": "check digit should be 8 · validation case"
+    },
+    {
+      "id": "nid-sealed-after-quantity",
+      "text": "สั่ง [[~QTY:3]] [[TH_NATIONAL_ID:2100800765431]]",
+      "context": "ขอเลขบัตรประชาชนสำหรับออกใบกำกับภาษีค่ะ",
+      "note": "a one-digit quantity right before the id"
+    }
+  ]
+}

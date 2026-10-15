@@ -1,0 +1,23 @@
+{
+  "cases": [
+    {
+      "id": "line-sealed-uid-quoted",
+      "text": "รบกวนเช็ค \"[[LINE_USER_ID:Ua1b2c3d4e5f60718293a4b5c6d7e8f90]]\" ให้หน่อย"
+    },
+    {
+      "id": "line-sealed-group-id-decoy",
+      "text": "groupId [[~GROUP_ID:C4af4980629a1b2c3d4e5f60718293a4b]]",
+      "note": "group id (C prefix) identifies a group, not a person"
+    },
+    {
+      "id": "line-sealed-uid-33-hex-decoy",
+      "text": "[[~INVALID_UID:Ua1b2c3d4e5f60718293a4b5c6d7e8f901]]",
+      "note": "U + 33 hex · too long, no 32-char slice of it should be found"
+    },
+    {
+      "id": "line-sealed-typed-line-id",
+      "text": "ID line: [[LINE_USER_ID:nong.mint2540]]",
+      "note": "README does not say whether a LINE ID the customer types counts as LINE_USER_ID"
+    }
+  ]
+}

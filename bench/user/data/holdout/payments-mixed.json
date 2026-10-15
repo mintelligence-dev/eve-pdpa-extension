@@ -1,0 +1,144 @@
+{
+  "conversations": [
+    {
+      "id": "hold-pay-01",
+      "turns": [
+        { "from": "customer", "text": "จ่ายบัตรนะคะ [[CREDIT_CARD:4151-3734-2384-5494]]" },
+        { "from": "shop", "text": "ห้ามส่งเลขบัตรในแชทนะคะ 🙏 ส่งลิงก์ให้แล้วค่ะ" },
+        { "from": "customer", "text": "ok ใช้บัตรใบอื่นแทน [[CREDIT_CARD:5124 2329 9425 0560]] ได้มะ" },
+        { "from": "shop", "text": "ชำระผ่านลิงก์เท่านั้นนะคะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-02",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "gateway_webhook: {\"event\":\"charge.failed\",\"pan\":\"[[CREDIT_CARD:4905284060017298]]\",\"amount\":[[~AMOUNT:259000]],\"ref\":\"[[~REF:ord_8812]]\"}\ngateway_webhook: {\"event\":\"charge.succeeded\",\"pan\":\"[[CREDIT_CARD:2325787517902868]]\",\"amount\":[[~AMOUNT:259000]],\"ref\":\"[[~REF:ord_8812]]\"}"
+        },
+        { "from": "shop", "text": "ชำระเงินสำเร็จแล้วค่ะ ด้วยบัตรใบที่สอง ขอบคุณค่ะ" },
+        { "from": "customer", "text": "เย้ ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-03",
+      "turns": [
+        { "from": "customer", "text": "บัตรอเมริกันเอ็กซ์เพรส [[CREDIT_CARD:376115328741899]] รับไหมคะ" },
+        { "from": "shop", "text": "รับค่ะ แต่ไม่ต้องส่งเลขบัตรนะคะ 🙏" },
+        {
+          "from": "customer",
+          "text": "ใบ JCB ด้วย [[CREDIT_CARD:๓๕๔๗ ๘๒๒๐ ๐๙๐๔ ๖๒๐๓]] กับบัตร diners [[CREDIT_CARD:3679 843145 8709]]"
+        },
+        { "from": "shop", "text": "แนะนำให้แจ้งธนาคารเปลี่ยนบัตรค่ะ เพราะส่งในแชทแล้ว" }
+      ]
+    },
+    {
+      "id": "hold-pay-04",
+      "turns": [
+        { "from": "shop", "text": "แจ้งบัญชีที่จะให้โอนคืนได้เลยค่ะ" },
+        { "from": "customer", "text": "กรุงไทย [[BANK_ACCOUNT:350-3-48375-8]]" },
+        {
+          "from": "shop",
+          "text": "โอนคืนที่บัญชี [[BANK_ACCOUNT:350-3-48375-8]] แล้วค่ะ ยอด [[~AMOUNT:745]] บาท"
+        },
+        { "from": "customer", "text": "ได้รับแล้วค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-05",
+      "turns": [
+        { "from": "customer", "text": "เลขที่บช [[BANK_ACCOUNT:557 2 98283 7]] scb ค่ะ" },
+        { "from": "shop", "text": "รับทราบค่ะ" },
+        {
+          "from": "customer",
+          "text": "or my account no. [[BANK_ACCOUNT:3783332762]] (kbank) if easier"
+        },
+        { "from": "shop", "text": "จะโอนเข้า SCB นะคะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-06",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "แนบสลิปค่ะ\nโอนเงินพร้อมเพย์สำเร็จ\nผู้โอน: นาย วิชัย ม. [[~MASKED:xxx-x-xx199-x]]\nผู้รับ: นางสาว อรทัย ส. บัญชี [[BANK_ACCOUNT:357-4-95199-5]]\nจำนวนเงิน [[~AMOUNT:1,999.00]]\nเลขที่อ้างอิง [[~REF:20251014A8812301]]\n[[~DATE:14 ต.ค. 2568]] - [[~TIME:16:20]]"
+        },
+        { "from": "shop", "text": "ได้รับยอดแล้วค่ะ ขอบคุณค่ะ 🙏" },
+        { "from": "customer", "text": "ส่งวันไหนคะ" },
+        { "from": "shop", "text": "พรุ่งนี้ค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-07",
+      "turns": [
+        { "from": "customer", "text": "รับเงินคืนเป็นออมสินค่ะ [[BANK_ACCOUNT:0158-4640-0900]]" },
+        {
+          "from": "customer",
+          "text": "หรือพร้อมเพย์เบอร์ [[PHONE:097-882-3670]] หรือพร้อมเพย์เลขบัตร [[TH_NATIONAL_ID:4183978048967]] ก็ได้"
+        },
+        { "from": "shop", "text": "โอนเข้าพร้อมเพย์ให้นะคะ สะดวกกว่า" },
+        { "from": "customer", "text": "ได้ค่ะ อีกบัญชีของแฟนคือ [[BANK_ACCOUNT:๕๑๒-๖-๐๕๒๙๒-๐]] เผื่อไว้" },
+        { "from": "shop", "text": "รับทราบค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-08",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ช่วยตัดบัตรให้หน่อย [[CREDIT_CARD:2661056352542573]] [[~DATE:04/28]] [[~CVV:882]]"
+        },
+        { "from": "shop", "text": "ขออภัยค่ะ ร้านไม่สามารถรับเลขบัตรทางแชทได้ค่ะ 🙏" },
+        { "from": "customer", "text": "ใบนี้ล่ะ unionpay [[CREDIT_CARD:6227 9085 6021 1748]]" },
+        { "from": "shop", "text": "กรุณาชำระผ่านลิงก์ค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-09",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "affiliate_payouts week=[[~DATE:2025-W41]]\n- อัญชลี | BBL | [[BANK_ACCOUNT:153-1-00823-5]] | [[~AMOUNT:2,450.00]]\n- ศุภชัย | KTB | [[BANK_ACCOUNT:4381166267]] | [[~AMOUNT:1,120.00]]\n- ณัฐธิดา | GSB | [[BANK_ACCOUNT:0233-6005-0241]] | [[~AMOUNT:780.00]]"
+        },
+        { "from": "shop", "text": "โอนค่าคอมสัปดาห์นี้ครบ [[~QTY:3]] ท่านแล้วค่ะ" },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-10",
+      "turns": [
+        { "from": "shop", "text": "ขอเลขบัญชีสำหรับรับเงินคืนด้วยค่ะ 🙏" },
+        { "from": "customer", "text": "[[BANK_ACCOUNT:2542859869]]" },
+        { "from": "customer", "text": "ถ้าไม่สะดวก บัญชีกสิกรอีกอัน [[BANK_ACCOUNT:091-2-73354-8]] ค่ะ" },
+        { "from": "shop", "text": "โอนเข้าบัญชีแรกนะคะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-11",
+      "turns": [
+        { "from": "customer", "text": "ลบบัตรที่ผูกไว้ทั้งหมดค่ะ" },
+        {
+          "from": "tool",
+          "text": "cards.list(user=[[LINE_USER_ID:U1e540de9f0f4ffb64a686ab739368eca]]) → [\"[[CREDIT_CARD:4684962663581185]]\", \"[[CREDIT_CARD:5219643819103667]]\"]"
+        },
+        {
+          "from": "tool",
+          "text": "cards.delete_all(user=[[LINE_USER_ID:U1e540de9f0f4ffb64a686ab739368eca]]) → deleted=2"
+        },
+        { "from": "shop", "text": "ลบบัตรที่ผูกไว้ [[~QTY:2]] ใบเรียบร้อยค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-pay-12",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ก๊อปเลขบัตรจากแอปธนาคารมาค่ะ [[CREDIT_CARD:４６５８ ５８２９ ４４７４ ３２４８]]"
+        },
+        { "from": "shop", "text": "ไม่ต้องส่งเลขบัตรนะคะ 🙏" },
+        { "from": "customer", "text": "อีกใบ\n[[CREDIT_CARD:4072 9226\n0469 3713]]" },
+        { "from": "shop", "text": "แนะนำให้ชำระผ่านลิงก์ค่ะ" }
+      ]
+    }
+  ]
+}

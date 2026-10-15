@@ -1,0 +1,5 @@
+{
+  "entitySet": "0.1",
+  "entities": { "PHONE": { "action": "redact" } },
+  "allowlist": { "exact": ["0891234567",] }
+}

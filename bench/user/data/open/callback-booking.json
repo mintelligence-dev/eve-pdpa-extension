@@ -1,0 +1,72 @@
+{
+  "conversations": [
+    {
+      "id": "open-callback-01",
+      "turns": [
+        { "from": "customer", "text": "อยากให้ฝ่ายขายโทรกลับค่ะ สนใจสั่งจำนวนเยอะ [[~QTY:200 ชิ้น]]" },
+        { "from": "shop", "text": "ยินดีค่ะ สะดวกให้ติดต่อเบอร์ไหน ช่วงเวลาไหนดีคะ" },
+        {
+          "from": "customer",
+          "text": "โทร [[PHONE:038-630-534]] ต่อ [[~EXT:12]] ช่วง [[~TIME:13:00-15:00]] ค่ะ หรือมือถือ [[PHONE:๐๘๒ ๘๙๘ ๔๕๔๓]]"
+        },
+        {
+          "from": "tool",
+          "text": "book_callback({\"phone\":\"[[PHONE:038630534]]\",\"ext\":\"12\",\"line_user_id\":\"[[LINE_USER_ID:U4667a969d47b21eea625853591809af6]]\",\"slot\":\"[[~DATE:2025-10-15T13:00+07:00]]\"}) -> {\"booking_id\":\"[[~REF:CB-10293]]\",\"status\":\"confirmed\"}"
+        },
+        {
+          "from": "shop",
+          "text": "นัดโทรกลับวันที่ [[~DATE:15 ต.ค.]] ช่วง [[~TIME:13:00-15:00]] เรียบร้อยค่ะ หมายเลขนัด [[~REF:CB-10293]]"
+        },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "open-callback-02",
+      "turns": [
+        { "from": "customer", "text": "ช่วยโทรกลับเบอร์ [[PHONE:29417720]] หน่อยครับ บ้านผมเอง" },
+        { "from": "shop", "text": "ได้ครับ ขอยืนยันเบอร์ [[PHONE:02-941-7720]] นะครับ" },
+        { "from": "customer", "text": "ถ้าไม่ติด โทรมือถือ [[PHONE:66661312344]] ได้ครับ" },
+        { "from": "shop", "text": "รับทราบครับ" },
+        { "from": "customer", "text": "ขอบคุณครับ" }
+      ]
+    },
+    {
+      "id": "open-callback-03",
+      "turns": [
+        { "from": "customer", "text": "เบอร์ติดต่อค่ะ [[PHONE:０９６－６４２－５９９２]]" },
+        { "from": "shop", "text": "ขอบคุณค่ะ" },
+        { "from": "customer", "text": "ส่งอีกเบอร์จากโน้ตในมือถือค่ะ [[PHONE:090​311​6864]]" },
+        { "from": "customer", "text": "แล้วก็อีเมลนะคะ [[EMAIL:aom.siriporn@icloud.com]]​" },
+        { "from": "shop", "text": "รับทราบค่ะ จะให้ฝ่ายขายติดต่อกลับภายในวันนี้ค่ะ" }
+      ]
+    },
+    {
+      "id": "open-callback-04",
+      "turns": [
+        { "from": "customer", "text": "โทรหาที่ร้านได้ที่ [[PHONE:043.857.756]] นะคะ ขอนแก่น" },
+        { "from": "shop", "text": "รับทราบค่ะ" },
+        { "from": "customer", "text": "หรือสาขาภูเก็ต [[PHONE:076 417 005]] ค่ะ" },
+        { "from": "shop", "text": "แจ้งสาขาให้แล้วค่ะ จะโทรกลับภายใน [[~TIME:17:00]] น. นะคะ" },
+        { "from": "customer", "text": "ค่ะ" }
+      ]
+    },
+    {
+      "id": "open-callback-05",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ขอให้ช่างโทรนัดติดตั้งแอร์ค่ะ เบอร์ [[PHONE:087 815 7217]] ช่วง [[~TIME:9:00-12:00]]"
+        },
+        {
+          "from": "tool",
+          "text": "schedule_install(phone=[[PHONE:0878157217]], window=[[~TIME:09:00-12:00]], date=[[~DATE:2025-10-17]], job=[[~REF:INST-4471]])"
+        },
+        {
+          "from": "shop",
+          "text": "นัดช่างวันที่ [[~DATE:17 ต.ค.]] ช่วง [[~TIME:9:00-12:00]] นะคะ หากมีเหตุฉุกเฉินเกี่ยวกับไฟฟ้าโทร [[~SHORTNUM:1129]] ได้ตลอด 24 ชม.ค่ะ"
+        },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    }
+  ]
+}

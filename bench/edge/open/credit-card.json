@@ -1,0 +1,50 @@
+{
+  "cases": [
+    {
+      "id": "card-visa-spaced",
+      "text": "บัตรเครดิต [[CREDIT_CARD:4532 0151 1283 0366]] ค่ะ"
+    },
+    {
+      "id": "card-mc-dashes-expiry-cvv",
+      "text": "[[CREDIT_CARD:5425-2334-3010-9903]] [[~EXPIRY:12/28]] [[~CVV:123]]",
+      "note": "CVV is not one of the six entities; marked decoy so the card span must not swallow it or the expiry"
+    },
+    {
+      "id": "card-amex-4-6-5",
+      "text": "Amex [[CREDIT_CARD:3782 822463 10005]] ตัดได้ไหมคะ"
+    },
+    {
+      "id": "card-jcb-thai-digits",
+      "text": "บัตร JCB [[CREDIT_CARD:๓๕๓๐ ๑๑๑๓ ๓๓๓๐ ๐๐๐๐]]"
+    },
+    {
+      "id": "card-luhn-fail-decoy",
+      "text": "เลขบัตร [[~INVALID_CARD:4532 0151 1283 0367]]",
+      "note": "fails Luhn · validation case"
+    },
+    {
+      "id": "card-glued-thai-expiry",
+      "text": "เลขบัตรเครดิต[[CREDIT_CARD:4012888888881881]]หมดอายุ[[~EXPIRY:09/27]]"
+    },
+    {
+      "id": "card-split-across-lines",
+      "text": "บัตรค่ะ\n[[CREDIT_CARD:4111 1111\n1111 1111]]",
+      "note": "card pasted across two lines"
+    },
+    {
+      "id": "card-mc-2-series",
+      "text": "ตัดบัตรใบนี้ค่ะ [[CREDIT_CARD:2221 0000 0000 0009]]",
+      "note": "Mastercard 2-series prefix"
+    },
+    {
+      "id": "card-mc-dashes-alone",
+      "text": "[[CREDIT_CARD:5425-2334-3010-9903]]",
+      "note": "same card as card-mc-dashes-expiry-cvv with nothing after it"
+    },
+    {
+      "id": "card-visa-spaced-then-expiry",
+      "text": "[[CREDIT_CARD:4532 0151 1283 0366]] [[~EXPIRY:11/27]]",
+      "note": "expiry right after the card, no cue word"
+    }
+  ]
+}

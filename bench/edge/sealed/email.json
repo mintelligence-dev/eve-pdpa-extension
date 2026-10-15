@@ -1,0 +1,17 @@
+{
+  "cases": [
+    {
+      "id": "email-sealed-label-glued-comma",
+      "text": "mail:[[EMAIL:aree.s@yahoo.com]],ขอบคุณค่ะ"
+    },
+    {
+      "id": "email-sealed-bracket-at",
+      "text": "อีเมล [[EMAIL:jirapat[at]gmail.com]] ค่ะ",
+      "note": "evasion: [at] for @"
+    },
+    {
+      "id": "email-sealed-filename-decoy",
+      "text": "ไฟล์ [[~FILENAME:logo@3x.jpg]] ส่งไม่ได้ค่ะ"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "id": "phone-dots-mobile",
+      "text": "โทร [[PHONE:081.234.5678]] นะคะ"
+    },
+    {
+      "id": "phone-plus66-spaced",
+      "text": "เบอร์ติดต่อ [[PHONE:+66 89 123 4567]] ค่ะ"
+    },
+    {
+      "id": "phone-no-zero-reply-context",
+      "text": "[[PHONE:956318274]]",
+      "context": "รบกวนขอเบอร์ติดต่อกลับด้วยค่ะ",
+      "note": "leading 0 dropped, cue only in context"
+    },
+    {
+      "id": "phone-bracket-bangkok-landline-ext",
+      "text": "ที่ทำงาน [[PHONE:(02) 123-4567]] ต่อ [[~EXTENSION:205]]",
+      "note": "bracketed area code followed by an extension number"
+    },
+    {
+      "id": "phone-thai-digits-spaced-dashes",
+      "text": "เบอร์ [[PHONE:๐๘๙ - ๑๒๓ - ๔๕๖๗]] ค่ะ",
+      "note": "Thai digits, spaces around dashes"
+    },
+    {
+      "id": "phone-after-amount-no-cue",
+      "text": "ยอด [[~AMOUNT:590]] ส่งคุณแอน [[PHONE:0657778899]] นะคะ",
+      "note": "amount just before a mobile number"
+    },
+    {
+      "id": "phone-letter-o-for-zero",
+      "text": "เบอร์ [[PHONE:O81-234-5678]] ค่ะ",
+      "note": "evasion / typo: capital letter O typed for the leading zero"
+    },
+    {
+      "id": "phone-order-no-negated-cue-decoy",
+      "text": "ไม่ต้องโทรนะคะ เช็คให้หน่อย เลขออเดอร์ [[~ORDER_NO:812345679]]",
+      "note": "9-digit order number shaped like a mobile without 0, near a negated cue"
+    },
+    {
+      "id": "phone-short-code-decoy",
+      "text": "ฉุกเฉินโทร [[~SHORT_CODE:1669]] ใช่ไหมคะ"
+    },
+    {
+      "id": "phone-outbound-reply",
+      "text": "ส่งของไปที่เบอร์ [[PHONE:0623456789]] เรียบร้อยแล้วค่ะ",
+      "boundary": "outbound"
+    },
+    {
+      "id": "phone-directly-after-amount",
+      "text": "ยอด [[~AMOUNT:590]] [[PHONE:0891234567]]",
+      "context": "ขอเบอร์ผู้รับด้วยค่ะ",
+      "note": "short number then a mobile with only a space between"
+    }
+  ]
+}

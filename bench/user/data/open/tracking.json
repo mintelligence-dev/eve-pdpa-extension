@@ -1,0 +1,84 @@
+{
+  "conversations": [
+    {
+      "id": "open-track-01",
+      "turns": [
+        { "from": "customer", "text": "ของถึงไหนแล้วคะ สั่งไปตั้งแต่ [[~DATE:10/10]]" },
+        {
+          "from": "tool",
+          "text": "track(order=[[~ORDER:SO2510-0088]]) → courier=Flash, tracking=[[~TRACKING:TH0123F45A6B7C]], status=out_for_delivery, eta=[[~DATE:2025-10-14]]"
+        },
+        {
+          "from": "shop",
+          "text": "พัสดุกำลังออกไปส่งวันนี้ค่ะ เลขพัสดุ [[~TRACKING:TH0123F45A6B7C]] ติดตามได้ที่เว็บ Flash นะคะ"
+        },
+        { "from": "customer", "text": "ไรเดอร์จะโทรมาเบอร์อะไรคะ จะได้รับสาย" },
+        { "from": "shop", "text": "ไรเดอร์จะโทรจากเบอร์ [[PHONE:063-539-1172]] ค่ะ" },
+        { "from": "customer", "text": "โอเคค่ะ" }
+      ]
+    },
+    {
+      "id": "open-track-02",
+      "turns": [
+        { "from": "customer", "text": "เลขแทรคไม่ขึ้นค่ะ [[~TRACKING:EB123456789TH]]" },
+        {
+          "from": "shop",
+          "text": "ขออภัยค่ะ เลขที่ถูกต้องคือ [[~TRACKING:EB987654321TH]] ค่ะ ไปรษณีย์ไทย EMS"
+        },
+        { "from": "customer", "text": "อีกออเดอร์ล่ะคะ ส่ง J&T" },
+        {
+          "from": "shop",
+          "text": "J&T เลข [[~TRACKING:820045718263]] ค่ะ ส่วนของ Kerry เลข [[~TRACKING:KERDO031257894]] นะคะ"
+        },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "open-track-03",
+      "turns": [
+        { "from": "customer", "text": "Flash แจ้งว่าส่งไม่สำเร็จค่ะ เลขพัสดุ [[~TRACKING:TH0645123987]]" },
+        {
+          "from": "shop",
+          "text": "ขออภัยค่ะ แอดมินจะติดต่อ Flash ให้นะคะ หรือโทร call center Flash [[~SHORTNUM:1499]] ได้เลยค่ะ"
+        },
+        {
+          "from": "customer",
+          "text": "โทรแล้วไม่มีคนรับเลยค่ะ ฝากแจ้งให้โทรหาเบอร์ [[PHONE:096-118-1465]] หน่อยค่ะ"
+        },
+        {
+          "from": "tool",
+          "text": "ticket_created id=[[~REF:FL-TCK-78812]] user=[[LINE_USER_ID:U2fb4e75a78fa5bf8b88358f7b67a6e04]] note=\"ลูกค้าขอให้โทรกลับ [[PHONE:0961181465]]\""
+        },
+        { "from": "shop", "text": "แจ้งให้แล้วนะคะ เลขเรื่อง [[~REF:FL-TCK-78812]] ค่ะ" }
+      ]
+    },
+    {
+      "id": "open-track-04",
+      "turns": [
+        { "from": "customer", "text": "ส่งกี่วันถึงคะ ต่างจังหวัด" },
+        {
+          "from": "shop",
+          "text": "ปกติ [[~QTY:2-3 วัน]]ค่ะ ถ้าสั่งก่อน [[~TIME:14.00 น.]] ส่งออกวันเดียวกันค่ะ"
+        },
+        { "from": "customer", "text": "ส่งฟรีไหมคะ" },
+        { "from": "shop", "text": "ซื้อครบ [[~AMOUNT:499]] บาทส่งฟรีค่ะ 🚚" },
+        { "from": "customer", "text": "โอเค เดี๋ยวสั่งค่ะ" }
+      ]
+    },
+    {
+      "id": "open-track-05",
+      "turns": [
+        { "from": "customer", "text": "สั่งผ่านช้อปปี้ค่ะ ออเดอร์ [[~ORDER:251013P8KQ2XWN]] ยังไม่ได้ของ" },
+        {
+          "from": "tool",
+          "text": "shopee_order [[~ORDER:251013P8KQ2XWN]] → logistics=SPX tracking=[[~TRACKING:SPXTH047391826504]] status=in_transit hub=[[~REF:BKK-LKB-03]]"
+        },
+        {
+          "from": "shop",
+          "text": "พัสดุอยู่ระหว่างขนส่งค่ะ เลข [[~TRACKING:SPXTH047391826504]] คาดว่าจะถึง [[~DATE:16 ต.ค.]] ค่ะ"
+        },
+        { "from": "customer", "text": "ok ค่ะ" }
+      ]
+    }
+  ]
+}

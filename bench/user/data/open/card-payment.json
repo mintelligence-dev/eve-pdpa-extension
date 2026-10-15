@@ -1,0 +1,72 @@
+{
+  "conversations": [
+    {
+      "id": "open-card-01",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "จ่ายผ่านบัตรเครดิตได้มั้ยคะ บัตร [[CREDIT_CARD:4807 4634 7486 5588]] หมดอายุ [[~DATE:09/27]]"
+        },
+        { "from": "shop", "text": "ลูกค้าอย่าส่งเลขบัตรในแชทนะคะ 🙏 ระบบจะส่งลิงก์ชำระเงินให้ค่ะ" },
+        { "from": "customer", "text": "อ้าว ขอโทษค่ะ" },
+        {
+          "from": "tool",
+          "text": "payment_link created: https://pay.example-shop.co.th/l/[[~REF:Pq7XkM2a]] amount=[[~AMOUNT:3,290.00]] expires=[[~TIME:23:59]]"
+        },
+        { "from": "shop", "text": "ลิงก์ชำระเงินค่ะ ใช้ได้ถึง [[~TIME:23:59]] วันนี้นะคะ" }
+      ]
+    },
+    {
+      "id": "open-card-02",
+      "turns": [
+        { "from": "customer", "text": "ตัดบัตรไม่ผ่านค่ะ ลองสองรอบแล้ว" },
+        { "from": "shop", "text": "ขอเช็คให้นะคะ" },
+        {
+          "from": "tool",
+          "text": "{\"charge_id\":\"ch_[[~REF:5x9kq2m1z8]]\",\"status\":\"failed\",\"reason\":\"insufficient_funds\",\"card\":{\"brand\":\"mastercard\",\"number\":\"[[CREDIT_CARD:5514098453929897]]\",\"last4\":\"[[~MASKED:9897]]\"},\"amount\":[[~AMOUNT:189000]]}"
+        },
+        {
+          "from": "shop",
+          "text": "บัตรที่ลงท้าย [[~MASKED:9897]] ยอดไม่พอค่ะ ลองใช้บัตรใบอื่นหรือโอนแทนได้นะคะ"
+        },
+        { "from": "customer", "text": "งั้นใช้ใบนี้ค่ะ [[CREDIT_CARD:3577-8177-3687-7139]] JCB" },
+        { "from": "shop", "text": "ลูกค้าไม่ต้องพิมพ์เลขบัตรในแชทนะคะ 🙏 กดที่ลิงก์ชำระเงินได้เลยค่ะ" }
+      ]
+    },
+    {
+      "id": "open-card-03",
+      "turns": [
+        { "from": "customer", "text": "บัตร amex ใช้ได้ไหม [[CREDIT_CARD:3781 949217 92052]]" },
+        { "from": "shop", "text": "ใช้ได้ค่ะ แต่ไม่ต้องส่งเลขบัตรมานะคะ" },
+        {
+          "from": "customer",
+          "text": "แล้วบัตรยูเนี่ยนเพย์ของแม่ [[CREDIT_CARD:๖๒๒๓ ๔๕๗๕ ๙๔๒๑ ๐๘๑๗]] ล่ะคะ"
+        },
+        { "from": "shop", "text": "UnionPay ใช้ได้เหมือนกันค่ะ ชำระผ่านลิงก์ได้เลย" },
+        { "from": "customer", "text": "ขอบคุณค่า" }
+      ]
+    },
+    {
+      "id": "open-card-04",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ผ่อน 0% [[~QTY:10 เดือน]] ได้ไหมคะ ตู้เย็นรุ่น [[~MODEL:RT38K5032S8]]"
+        },
+        {
+          "from": "shop",
+          "text": "ได้ค่ะ ผ่อนผ่านบัตรเครดิตที่ร่วมรายการค่ะ ต้องใช้เลขบัตรประชาชนกับอีเมลเพื่อส่งสัญญานะคะ"
+        },
+        {
+          "from": "customer",
+          "text": "บัตรปชช [[TH_NATIONAL_ID:7-6357-74202-87-1]]\nอีเมล [[EMAIL:jintana.p@hotmail.com]]\nบัตร KTC [[CREDIT_CARD:4739451937880396]]"
+        },
+        {
+          "from": "shop",
+          "text": "รับทราบค่ะ จะส่งสัญญาไปที่ [[EMAIL:jintana.p@hotmail.com]] ภายในวันนี้นะคะ เลขบัตรเครดิตไม่ต้องส่งในแชทนะคะ"
+        },
+        { "from": "customer", "text": "ok ค่ะ" }
+      ]
+    }
+  ]
+}

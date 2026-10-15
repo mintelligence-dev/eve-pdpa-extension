@@ -1,0 +1,10 @@
+#!/bin/sh
+# Runs a script inside bench/user: it can read only this folder and write only
+# out/. Node's permission model enforces that, so nothing written here can read
+# the source of the package it is testing.
+#
+#   bench/user/run bench.mjs --set holdout
+dir=$(cd "$(dirname "$0")" && pwd)
+cd "$dir" || exit 1
+mkdir -p out
+exec node --permission --allow-fs-read="$dir/*" --allow-fs-write="$dir/out/*" -- "$@"

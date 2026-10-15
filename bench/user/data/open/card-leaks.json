@@ -1,0 +1,180 @@
+{
+  "conversations": [
+    {
+      "id": "open-cardleak-01",
+      "turns": [
+        { "from": "customer", "text": "โดนตัดเงินซ้ำสองรอบค่ะ ช่วยเช็คหน่อย" },
+        {
+          "from": "tool",
+          "text": "recent_charges(customer=[[~REF:C-77812]]):\n- [[~DATE:2025-10-12]] [[~TIME:21:04]] card=[[CREDIT_CARD:4273594459173609]] amount=[[~AMOUNT:1,450.00]] status=captured\n- [[~DATE:2025-10-12]] [[~TIME:21:05]] card=[[CREDIT_CARD:4273594459173609]] amount=[[~AMOUNT:1,450.00]] status=captured\n- [[~DATE:2025-10-02]] [[~TIME:10:11]] card=[[CREDIT_CARD:5276654454613936]] amount=[[~AMOUNT:390.00]] status=refunded"
+        },
+        {
+          "from": "shop",
+          "text": "ขออภัยค่ะ พบรายการซ้ำจริง [[~AMOUNT:1,450]] บาท จะคืนเงินเข้าบัตรเดิมภายใน [[~QTY:7-14 วัน]]นะคะ"
+        },
+        { "from": "customer", "text": "บัตรเดิมคือใบที่ลงท้าย [[~MASKED:3609]] ใช่ไหมคะ" },
+        { "from": "shop", "text": "ใช่ค่ะ" }
+      ]
+    },
+    {
+      "id": "open-cardleak-02",
+      "turns": [
+        { "from": "customer", "text": "ใบนี้ได้ไหม [[CREDIT_CARD:4392-3444-0803-7703]]" },
+        { "from": "shop", "text": "ไม่ต้องพิมพ์เลขบัตรนะคะ 🙏 กรอกในหน้าชำระเงินเท่านั้นค่ะ" },
+        {
+          "from": "customer",
+          "text": "กรอกแล้วไม่ผ่าน ลองอีกใบ [[CREDIT_CARD:5534926932087729]] exp [[~DATE:11/28]] cvv [[~CVV:123]]"
+        },
+        { "from": "customer", "text": "หรือบัตรเดบิตกรุงเทพ [[CREDIT_CARD:4365 9839 5183 6830]] ค่ะ" },
+        {
+          "from": "shop",
+          "text": "ลูกค้าคะ เพื่อความปลอดภัยแนะนำให้ติดต่อธนาคารเพื่ออายัดบัตรที่พิมพ์ในแชทนะคะ และชำระผ่านลิงก์เท่านั้นค่ะ"
+        },
+        { "from": "customer", "text": "อ่าาา โอเคค่ะ" }
+      ]
+    },
+    {
+      "id": "open-cardleak-03",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "บริษัทจะสั่งของขวัญปีใหม่ [[~QTY:150 ชุด]]ค่ะ จ่ายบัตรบริษัท\n[[CREDIT_CARD:4096 3466\n0802 0271]]\nชื่อบนบัตร SIRIWAN K."
+        },
+        {
+          "from": "shop",
+          "text": "รับทราบค่ะ ขอยืนยันบัตรลงท้าย [[~MASKED:0271]] นะคะ ใบเสนอราคาเลขที่ [[~INVOICE:QT-2568-0412]] ส่งให้ทางอีเมลค่ะ"
+        },
+        { "from": "customer", "text": "ส่งที่ [[EMAIL:siriwan.k@thaiunion-trading.co.th]] นะคะ" },
+        { "from": "shop", "text": "ส่งเรียบร้อยค่ะ 📧" },
+        { "from": "customer", "text": "ได้รับแล้วค่ะ" }
+      ]
+    },
+    {
+      "id": "open-cardleak-04",
+      "turns": [
+        { "from": "customer", "text": "บัตรสมาชิกร้านเลข [[~MEMBER:7693782611212114]] ใช้ลดได้ไหมคะ" },
+        { "from": "shop", "text": "ใช้ได้ค่ะ ลด 5% ค่ะ" },
+        {
+          "from": "customer",
+          "text": "จ่ายด้วยบัตรเดบิตไทยพาณิชย์นะคะ [[CREDIT_CARD:4270901738556327]]"
+        },
+        { "from": "shop", "text": "ไม่ต้องส่งเลขบัตรมาในแชทนะคะ 🙏 ชำระที่หน้าเว็บได้เลยค่ะ" },
+        { "from": "customer", "text": "แล้วบัตรของขวัญ [[~MEMBER:7246210844563142]] ล่ะคะ ใช้ร่วมได้ไหม" },
+        { "from": "shop", "text": "บัตรของขวัญใช้ร่วมได้ค่ะ 🎁" }
+      ]
+    },
+    {
+      "id": "open-cardleak-05",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "กรอกในฟอร์มแล้วขึ้น error ค่ะ ก๊อปมาให้ดู\nCard number: [[CREDIT_CARD:５３５０ ６８０６ ８１５２ １３３６]]\nName: PRAPHAN S.\nExpiry: [[~DATE:03/29]]"
+        },
+        {
+          "from": "shop",
+          "text": "ขอบคุณค่ะ ระบบยังไม่รองรับตัวเลขแบบเต็มความกว้าง รบกวนพิมพ์ใหม่ในฟอร์มนะคะ (ไม่ต้องส่งในแชทค่ะ)"
+        },
+        { "from": "customer", "text": "แล้วบัตร diners ใช้ได้ไหม [[CREDIT_CARD:3658 556471 3970]]" },
+        { "from": "shop", "text": "ขออภัยค่ะ ไม่รับ Diners Club ค่ะ" },
+        { "from": "customer", "text": "งั้นใช้ unionpay [[CREDIT_CARD:6218-6202-7532-5173]]" },
+        { "from": "shop", "text": "ได้ค่ะ ชำระผ่านลิงก์ได้เลยนะคะ" }
+      ]
+    },
+    {
+      "id": "open-cardleak-06",
+      "turns": [
+        { "from": "customer", "text": "ช่วยดูหน่อยค่ะว่าผูกบัตรใบไหนไว้กับบัญชี" },
+        {
+          "from": "tool",
+          "text": "saved_cards: [{\"brand\":\"visa\",\"pan\":\"[[CREDIT_CARD:4815859103462525]]\",\"exp\":\"[[~DATE:2027-04]]\"},{\"brand\":\"jcb\",\"pan\":\"[[CREDIT_CARD:3583887619025447]]\",\"exp\":\"[[~DATE:2026-12]]\"}]"
+        },
+        {
+          "from": "shop",
+          "text": "บัญชีผูกไว้ 2 ใบค่ะ Visa ลงท้าย [[~MASKED:2525]] และ JCB ลงท้าย [[~MASKED:5447]] ค่ะ"
+        },
+        { "from": "customer", "text": "ลบ JCB ออกได้ไหมคะ" },
+        { "from": "shop", "text": "ลบให้แล้วค่ะ" }
+      ]
+    },
+    {
+      "id": "open-cardleak-07",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "สั่งของแล้วจ่ายไม่ได้ค่ะ บัตร [[CREDIT_CARD:5113 6873 4974 8076]] เบอร์ติดต่อ [[PHONE:089-665-4765]]"
+        },
+        {
+          "from": "shop",
+          "text": "ขออภัยค่ะ แอดมินจะโทรกลับที่ [[PHONE:089-665-4765]] ภายใน [[~QTY:15 นาที]]นะคะ และรบกวนอย่าส่งเลขบัตรในแชทค่ะ"
+        },
+        { "from": "customer", "text": "ok" }
+      ]
+    },
+    {
+      "id": "open-cardleak-08",
+      "turns": [
+        { "from": "customer", "text": "ส่งรูปบัตรให้แล้วนะคะ ใช้ผ่อนได้ไหม" },
+        {
+          "from": "tool",
+          "text": "ocr_card_image → {\"detected\":\"payment_card\",\"number\":\"[[CREDIT_CARD:4746 5960 7424 9127]]\",\"name\":\"WANNA P\",\"valid_thru\":\"[[~DATE:08/30]]\",\"warning\":\"customer sent a card photo\"}"
+        },
+        {
+          "from": "shop",
+          "text": "ลูกค้าคะ ไม่ควรส่งรูปบัตรในแชทนะคะ 🙏 ทางร้านลบรูปให้แล้วค่ะ ผ่อนได้ผ่านลิงก์ชำระเงินค่ะ"
+        },
+        { "from": "customer", "text": "ขอโทษค่ะ ไม่รู้" }
+      ]
+    },
+    {
+      "id": "open-cardleak-09",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "คืนเงินเข้าบัตรนี้นะคะ [[CREDIT_CARD:4711434355627533]] ไม่ใช่ใบเก่า"
+        },
+        {
+          "from": "shop",
+          "text": "การคืนเงินต้องเข้าบัตรใบที่ใช้ชำระเท่านั้นค่ะ คือใบลงท้าย [[~MASKED:1209]] ค่ะ"
+        },
+        {
+          "from": "customer",
+          "text": "ใบเก่ายกเลิกไปแล้ว ใบใหม่ [[CREDIT_CARD:๔๓๖๙ ๙๖๗๖ ๙๑๓๙ ๐๕๙๒]] ค่ะ"
+        },
+        { "from": "shop", "text": "ขอประสานธนาคารก่อนนะคะ" },
+        { "from": "customer", "text": "ค่ะ" }
+      ]
+    },
+    {
+      "id": "open-cardleak-10",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "มีสองใบค่ะ [[CREDIT_CARD:345684019310577]] กับ [[CREDIT_CARD:3578290767037909]] ใช้อันไหนได้บ้าง"
+        },
+        { "from": "shop", "text": "ทั้งสองใบใช้ได้ค่ะ แต่ห้ามส่งเลขบัตรในแชทนะคะ" },
+        { "from": "customer", "text": "อีกใบของสามี [[CREDIT_CARD:5332 9466 9200 3926]]" },
+        { "from": "shop", "text": "แนะนำให้ชำระผ่านลิงก์ค่ะ 🙏" }
+      ]
+    },
+    {
+      "id": "open-cardleak-11",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "จ่ายมัดจำค่าตัดชุดด้วยบัตรนี้ค่ะ [[CREDIT_CARD:4676040392557790]] ส่วนที่เหลือโอน"
+        },
+        {
+          "from": "shop",
+          "text": "รับทราบค่ะ ตัดมัดจำ [[~AMOUNT:2,000]] บาทเรียบร้อย ส่วนที่เหลือ [[~AMOUNT:3,500]] บาทโอนเข้าบัญชีร้านได้เลยค่ะ"
+        },
+        { "from": "customer", "text": "เลขบัญชีร้านอะไรนะคะ" },
+        { "from": "shop", "text": "ไทยพาณิชย์ [[BANK_ACCOUNT:297-6-79266-6]] ชื่อ ธิดารัตน์ ช่างตัด ค่ะ" },
+        {
+          "from": "customer",
+          "text": "บัตรเดิม [[CREDIT_CARD:4676 0403 9255 7790]] ตัดไม่ผ่านแล้ว เลยโอนแทนนะคะ"
+        },
+        { "from": "shop", "text": "ได้รับแล้วค่ะ 🙏" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/@thai-pdpa-guard/core/schema/policy.schema.json",
+  "entitySet": "0.1",
+  "onUnmapped": "redact",
+  "placeholderLanguage": "th",
+  "entities": {
+    "PHONE": {
+      "action": "tokenise",
+      "allowedPurposes": ["otp_send"],
+      "ttlSec": 300,
+      "display": "mask"
+    },
+    "TH_NATIONAL_ID": { "action": "redact" },
+    "BANK_ACCOUNT": { "action": "mask", "keep": "last4" },
+    "EMAIL": { "action": "hash" },
+    "CREDIT_CARD": { "action": "block", "minConfidence": 0.6 },
+    "LINE_USER_ID": { "action": "redact" }
+  },
+  "allowlist": {
+    "exact": ["support@myshop.co.th", "02-123-4567"],
+    "pattern": [".*@myshop\\.co\\.th"]
+  }
+}

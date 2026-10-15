@@ -1,0 +1,115 @@
+{
+  "conversations": [
+    {
+      "id": "open-refund-01",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "สินค้าที่ได้รับชำรุดค่ะ ฝาแตก ขอคืนเงินได้ไหมคะ ออเดอร์ [[~ORDER:2510143KJ8PQ2M]]"
+        },
+        {
+          "from": "shop",
+          "text": "ขออภัยมากๆ ค่ะ 🙏 ทางร้านยินดีคืนเงินเต็มจำนวน [[~AMOUNT:1,290]] บาทค่ะ รบกวนขอเลขบัญชี ชื่อบัญชี และธนาคารด้วยนะคะ"
+        },
+        {
+          "from": "customer",
+          "text": "[[BANK_ACCOUNT:522-7-26227-0]]\nกสิกรไทย\nนางสาว พรทิพย์ แก้วกาญจนา"
+        },
+        {
+          "from": "shop",
+          "text": "โอนคืนเรียบร้อยค่ะ เข้าบัญชีกสิกร [[BANK_ACCOUNT:522-7-26227-0]] ยอด [[~AMOUNT:1,290.00]] บาท เวลา [[~TIME:14:32]] น. ค่ะ"
+        },
+        { "from": "customer", "text": "ได้รับแล้วค่ะ ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "open-refund-02",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ขอคืนค่าส่งที่โอนเกินค่ะ โอนไป [[~AMOUNT:150]] แต่ค่าส่งจริง [[~AMOUNT:50]]"
+        },
+        { "from": "shop", "text": "ขอโทษค่ะ เดี๋ยวโอนคืน [[~AMOUNT:100]] บาทนะคะ ขอบัญชีหน่อยค่ะ" },
+        { "from": "customer", "text": "บช. ไทยพาณิชย์ [[BANK_ACCOUNT:๓๕๖-๓-๙๘๓๘๕-๗]] ค่ะ" },
+        { "from": "shop", "text": "รับทราบค่ะ จะโอนภายในวันนี้ค่ะ" },
+        { "from": "customer", "text": "🙏🙏" }
+      ]
+    },
+    {
+      "id": "open-refund-03",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "เลขบันชี [[BANK_ACCOUNT:3611172262]] กรุงไทยค่ะ ชื่อ ธนพล ใจกว้าง ตามที่แอดขอเมื่อวานค่ะ"
+        },
+        { "from": "shop", "text": "ขอบคุณค่ะ จะคืนเงินออเดอร์ [[~ORDER:2510120045]] ให้นะคะ" },
+        {
+          "from": "tool",
+          "text": "refund_status: QUEUED | order=[[~ORDER:2510120045]] | user=[[LINE_USER_ID:Uae9e439010deb2ad4c9d298584afde2a]] | amount=[[~AMOUNT:459.00]] THB | dest_acct=[[BANK_ACCOUNT:3611172262]] | bank=KTB | eta=[[~DATE:2025-10-15]]"
+        },
+        { "from": "shop", "text": "ระบบจะโอนคืนภายใน [[~DATE:15 ต.ค. 68]] ค่ะ" },
+        { "from": "customer", "text": "ok ค่ะ" }
+      ]
+    },
+    {
+      "id": "open-refund-04",
+      "turns": [
+        { "from": "customer", "text": "รับเงินคืนเป็นพร้อมเพย์ได้มั้ยคะ [[PHONE:0630490126]]" },
+        { "from": "shop", "text": "ได้ค่ะ หรือถ้าสะดวกเป็นบัญชีออมสินก็ได้นะคะ" },
+        { "from": "customer", "text": "งั้นเอาออมสินค่ะ เลขที่บัญชี [[BANK_ACCOUNT:0699-8969-5124]]" },
+        {
+          "from": "customer",
+          "text": "ถ้าโอนไม่ได้ ใช้พร้อมเพย์เลขบัตรปชช. [[TH_NATIONAL_ID:2068363511982]] ก็ได้ค่ะ"
+        },
+        { "from": "shop", "text": "ได้ค่ะ ทางร้านโอนเข้าออมสินให้แล้วนะคะ" }
+      ]
+    },
+    {
+      "id": "open-refund-05",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "โอนแล้วค่ะ 👇\nโอนเงินสำเร็จ\n[[~DATE:13 ต.ค. 68]] [[~TIME:20:14]]\nจาก น.ส. ปิยะนุช ส.\n[[~MASKED:xxx-x-x5521-x]]\nไปยัง นาย กิตติ ร.\n[[~MASKED:xxx-x-x2811-x]]\nจำนวน: [[~AMOUNT:2,450.00]] บาท\nเลขที่รายการ: [[~REF:016286201415CPP04392]]"
+        },
+        { "from": "shop", "text": "ได้รับยอดแล้วค่ะ ขอบคุณค่ะ 😊" },
+        { "from": "customer", "text": "ครั้งหน้าโอนเข้าบัญชีเดิมได้เลยใช่มั้ยคะ" },
+        { "from": "shop", "text": "ใช่ค่ะ บัญชีร้าน กสิกร [[BANK_ACCOUNT:342-2-43753-0]] ชื่อ กิตติ รักดี ค่ะ" },
+        { "from": "customer", "text": "โอเคค่ะ" }
+      ]
+    },
+    {
+      "id": "open-refund-06",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "hi admin pls refund to my acc [[BANK_ACCOUNT:4535567048]] bangkok bank ka"
+        },
+        {
+          "from": "shop",
+          "text": "Sure ka, refund [[~AMOUNT:890]] THB to a/c [[BANK_ACCOUNT:453-5-56704-8]] within today 🙏"
+        },
+        { "from": "customer", "text": "thank u na" },
+        { "from": "shop", "text": "ยินดีค่ะ" }
+      ]
+    },
+    {
+      "id": "open-refund-07",
+      "turns": [
+        { "from": "shop", "text": "รบกวนขอเลขที่บัญชีสำหรับโอนเงินคืนค่ะ" },
+        { "from": "customer", "text": "[[BANK_ACCOUNT:3777505285]]" },
+        { "from": "customer", "text": "ไทยพาณิชย์ค่ะ" },
+        { "from": "shop", "text": "โอนแล้วนะคะ ยอด [[~AMOUNT:320]] บาท" },
+        { "from": "customer", "text": "ขอบคุณค่ะ ไว้อุดหนุนใหม่นะคะ 😊" }
+      ]
+    },
+    {
+      "id": "open-refund-08",
+      "turns": [
+        { "from": "shop", "text": "รบกวนแจ้งเลขบัญชีที่จะให้โอนคืนค่ะ" },
+        { "from": "customer", "text": "[[BANK_ACCOUNT:๔๔๐๒๔๐๐๘๓๓]]" },
+        { "from": "customer", "text": "ออมสินก็มีค่ะ [[BANK_ACCOUNT:０４１０-４２６４-０３７９]]" },
+        { "from": "shop", "text": "โอนเข้าบัญชีแรกนะคะ" }
+      ]
+    }
+  ]
+}

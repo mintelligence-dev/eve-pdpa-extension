@@ -1,0 +1,87 @@
+{
+  "conversations": [
+    {
+      "id": "open-crm-01",
+      "turns": [
+        { "from": "customer", "text": "เช็คแต้มสะสมให้หน่อยค่ะ" },
+        {
+          "from": "tool",
+          "text": "{\"lineUserId\":\"[[LINE_USER_ID:U08ae79a3abfc7272f1f9739b21e7031e]]\",\"name\":\"กมลชนก\",\"tier\":\"Gold\",\"points\":[[~QTY:1520]],\"phone\":\"[[PHONE:0623087554]]\",\"email\":\"[[EMAIL:kamonchanok.r@gmail.com]]\"}"
+        },
+        { "from": "shop", "text": "คุณกมลชนกมีแต้มสะสม [[~QTY:1,520]] แต้มค่ะ ระดับ Gold นะคะ ✨" },
+        { "from": "customer", "text": "ขอบคุณค่า" }
+      ]
+    },
+    {
+      "id": "open-crm-02",
+      "turns": [
+        { "from": "customer", "text": "ทักมาเรื่องเคลมค่ะ ชื่อสมชาย" },
+        {
+          "from": "tool",
+          "text": "found 3 customers named 'สมชาย':\n1) userId=[[LINE_USER_ID:U3755d00ff2df67bf63cdc1058769dc1b]] phone=[[PHONE:081-972-1029]] last_order=[[~ORDER:SO2509-0311]]\n2) userId=[[LINE_USER_ID:U51c66f2c3276c65dfb096ae03f465923]] phone=[[PHONE:089-506-2519]] last_order=[[~ORDER:SO2510-0017]]\n3) userId=[[LINE_USER_ID:U208fb6a2c429b0c0d901073e923ee1ff]] phone=- last_order=-"
+        },
+        { "from": "shop", "text": "รบกวนขอเบอร์โทรที่ใช้สั่งซื้อด้วยค่ะ จะได้หาออเดอร์ถูก" },
+        { "from": "customer", "text": "[[PHONE:089 506 2519]]" },
+        {
+          "from": "tool",
+          "text": "claim_create(user=[[LINE_USER_ID:U51c66f2c3276c65dfb096ae03f465923]], order=[[~ORDER:SO2510-0017]]) → ticket=[[~REF:CLM-68-00912]]"
+        },
+        {
+          "from": "shop",
+          "text": "เปิดเรื่องเคลมให้แล้วค่ะ เลขที่ [[~REF:CLM-68-00912]] ออเดอร์ [[~ORDER:SO2510-0017]] นะคะ"
+        }
+      ]
+    },
+    {
+      "id": "open-crm-03",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "{\"type\":\"message\",\"replyToken\":\"[[~REF:aa763c5a1b450fa4f74f07d5f5f0dee9]]\",\"source\":{\"type\":\"user\",\"userId\":\"[[LINE_USER_ID:U93dc3cf2e06796b0e45e2e2a1f0c262c]]\"},\"timestamp\":[[~DATE:1760259091075]],\"message\":{\"type\":\"text\",\"id\":\"[[~REF:509036786881146426]]\",\"text\":\"สวัสดีค่ะ\"}}"
+        },
+        { "from": "shop", "text": "สวัสดีค่ะ ยินดีต้อนรับค่ะ 😊 สนใจสินค้าตัวไหนคะ" },
+        { "from": "customer", "text": "มีเสื้อไซซ์ XL ไหมคะ" },
+        {
+          "from": "tool",
+          "text": "stock_lookup sku=[[~SKU:TS-OVS-XL-BLK]] qty=[[~QTY:12]] warehouse=BKK1 updated=[[~DATE:1760233720083]]"
+        },
+        { "from": "shop", "text": "มีค่ะ สีดำเหลือ [[~QTY:12]] ตัวค่ะ" }
+      ]
+    },
+    {
+      "id": "open-crm-04",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "merge_candidates: [{\"userId\":\"[[LINE_USER_ID:U079effc0f1edb4a4cb2e8bbfd8f6d60f]]\",\"email\":\"[[EMAIL:noppadol.w@outlook.com]]\"},{\"userId\":\"[[LINE_USER_ID:U0c1884f418f65bbd855afa78845e3739]]\",\"email\":\"[[EMAIL:noppadol.w@outlook.com]]\"}] source_group=[[~GROUPID:C3795a0364a18a03d17f2a649fce10264]]"
+        },
+        { "from": "shop", "text": "คุณนพดลมีบัญชีสมาชิก 2 บัญชี ต้องการรวมแต้มไหมคะ" },
+        {
+          "from": "customer",
+          "text": "รวมเลยครับ ใช้อีเมล [[EMAIL:Noppadol.W@outlook.com]] อันเดียวกัน"
+        },
+        {
+          "from": "tool",
+          "text": "merged into [[LINE_USER_ID:U079effc0f1edb4a4cb2e8bbfd8f6d60f]]; points=[[~QTY:2840]]"
+        },
+        { "from": "shop", "text": "รวมให้เรียบร้อยค่ะ แต้มรวม [[~QTY:2,840]] แต้มนะคะ" }
+      ]
+    },
+    {
+      "id": "open-crm-05",
+      "turns": [
+        { "from": "customer", "text": "อยากอัปเดตที่อยู่จัดส่งค่ะ" },
+        {
+          "from": "tool",
+          "text": "profile(user=[[LINE_USER_ID:Uede80d2e202e1d8dbcb0026ab8957860]]) name=ธีรวัฒน์ phone=[[PHONE:+66 65 385 9419]] email=[[EMAIL:teerawat.p@ku.th]] default_card=[[CREDIT_CARD:5432750270914150]] address=\"[[~HOUSE:9/99]] ซ.ลาดพร้าว 101\""
+        },
+        { "from": "shop", "text": "ได้ค่ะ แจ้งที่อยู่ใหม่ได้เลยค่ะ" },
+        {
+          "from": "customer",
+          "text": "[[~HOUSE:123/4]] คอนโดลุมพินี ถ.พหลโยธิน แขวงจตุจักร กทม. [[~POSTCODE:10900]]"
+        },
+        { "from": "shop", "text": "อัปเดตให้แล้วค่ะ ✅" }
+      ]
+    }
+  ]
+}

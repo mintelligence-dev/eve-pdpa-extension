@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "id": "bank-cue-dashed",
+      "text": "กสิกร เลขบัญชี [[BANK_ACCOUNT:012-3-45678-9]] ค่ะ"
+    },
+    {
+      "id": "bank-bare-reply-context",
+      "text": "[[BANK_ACCOUNT:4071234567]]",
+      "context": "รบกวนแจ้งเลขบัญชีสำหรับคืนเงินค่ะ"
+    },
+    {
+      "id": "bank-cue-after-value",
+      "text": "[[BANK_ACCOUNT:6543210987]] ไทยพาณิชย์ ชื่อบัญชีสมหญิงค่ะ",
+      "note": "cue word comes after the value"
+    },
+    {
+      "id": "bank-english-acct-no",
+      "text": "acct no. [[BANK_ACCOUNT:1112223334]] SCB"
+    },
+    {
+      "id": "bank-misspelt-cue",
+      "text": "เลขบันชี [[BANK_ACCOUNT:5021234567]] กรุงไทยค่ะ",
+      "note": "common misspelling บันชี for บัญชี"
+    },
+    {
+      "id": "bank-gsb-12-digit",
+      "text": "ออมสิน เลขที่บัญชี [[BANK_ACCOUNT:020012345678]]",
+      "note": "12-digit GSB account that starts with 02 like a Bangkok landline"
+    },
+    {
+      "id": "bank-order-no-decoy",
+      "text": "ออเดอร์ [[~ORDER_NO:2569100123]] ส่งของหรือยังคะ"
+    },
+    {
+      "id": "bank-promptpay-is-phone",
+      "text": "โอนพร้อมเพย์มาที่ [[PHONE:0812345678]] ได้เลยค่ะ",
+      "note": "PromptPay to a mobile: should be PHONE, not BANK_ACCOUNT"
+    }
+  ]
+}

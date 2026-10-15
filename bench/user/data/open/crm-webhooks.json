@@ -1,0 +1,84 @@
+{
+  "conversations": [
+    {
+      "id": "open-hook-01",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "webhook batch (3 events)\nfollow    userId=[[LINE_USER_ID:Uced8a5cac1edddb7d53a81e6cbbced52]]  ts=[[~DATE:1760492035520]]\nfollow    userId=[[LINE_USER_ID:U605cc1a9cb929bf7694c60ea52d9e73e]]  ts=[[~DATE:1760250747910]]\nunfollow  userId=[[LINE_USER_ID:Ue6808efa18fc395c8e7a4d39bdb2f0c7]]  ts=[[~DATE:1760838113225]]"
+        },
+        {
+          "from": "shop",
+          "text": "สวัสดีค่ะ ขอบคุณที่เพิ่มเพื่อนนะคะ 🎉 รับคูปอง [[~PROMO:WELCOME10]] ลด 10% ได้เลยค่ะ"
+        },
+        { "from": "customer", "text": "ใช้ได้ถึงเมื่อไหร่คะ" },
+        { "from": "shop", "text": "ถึง [[~DATE:31 ต.ค. 2568]] ค่ะ" }
+      ]
+    },
+    {
+      "id": "open-hook-02",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "{\"type\":\"postback\",\"postback\":{\"data\":\"action=buy&sku=[[~SKU:MUG-CER-350]]\"},\"source\":{\"type\":\"room\",\"roomId\":\"[[~ROOMID:R432a31fa4a75a993993e568ec6de6471]]\",\"userId\":\"[[LINE_USER_ID:U2618b2edfc56591adb19b78fe95db675]]\"}}"
+        },
+        { "from": "shop", "text": "เพิ่มแก้วเซรามิกลงตะกร้าแล้วค่ะ ☕" },
+        { "from": "customer", "text": "ขอ 2 ใบค่ะ" },
+        { "from": "shop", "text": "ได้ค่ะ รวม [[~AMOUNT:398]] บาทค่ะ" }
+      ]
+    },
+    {
+      "id": "open-hook-03",
+      "turns": [
+        { "from": "customer", "text": "แอดมินคะ ทำไมไม่ได้รับบรอดแคสต์โปรเลยคะ" },
+        {
+          "from": "tool",
+          "text": "audience_lookup: userId=[[LINE_USER_ID:U8763c783c4800f439e482027bc764b0c]] in_audiences=[] blocked=false last_seen=[[~DATE:2025-10-13]]"
+        },
+        { "from": "shop", "text": "ตอนนี้ยังไม่อยู่ในกลุ่มรับข่าวสารค่ะ เพิ่มให้แล้วนะคะ" },
+        {
+          "from": "tool",
+          "text": "audience_add(audience=[[~REF:AUD-PROMO-1010]], users=[\"[[LINE_USER_ID:U8763c783c4800f439e482027bc764b0c]]\",\"[[LINE_USER_ID:Uc96f41b805f05b2da751867c70e1fa4c]]\"]) → added=2"
+        },
+        { "from": "customer", "text": "เพิ่มน้องสาวด้วยได้ไหมคะ ชื่อในไลน์ Mint 🌿 ทักมาแล้วเมื่อเช้า" },
+        {
+          "from": "tool",
+          "text": "find_user(display_name='Mint 🌿', since=[[~DATE:2025-10-14]]) → userId=[[LINE_USER_ID:Uf4776354daad9ffe1ec28e787478b7e1]]"
+        },
+        { "from": "shop", "text": "เพิ่มให้น้องสาวเรียบร้อยค่ะ 😊" }
+      ]
+    },
+    {
+      "id": "open-hook-04",
+      "turns": [
+        { "from": "customer", "text": "ทำไมไม่มีแจ้งเตือนสถานะพัสดุเลยคะ" },
+        {
+          "from": "tool",
+          "text": "push_message failed: 400 {\"message\":\"The user hasn't added the LINE Official Account as a friend.\",\"to\":\"[[LINE_USER_ID:Ufdf0c608c8eb05aebed6e8c67ea0d27a]]\"} retry_in=[[~QTY:300]]s"
+        },
+        {
+          "from": "shop",
+          "text": "ระบบส่งแจ้งเตือนไม่ได้เพราะบัญชีของคุณลูกค้ายังไม่ได้เพิ่มเพื่อนร้านค่ะ รบกวนกดเพิ่มเพื่อนอีกครั้งนะคะ"
+        },
+        { "from": "customer", "text": "อ๋อ เคยบล็อกไป ขอโทษค่ะ 😅" },
+        {
+          "from": "tool",
+          "text": "follow userId=[[LINE_USER_ID:Ufdf0c608c8eb05aebed6e8c67ea0d27a]] ts=[[~DATE:1760528950659]]"
+        },
+        { "from": "shop", "text": "เพิ่มเพื่อนเรียบร้อยแล้วค่ะ ✅" }
+      ]
+    },
+    {
+      "id": "open-hook-05",
+      "turns": [
+        { "from": "customer", "text": "ช่วยดึงรายชื่อสมาชิกในกลุ่มตัวแทนจำหน่ายหน่อยค่ะ จะส่งโปรให้ทุกคน" },
+        {
+          "from": "tool",
+          "text": "group_members(groupId=[[~GROUPID:C7311a059e4d80d7da14df6fb427b5a77]]) → [\"[[LINE_USER_ID:U68e87ffb67edb1babad6271e98a91b36]]\",\"[[LINE_USER_ID:Udf1ac277994f9b40d8bc4062c01e0a26]]\",\"[[LINE_USER_ID:Ub87e61fb2673da5425f5f3a11fa28cb2]]\",\"[[LINE_USER_ID:U2a8e118c8a64f6209b69fa2b6b53edf7]]\"] next=null"
+        },
+        { "from": "shop", "text": "ในกลุ่มมีสมาชิก [[~QTY:4]] คนค่ะ ส่งโปรให้ครบแล้วนะคะ" },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    }
+  ]
+}

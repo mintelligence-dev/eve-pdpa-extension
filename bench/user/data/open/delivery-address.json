@@ -1,0 +1,104 @@
+{
+  "conversations": [
+    {
+      "id": "open-delivery-01",
+      "turns": [
+        { "from": "customer", "text": "สวัสดีค่ะ สั่งเดรสลายดอกไซซ์ M สีครีม 1 ตัวค่ะ เก็บปลายทางได้มั้ยคะ" },
+        {
+          "from": "shop",
+          "text": "ได้ค่ะคุณลูกค้า ราคา [[~AMOUNT:590]] บาท ค่าส่ง COD [[~AMOUNT:40]] บาทนะคะ รบกวนขอชื่อ ที่อยู่ และเบอร์โทรผู้รับด้วยค่ะ"
+        },
+        {
+          "from": "customer",
+          "text": "วิภาวรรณ ศรีสุข\n[[~HOUSE:88/123]] หมู่บ้านพฤกษา 12 ต.บางคูวัด อ.เมือง จ.ปทุมธานี [[~POSTCODE:12000]]\nโทร [[PHONE:099-861-4490]] ค่ะ"
+        },
+        {
+          "from": "shop",
+          "text": "รับทราบค่ะ ขอทวนนะคะ ส่งคุณวิภาวรรณ เบอร์ [[PHONE:0998614490]] ยอดเก็บปลายทาง [[~AMOUNT:630]] บาท จัดส่งภายใน [[~DATE:15 ต.ค.]] ค่ะ"
+        },
+        { "from": "customer", "text": "โอเคค่า ขอบคุณค่ะ 🙏" }
+      ]
+    },
+    {
+      "id": "open-delivery-02",
+      "turns": [
+        { "from": "customer", "text": "สั่งของให้แม่ค่ะ ส่งไปต่างจังหวัดได้ไหมคะ" },
+        { "from": "shop", "text": "ได้เลยค่ะ ขอที่อยู่กับเบอร์ผู้รับด้วยนะคะ" },
+        {
+          "from": "customer",
+          "text": "นางสมใจ ทองดี [[~HOUSE:45/2]] ม.3 ต.ท่าศาลา อ.เมือง จ.ลพบุรี [[~POSTCODE:15000]]\nเบอร์แม่ [[PHONE:๐๙๑ ๗๒๔ ๒๖๙๔]] ถ้าแม่ไม่รับสายโทรหาหนูได้ที่ [[PHONE:092 062 9760]] นะคะ"
+        },
+        { "from": "shop", "text": "รับทราบค่ะ จะแจ้งขนส่งให้โทรเบอร์คุณแม่ก่อนนะคะ ถ้าไม่ติดจะโทรหาคุณลูกค้าค่ะ" },
+        { "from": "customer", "text": "ขอบคุณค่ะ แม่หูไม่ค่อยดี ให้โทรหลายๆรอบนะคะ 😅" }
+      ]
+    },
+    {
+      "id": "open-delivery-03",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "Hi, can I order 2 bottles of the lemongrass oil? ship to Chiang Mai pls"
+        },
+        {
+          "from": "shop",
+          "text": "Hello ka! Sure, [[~AMOUNT:700]] baht total incl. shipping. Please send name, address and phone number ka 🙏"
+        },
+        {
+          "from": "customer",
+          "text": "John Miller, [[~HOUSE:12/7]] Nimman soi 9, Mueang Chiang Mai [[~POSTCODE:50200]]. phone [[PHONE:+66 90 601 6372]] or my wife [[PHONE:+66830593601]]"
+        },
+        {
+          "from": "shop",
+          "text": "Thank you ka. We ship by Kerry tomorrow, the rider will call [[PHONE:+66 90 601 6372]] before delivery."
+        },
+        { "from": "customer", "text": "👍 thx" }
+      ]
+    },
+    {
+      "id": "open-delivery-04",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "แอดคะ ออเดอร์ [[~ORDER:#SO2510-0042]] ขอเปลี่ยนเบอร์ผู้รับได้ไหมคะ"
+        },
+        { "from": "shop", "text": "ได้ค่ะ แจ้งเบอร์ใหม่ได้เลยค่ะ" },
+        { "from": "customer", "text": "[[PHONE:091.684.1677]] ค่า เบอร์เก่าเลิกใช้แล้ว" },
+        {
+          "from": "customer",
+          "text": "หรือส่งที่ออฟฟิศก็ได้ โทร [[PHONE:(02) 873-9475]] ต่อ [[~EXT:214]] นะคะ"
+        },
+        {
+          "from": "tool",
+          "text": "{\"order\":\"[[~ORDER:SO2510-0042]]\",\"line_user\":\"[[LINE_USER_ID:U3f4dd8ffa4575aed0dee1f00f8f537d7]]\",\"recipient_phone\":\"[[PHONE:0916841677]]\",\"status\":\"updated\",\"updated_at\":\"[[~DATE:2025-10-14T10:22:05+07:00]]\"}"
+        },
+        {
+          "from": "shop",
+          "text": "แก้ไขให้แล้วค่ะ ออเดอร์ [[~ORDER:#SO2510-0042]] จะจัดส่ง [[~DATE:16/10/2568]] นะคะ"
+        }
+      ]
+    },
+    {
+      "id": "open-delivery-05",
+      "turns": [
+        { "from": "customer", "text": "สั่งหมอนยางพารา 2 ใบค่ะ ส่งเคอรี่" },
+        { "from": "shop", "text": "ได้ค่ะ ขอเบอร์ติดต่อผู้รับหน่อยค่ะ 😊" },
+        { "from": "customer", "text": "[[PHONE:842812959]]" },
+        {
+          "from": "customer",
+          "text": "อ้าว ขอโทษค่ะ ก๊อปมาจาก excel เลข 0 หาย [[PHONE:0842812959]] ค่ะ"
+        },
+        { "from": "shop", "text": "ไม่เป็นไรค่ะ 😊 จัดส่งพรุ่งนี้นะคะ" }
+      ]
+    },
+    {
+      "id": "open-delivery-06",
+      "turns": [
+        { "from": "customer", "text": "ส่งของด่วนได้ไหมคะ ต้องใช้วันเสาร์" },
+        { "from": "shop", "text": "ได้ค่ะ ส่งแบบด่วนพิเศษเพิ่ม [[~AMOUNT:60]] บาทนะคะ แจ้งเบอร์ผู้รับได้เลยค่ะ" },
+        { "from": "customer", "text": "📞 [[PHONE:06 4325 8090]] ค่ะ 🙏🏻" },
+        { "from": "customer", "text": "ส่งที่ร้านกาแฟหน้าปากซอยนะคะ เบอร์ร้าน[[PHONE:053-956-606]]" },
+        { "from": "shop", "text": "รับทราบค่ะ ไรเดอร์จะโทรหาคุณลูกค้าก่อนเข้าส่งนะคะ" }
+      ]
+    }
+  ]
+}

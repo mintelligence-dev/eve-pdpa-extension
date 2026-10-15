@@ -1,0 +1,70 @@
+{
+  "conversations": [
+    {
+      "id": "open-sim-01",
+      "turns": [
+        { "from": "customer", "text": "ซื้อซิมเติมเงินต้องใช้อะไรบ้างคะ" },
+        { "from": "shop", "text": "ต้องลงทะเบียนด้วยเลขบัตรประชาชนค่ะ ส่งเลขบัตรผู้ใช้งานได้เลยค่ะ" },
+        {
+          "from": "customer",
+          "text": "[[TH_NATIONAL_ID:3-0146-38428-30-9]] ค่ะ ซิมนี้ให้ลูกใช้ แต่ลงชื่อแม่"
+        },
+        {
+          "from": "tool",
+          "text": "sim_register(msisdn=[[PHONE:0625592791]], citizen_id=[[TH_NATIONAL_ID:3014638428309]]) → status=OK ref=[[~REF:REG2510140033]]"
+        },
+        { "from": "shop", "text": "ลงทะเบียนเรียบร้อยค่ะ เบอร์ใหม่คือ [[PHONE:062-559-2791]] นะคะ" },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "open-sim-02",
+      "turns": [
+        { "from": "customer", "text": "ผ่อนไอโฟน [[~MODEL:iPhone 16 Pro 256GB]] ได้ไหมคะ" },
+        {
+          "from": "shop",
+          "text": "ได้ค่ะ ผ่อนบัตรเครดิต 0% [[~QTY:10 เดือน]] ค่ะ ขอเลขบัตร ปชช. เบอร์ และอีเมลค่ะ"
+        },
+        {
+          "from": "customer",
+          "text": "เลขบัตร ปชช [[TH_NATIONAL_ID:๓๕๖๙๑๗๖๗๓๔๐๑๓]]\nเบอร์ [[PHONE:๐๙๓-๘๖๖-๘๑๕๒]]\nอีเมล [[EMAIL:kittipong.ch@gmail.com]]\nบัตรที่จะผ่อน [[CREDIT_CARD:4183425527098909]]"
+        },
+        {
+          "from": "shop",
+          "text": "รับทราบค่ะ บัตรเครดิตไม่ต้องส่งในแชทนะคะ ทางร้านจะส่งลิงก์ผ่อนชำระไปที่ [[EMAIL:kittipong.ch@gmail.com]] ค่ะ"
+        },
+        { "from": "customer", "text": "โอเคครับ" }
+      ]
+    },
+    {
+      "id": "open-sim-03",
+      "turns": [
+        { "from": "customer", "text": "ส่งรูปบัตรประชาชนแล้วนะคะ" },
+        {
+          "from": "tool",
+          "text": "ocr_id_card → {\"id_number\":\"[[TH_NATIONAL_ID:8 8554 37958 02 0]]\",\"name_th\":\"นางสาว ลลิตา ใจงาม\",\"dob\":\"[[~DATE:12 มี.ค. 2538]]\",\"address\":\"[[~HOUSE:77/12]] ม.4 ต.หนองปรือ อ.บางละมุง จ.ชลบุรี\",\"expiry\":\"[[~DATE:11 มี.ค. 2575]]\"}"
+        },
+        { "from": "shop", "text": "ได้รับแล้วค่ะ ข้อมูลครบนะคะ" },
+        { "from": "customer", "text": "ใช้ลงทะเบียนซิมเบอร์ [[PHONE:089-990-3161]] นะคะ" },
+        {
+          "from": "tool",
+          "text": "sim_register(msisdn=[[PHONE:0899903161]], citizen_id=[[TH_NATIONAL_ID:8855437958020]]) → status=OK"
+        },
+        { "from": "shop", "text": "ลงทะเบียนเรียบร้อยค่ะ ✅" }
+      ]
+    },
+    {
+      "id": "open-sim-04",
+      "turns": [
+        { "from": "customer", "text": "เติมเงินเบอร์ [[PHONE:061-669-9461]] [[~AMOUNT:100]] บาทค่ะ" },
+        { "from": "shop", "text": "รับทราบค่ะ โอนเข้าพร้อมเพย์ร้านได้เลยค่ะ" },
+        { "from": "customer", "text": "โอนแล้วค่ะ" },
+        {
+          "from": "tool",
+          "text": "topup(msisdn=[[PHONE:66616699461]], amount=[[~AMOUNT:100]]) → OK txn=[[~REF:TP-998812]]"
+        },
+        { "from": "shop", "text": "เติมเงินเรียบร้อยค่ะ ✅" }
+      ]
+    }
+  ]
+}

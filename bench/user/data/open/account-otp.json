@@ -1,0 +1,67 @@
+{
+  "conversations": [
+    {
+      "id": "open-otp-01",
+      "turns": [
+        { "from": "customer", "text": "สมัครสมาชิกไม่ได้ค่ะ OTP ไม่เข้า" },
+        { "from": "shop", "text": "สมัครด้วยเบอร์อะไรคะ" },
+        { "from": "customer", "text": "[[PHONE:0661517940]] ค่ะ" },
+        {
+          "from": "tool",
+          "text": "otp_send to=[[PHONE:+66661517940]] user=[[LINE_USER_ID:U40645c855141b79715af8bdc7327bac5]] status=delivered code_ref=[[~REF:K7Q2]] ttl=[[~QTY:300]]s"
+        },
+        { "from": "shop", "text": "ระบบส่ง OTP ไปแล้วค่ะ รหัสอ้างอิง [[~REF:K7Q2]] ลองเช็คอีกทีนะคะ" },
+        { "from": "customer", "text": "ได้แล้วค่ะ [[~OTP:482913]] ใช่ไหม" },
+        { "from": "shop", "text": "ลูกค้ากรอก OTP ในแอปเองได้เลยค่ะ ไม่ต้องส่งมาในแชทนะคะ 🙏" }
+      ]
+    },
+    {
+      "id": "open-otp-02",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ขอเปลี่ยนอีเมลที่ผูกกับบัญชีค่ะ จาก[[EMAIL:pimploy.s@hotmail.com]]เป็น [[EMAIL:PimPloy.Sri+shop@gmail.com]]"
+        },
+        {
+          "from": "shop",
+          "text": "รับทราบค่ะ ระบบส่งลิงก์ยืนยันไปที่ [[EMAIL:PimPloy.Sri+shop@gmail.com]] แล้วนะคะ"
+        },
+        { "from": "customer", "text": "ไม่เห็นเลยค่ะ เช็คถังขยะแล้ว" },
+        { "from": "shop", "text": "รบกวนลองเช็คโฟลเดอร์โปรโมชันด้วยนะคะ ลิงก์มีอายุ [[~QTY:30 นาที]]ค่ะ" },
+        { "from": "customer", "text": "เจอแล้วค่า" }
+      ]
+    },
+    {
+      "id": "open-otp-03",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "แอปบอกว่ารหัสสมาชิกของฉันคือ [[LINE_USER_ID:U3598af9242033d2884320078688f7f76]] แต่เข้าระบบไม่ได้ค่ะ"
+        },
+        { "from": "shop", "text": "ขอบคุณค่ะ ขอเช็คให้นะคะ" },
+        {
+          "from": "tool",
+          "text": "member_status user=[[LINE_USER_ID:U3598af9242033d2884320078688f7f76]] locked=true reason=too_many_attempts unlock_at=[[~TIME:18:40]]"
+        },
+        { "from": "shop", "text": "บัญชีถูกล็อกชั่วคราวค่ะ จะปลดล็อกอัตโนมัติเวลา [[~TIME:18:40]] น. นะคะ" },
+        { "from": "customer", "text": "โอเคค่ะ" }
+      ]
+    },
+    {
+      "id": "open-otp-04",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "เปลี่ยนเบอร์ที่ใช้รับ OTP ค่ะ เบอร์เก่า [[PHONE:+66-85-100-0585]] เบอร์ใหม่ [[PHONE:+66-86-658-4136]]"
+        },
+        { "from": "shop", "text": "เพื่อความปลอดภัย รบกวนยืนยันตัวตนด้วยเลขบัตรประชาชน 4 ตัวท้ายค่ะ" },
+        { "from": "customer", "text": "[[~MASKED:7845]]" },
+        {
+          "from": "shop",
+          "text": "ยืนยันสำเร็จค่ะ เปลี่ยนเป็นเบอร์ [[PHONE:086-658-4136]] เรียบร้อยแล้วนะคะ"
+        },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    }
+  ]
+}

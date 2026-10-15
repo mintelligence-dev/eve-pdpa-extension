@@ -1,0 +1,79 @@
+{
+  "conversations": [
+    {
+      "id": "open-chat-01",
+      "turns": [
+        { "from": "customer", "text": "มีโค้ดส่วนลดไหมคะ" },
+        {
+          "from": "shop",
+          "text": "มีค่ะ ใช้โค้ด [[~PROMO:NEWMEMBER50]] ลด [[~AMOUNT:50]] บาท เมื่อซื้อครบ [[~AMOUNT:300]] บาทค่ะ"
+        },
+        { "from": "customer", "text": "ใช้กับโปร [[~PROMO:11.11]] ได้ไหม" },
+        { "from": "shop", "text": "ใช้ร่วมกันไม่ได้ค่ะ 🙏" },
+        { "from": "customer", "text": "โอเคค่ะ" }
+      ]
+    },
+    {
+      "id": "open-chat-02",
+      "turns": [
+        { "from": "customer", "text": "เสื้อรุ่นนี้ อก [[~QTY:42]] นิ้ว ใส่ไซซ์ไหนคะ" },
+        {
+          "from": "shop",
+          "text": "แนะนำไซซ์ L ค่ะ (อก [[~QTY:44]] ยาว [[~QTY:28]]) รหัสสินค้า [[~SKU:SKU-TS-001-BLK-L]]"
+        },
+        { "from": "customer", "text": "มีสีอื่นไหมคะ" },
+        { "from": "shop", "text": "มีขาว ดำ กรมค่ะ 🖤🤍💙" },
+        { "from": "customer", "text": "เอาดำค่ะ" }
+      ]
+    },
+    {
+      "id": "open-chat-03",
+      "turns": [
+        { "from": "customer", "text": "ร้านเปิดกี่โมงคะ หน้าร้านอยู่ไหน" },
+        {
+          "from": "shop",
+          "text": "เปิด [[~TIME:10:00-20:00]] ทุกวันค่ะ หน้าร้านอยู่ [[~HOUSE:55/9]] ถ.นิมมานเหมินท์ ซ.7 เชียงใหม่ค่ะ"
+        },
+        { "from": "customer", "text": "จอดรถได้ไหมคะ" },
+        { "from": "shop", "text": "จอดได้ [[~QTY:3]] คันหน้าร้านค่ะ" },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "open-chat-04",
+      "turns": [
+        { "from": "customer", "text": "ทำไมยอดในลาซาด้าไม่ตรงคะ ออเดอร์ [[~ORDER:509717726215169]]" },
+        { "from": "shop", "text": "ขอเช็คให้นะคะ" },
+        {
+          "from": "tool",
+          "text": "lazada_order id=[[~ORDER:509717726215169]] subtotal=[[~AMOUNT:1,180.00]] shipping=[[~AMOUNT:38.00]] voucher=-[[~AMOUNT:100.00]] total=[[~AMOUNT:1,118.00]]"
+        },
+        {
+          "from": "shop",
+          "text": "ยอดสุทธิ [[~AMOUNT:1,118]] บาทค่ะ หักโค้ดส่วนลด [[~AMOUNT:100]] บาทแล้วนะคะ"
+        },
+        { "from": "customer", "text": "อ๋อ โอเคค่ะ" }
+      ]
+    },
+    {
+      "id": "open-chat-05",
+      "turns": [
+        { "from": "customer", "text": "โอนผ่านแอปแล้ว เลขอ้างอิงธนาคาร [[~REF:4780293120694863]] ค่ะ" },
+        { "from": "shop", "text": "ได้รับแล้วค่ะ ขอบคุณค่ะ" },
+        { "from": "customer", "text": "อีกรายการ [[~REF:4436536252451853]] ค่ะ" },
+        { "from": "shop", "text": "ได้รับครบทั้งสองรายการค่ะ 😊" }
+      ]
+    },
+    {
+      "id": "open-chat-06",
+      "turns": [
+        { "from": "customer", "text": "แอดมินคะ วันนี้ส่งของไหมคะ วันหยุด" },
+        { "from": "shop", "text": "วันนี้ส่งปกติค่ะ ตัดรอบ [[~TIME:15:00]] น.ค่ะ" },
+        { "from": "customer", "text": "เย้ 🥳 งั้นรีบโอนเลย" },
+        { "from": "shop", "text": "รอสลิปนะคะ 😊" },
+        { "from": "customer", "text": "แปปนึงนะคะ ลูกร้อง 😭" },
+        { "from": "shop", "text": "ไม่รีบค่ะ ค่อยๆ ทำได้เลยค่ะ" }
+      ]
+    }
+  ]
+}

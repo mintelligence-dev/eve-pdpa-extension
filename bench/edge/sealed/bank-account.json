@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "id": "bank-sealed-abbrev-thai-digits",
+      "text": "บช. [[BANK_ACCOUNT:๓๒๑-๗-๖๕๔๓๒-๑]] กรุงเทพค่ะ",
+      "note": "abbreviated cue บช., Thai digits"
+    },
+    {
+      "id": "bank-sealed-misspelt-cue",
+      "text": "เลขบัญชิ [[BANK_ACCOUNT:7351234560]] ค่ะ",
+      "note": "misspelling บัญชิ"
+    },
+    {
+      "id": "bank-sealed-context-dashed",
+      "text": "[[BANK_ACCOUNT:403-1-23456-7]] ค่ะ",
+      "context": "ขอเลขที่บัญชีด้วยนะคะ จะโอนคืนให้"
+    },
+    {
+      "id": "bank-sealed-negated-transfer-decoy",
+      "text": "ไม่ได้โอนเข้าบัญชีนะคะ เก็บเงินปลายทาง ออเดอร์ [[~ORDER_NO:7712345678]]",
+      "note": "cue words present but negated; the number is an order number"
+    }
+  ]
+}

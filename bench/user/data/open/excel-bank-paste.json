@@ -1,0 +1,88 @@
+{
+  "conversations": [
+    {
+      "id": "open-paste-01",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "แอดคะ รายชื่อตัวแทนที่ต้องโอนค่าคอมเดือนนี้ค่ะ\nชื่อ\tธนาคาร\tเลขบัญชี\tยอด\nสุดารัตน์\tSCB\t[[BANK_ACCOUNT:2142526038]]\t[[~AMOUNT:1,250]]\nวีระพงษ์\tKBANK\t[[BANK_ACCOUNT:2897177289]]\t[[~AMOUNT:980]]\nปวีณา\tBBL\t[[BANK_ACCOUNT:4792480748]]\t[[~AMOUNT:2,110]]"
+        },
+        { "from": "shop", "text": "รับทราบค่ะ โอนครบ [[~QTY:3]] รายการแล้วนะคะ" },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "open-paste-02",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ลูกค้าที่สั่งงานอีเวนต์ค่ะ ฝากโทรคอนเฟิร์มด้วย\nเบอร์\n[[PHONE:803685274]]\n[[PHONE:997127246]]\n[[PHONE:811642252]]"
+        },
+        { "from": "shop", "text": "ได้ค่ะ เลข 0 ข้างหน้าหายนะคะ เดี๋ยวแอดมินเติมให้ค่ะ" },
+        { "from": "customer", "text": "ใช่ค่ะ excel ตัดออก 😅" },
+        { "from": "shop", "text": "โทรคอนเฟิร์มครบแล้วค่ะ" }
+      ]
+    },
+    {
+      "id": "open-paste-03",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "สลิปค่ะ\nทำรายการสำเร็จ\nโอนไปยัง ธนาคารกรุงศรีอยุธยา\nบัญชี [[BANK_ACCOUNT:320-5-84521-5]]\nชื่อบัญชี น.ส. มณี แก้วใส\nจำนวนเงิน [[~AMOUNT:890.00]] บาท\nค่าธรรมเนียม [[~AMOUNT:0.00]] บาท\nวันที่ [[~DATE:14/10/2025]] [[~TIME:09:41]]\nรหัสอ้างอิง [[~REF:202510140941001234567]]"
+        },
+        { "from": "shop", "text": "ได้รับยอดแล้วค่ะ" },
+        { "from": "customer", "text": "ส่งพรุ่งนี้เลยได้ไหมคะ" },
+        { "from": "shop", "text": "ได้ค่ะ 😊" }
+      ]
+    },
+    {
+      "id": "open-paste-04",
+      "turns": [
+        { "from": "customer", "text": "โอนเงินคืนเข้าบัญชีนี้นะคะ [[BANK_ACCOUNT:086-1-59417-2]] กสิกร" },
+        { "from": "shop", "text": "รับทราบค่ะ โอนคืนเข้า [[BANK_ACCOUNT:086-1-59417-2]] ภายในวันนี้นะคะ" },
+        {
+          "from": "customer",
+          "text": "เปลี่ยนเป็นบัญชีพี่สาวได้ไหมคะ บัญชีกรุงเทพ [[BANK_ACCOUNT:0942107735]]"
+        },
+        { "from": "shop", "text": "ขอยืนยันอีกครั้งนะคะ จะโอนเข้าบัญชีไหนดีคะ" },
+        { "from": "customer", "text": "ของหนูค่ะ อันแรก" }
+      ]
+    },
+    {
+      "id": "open-paste-05",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ข้อมูลรับเงินค่ะ\nธ.ก.ส. เลขที่บัญชี [[BANK_ACCOUNT:015744784558]]\nชื่อ นายประเสริฐ ทองคำ"
+        },
+        { "from": "shop", "text": "ขอบคุณค่ะ" },
+        { "from": "customer", "text": "ถ้าไม่ได้ โอนเข้า ttb [[BANK_ACCOUNT:476-1-26057-1]] ก็ได้" },
+        { "from": "shop", "text": "รับทราบค่ะ โอนเข้า ธ.ก.ส. ให้นะคะ" }
+      ]
+    },
+    {
+      "id": "open-paste-06",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "payout_batch.csv\nname,bank,account_no,amount\nAnucha,KTB,[[BANK_ACCOUNT:1927381849]],[[~AMOUNT:3200.00]]\nBenjawan,SCB,[[BANK_ACCOUNT:5633274741]],[[~AMOUNT:1475.50]]\nChatchai,GSB,[[BANK_ACCOUNT:029665153941]],[[~AMOUNT:860.00]]"
+        },
+        {
+          "from": "shop",
+          "text": "ยืนยันรายการโอนค่าคอมมิชชั่น [[~QTY:3]] รายการ รวม [[~AMOUNT:5,535.50]] บาทค่ะ"
+        },
+        { "from": "customer", "text": "ok โอนได้เลย" }
+      ]
+    },
+    {
+      "id": "open-paste-07",
+      "turns": [
+        { "from": "shop", "text": "ขอเลขบัญชีสำหรับโอนค่าคอมด้วยค่ะ" },
+        { "from": "customer", "text": "[[BANK_ACCOUNT:2235 7441 50]] กสิกรค่ะ" },
+        { "from": "customer", "text": "เอ้ย ผิด [[BANK_ACCOUNT:425-6-46627-3]] อันนี้ถูกค่ะ" },
+        { "from": "shop", "text": "รับทราบค่ะ โอนเข้า [[BANK_ACCOUNT:425-6-46627-3]] นะคะ" },
+        { "from": "customer", "text": "ค่า 🙏" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "id": "nid-dashed-standard-format",
+      "text": "เลขบัตรประชาชน [[TH_NATIONAL_ID:1-2099-00456-78-1]] ค่ะ",
+      "note": "the 1-4-5-2-1 grouping printed on the card"
+    },
+    {
+      "id": "nid-thai-digits-spaced",
+      "text": "บัตร ปชช. ค่ะ [[TH_NATIONAL_ID:๓ ๖๕๐๑ ๐๐๒๓๔ ๕๖ ๘]]",
+      "note": "Thai digits, card grouping with spaces"
+    },
+    {
+      "id": "nid-after-short-amount",
+      "text": "ยอด [[~AMOUNT:500]] [[TH_NATIONAL_ID:1101700203450]]",
+      "context": "ขอเลขบัตรประชาชนด้วยค่ะ",
+      "note": "a short number right before an id must not be pulled into the span"
+    },
+    {
+      "id": "nid-glued-thai-both-sides",
+      "text": "ชื่อสมชายเลขบัตร[[TH_NATIONAL_ID:1849900123451]]ค่ะเบอร์เดี๋ยวส่งตามนะ",
+      "note": "Thai text glued on both sides, no spaces"
+    },
+    {
+      "id": "nid-dot-separated-answer",
+      "text": "[[TH_NATIONAL_ID:1.1037.01234.56.3]]",
+      "context": "รบกวนขอเลขบัตรประชาชนเพื่อลงทะเบียนรับประกันค่ะ",
+      "note": "dots as separators, value alone answering the shop"
+    },
+    {
+      "id": "nid-wrong-check-digit-decoy",
+      "text": "เลขบัตรประชาชน [[~INVALID_ID:1209900456782]] ค่ะ",
+      "note": "check digit should be 1 · validation case"
+    },
+    {
+      "id": "nid-ean13-barcode-decoy",
+      "text": "บาร์โค้ดหลังกล่อง [[~BARCODE:8851234567890]] ยังมีของไหมคะ",
+      "note": "13-digit product barcode, fails mod-11"
+    },
+    {
+      "id": "nid-after-amount-word-between",
+      "text": "ยอด [[~AMOUNT:500]] บาท [[TH_NATIONAL_ID:1209900456781]]",
+      "context": "ขอเลขบัตรประชาชนด้วยค่ะ",
+      "note": "like nid-after-short-amount but with บาท between the numbers"
+    },
+    {
+      "id": "nid-after-list-number",
+      "text": "[[~LIST_NO:1.]] [[TH_NATIONAL_ID:1849900123451]]\n[[~LIST_NO:2.]] สำเนาบัตรแนบให้แล้วค่ะ",
+      "note": "list numbering before the id"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "cases": [
+    {
+      "id": "line-uid-labelled",
+      "text": "userId: [[LINE_USER_ID:U4af4980629a1b2c3d4e5f60718293a4b]]"
+    },
+    {
+      "id": "line-uid-webhook-json",
+      "text": "{\"source\":{\"type\":\"user\",\"userId\":\"[[LINE_USER_ID:Ub1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6]]\"}}"
+    },
+    {
+      "id": "line-uid-glued-thai",
+      "text": "ไอดีลูกค้า[[LINE_USER_ID:U0123456789abcdef0123456789abcdef]]ค่ะ"
+    },
+    {
+      "id": "line-uid-url-query",
+      "text": "https://shop.example/c?uid=[[LINE_USER_ID:U9f8e7d6c5b4a39281706f5e4d3c2b1a0]]&ref=x"
+    },
+    {
+      "id": "line-md5-hash-decoy",
+      "text": "md5 [[~HASH:d41d8cd98f00b204e9800998ecf8427e]]",
+      "note": "32 hex chars without the U prefix"
+    },
+    {
+      "id": "line-uid-31-hex-decoy",
+      "text": "[[~INVALID_UID:U4af4980629a1b2c3d4e5f60718293a4]]",
+      "note": "U + 31 hex · too short to be a userId"
+    },
+    {
+      "id": "line-typed-line-id",
+      "text": "แอดไลน์มาได้ค่ะ ไลน์ไอดี [[LINE_USER_ID:pimchanok_99]]",
+      "note": "README does not say whether a LINE ID the customer types (not the U… userId) counts as LINE_USER_ID"
+    }
+  ]
+}

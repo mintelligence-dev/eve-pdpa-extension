@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "id": "phone-sealed-66-no-plus-cue",
+      "text": "โทรกลับที่ [[PHONE:66891234567]] ได้เลยค่ะ",
+      "note": "66 without +, cue present"
+    },
+    {
+      "id": "phone-sealed-provincial-en-dash",
+      "text": "เบอร์บ้านที่เชียงใหม่ [[PHONE:053–123–456]]",
+      "note": "provincial landline with en dashes"
+    },
+    {
+      "id": "phone-sealed-amount-dots-decoy",
+      "text": "ราคา [[~AMOUNT:1.290.000]] บาท โทรมาคุยได้ไหมคะ",
+      "note": "dotted amount near the cue word โทร"
+    },
+    {
+      "id": "phone-sealed-letter-o-spaced",
+      "text": "โทร [[PHONE:O62 345 6789]] นะ",
+      "note": "evasion / typo: letter O for zero, space separated"
+    }
+  ]
+}

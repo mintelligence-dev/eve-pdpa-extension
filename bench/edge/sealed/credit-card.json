@@ -1,0 +1,25 @@
+{
+  "cases": [
+    {
+      "id": "card-sealed-mc-exp-cvv-words",
+      "text": "card [[CREDIT_CARD:5105 1051 0510 5100]] exp [[~EXPIRY:03/29]] cvv [[~CVV:456]]"
+    },
+    {
+      "id": "card-sealed-amex-dashes",
+      "text": "[[CREDIT_CARD:3782-822463-10005]] ค่ะ"
+    },
+    {
+      "id": "card-sealed-luhn-fail-mc",
+      "text": "ลองบัตรนี้ [[~INVALID_CARD:5425 2334 3010 9904]]",
+      "note": "fails Luhn · validation case"
+    },
+    {
+      "id": "card-sealed-dots",
+      "text": "เลขบัตร [[CREDIT_CARD:5555.5555.5555.4444]]"
+    },
+    {
+      "id": "card-sealed-mc-dashes-cue-expiry",
+      "text": "บัตรเครดิต [[CREDIT_CARD:5425-2334-3010-9903]] หมดอายุ [[~EXPIRY:12/28]]"
+    }
+  ]
+}

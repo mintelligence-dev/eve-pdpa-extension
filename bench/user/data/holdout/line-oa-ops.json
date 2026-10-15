@@ -1,0 +1,79 @@
+{
+  "conversations": [
+    {
+      "id": "hold-line-01",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "{\"type\":\"memberJoined\",\"joined\":{\"members\":[{\"type\":\"user\",\"userId\":\"[[LINE_USER_ID:Ue5ce90f8685ea48a9bc3251e77ead5f3]]\"},{\"type\":\"user\",\"userId\":\"[[LINE_USER_ID:U7bdde57fe9d35a1f3a6281eb14da0fdd]]\"}]},\"source\":{\"type\":\"group\",\"groupId\":\"[[~GROUPID:Cd52cc9fd2948419de6f0b1be49f8dd94]]\"}}"
+        },
+        { "from": "shop", "text": "ยินดีต้อนรับสมาชิกใหม่ค่ะ 🎉" },
+        { "from": "customer", "text": "สวัสดีค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-line-02",
+      "turns": [
+        { "from": "customer", "text": "สั่งไปเมื่อวานด้วยเบอร์ [[PHONE:064-657-6007]] ค่ะ" },
+        {
+          "from": "tool",
+          "text": "crm.find(phone=[[PHONE:0646576007]]) → {user:[[LINE_USER_ID:Ub80239e51fef705a9ea791f2af43e258]], email:[[EMAIL:sasithorn.b@gmail.com]], orders:([[~ORDER:SO2510-0450]])}"
+        },
+        { "from": "shop", "text": "เจอออเดอร์แล้วค่ะ [[~ORDER:SO2510-0450]] กำลังแพ็คค่ะ" },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-line-03",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "หน้าโปรไฟล์ในแอปขึ้นว่า user ID: [[LINE_USER_ID:Ub7ab3ed4e458b971c7969a55155724ca]] ใช้อันนี้ใช่ไหมคะ"
+        },
+        { "from": "shop", "text": "ใช่ค่ะ ขอบคุณค่ะ" },
+        {
+          "from": "tool",
+          "text": "handoff(to=human, user=[[LINE_USER_ID:Ub7ab3ed4e458b971c7969a55155724ca]], reason=\"ลูกค้าขอคุยกับแอดมิน\", queue=[[~QTY:3]])"
+        },
+        { "from": "shop", "text": "กำลังโอนสายให้แอดมินนะคะ รอสักครู่ค่ะ ⏳" }
+      ]
+    },
+    {
+      "id": "hold-line-04",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "richmenu_clicks [[~DATE:2025-10-13]]:\n[[LINE_USER_ID:U8bd4f95b8497f725129ec97df49fbd4c]] → area=promo ([[~QTY:4]] clicks)\n[[LINE_USER_ID:U470d3088e0a659b9ca60563fb512c17c]] → area=track ([[~QTY:1]] click)\n[[LINE_USER_ID:Uddb47c5f38aa3a4bc476cd5330d2d477]] → area=promo ([[~QTY:2]] clicks)\nroom [[~ROOMID:R7d0f2c41e9b3a8f06c5d1e2b4a9f7c33]] → area=help"
+        },
+        { "from": "shop", "text": "สรุปยอดคลิกเมนูโปรวันนี้ [[~QTY:6]] ครั้งค่ะ" },
+        { "from": "customer", "text": "โอเค ขอบคุณ" }
+      ]
+    },
+    {
+      "id": "hold-line-05",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "แอดมินขอไอดีไว้ผูกบัตรสมาชิก ก๊อปมาให้แล้วค่ะ [[LINE_USER_ID:U0591d2af450133daadee97334a7acdfc]]​"
+        },
+        { "from": "shop", "text": "ผูกบัตรสมาชิกให้แล้วค่ะ 💳" },
+        {
+          "from": "tool",
+          "text": "member_link(user=[[LINE_USER_ID:U0591d2af450133daadee97334a7acdfc]], card=[[~MEMBER:MB-00918273]]) → ok"
+        },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-line-06",
+      "turns": [
+        {
+          "from": "tool",
+          "text": "broadcast_report: delivered=[[~QTY:1204]] failed=[[~QTY:2]]\nfailed: [[LINE_USER_ID:U4fb0423fdf913571fa08d27cbc960c8f]] (blocked), [[LINE_USER_ID:U268a3b10604bbf3253804b78add8c4f1]] (blocked)\nfallback_email: [[EMAIL:thanyarat.k@yahoo.com]], [[EMAIL:mongkol_99@hotmail.com]]"
+        },
+        { "from": "shop", "text": "ส่งอีเมลแจ้งโปรสำรองให้ลูกค้า [[~QTY:2]] ท่านแล้วค่ะ" },
+        { "from": "customer", "text": "ok ค่ะ" }
+      ]
+    }
+  ]
+}

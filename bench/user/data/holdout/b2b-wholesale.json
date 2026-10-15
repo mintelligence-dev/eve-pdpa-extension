@@ -1,0 +1,73 @@
+{
+  "conversations": [
+    {
+      "id": "hold-b2b-01",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "PO เลขที่ [[~REF:PO-6810-0057]] สั่งแก้วกาแฟ [[~QTY:500]] ใบ ติดต่อจัดซื้อ คุณวรรณา [[PHONE:02-691-5520]] ต่อ [[~EXT:2231]] / [[EMAIL:wanna.p@cafe-supply.co.th]]"
+        },
+        {
+          "from": "shop",
+          "text": "รับ PO แล้วค่ะ จะส่งใบแจ้งหนี้ไปที่ [[EMAIL:wanna.p@cafe-supply.co.th]] นะคะ"
+        },
+        { "from": "customer", "text": "ส่งของได้ [[~DATE:20 ต.ค.]] ไหมคะ" },
+        { "from": "shop", "text": "ได้ค่ะ" },
+        { "from": "customer", "text": "หรือจะตัดบัตรบริษัท [[CREDIT_CARD:3570 4603 9246 6751]] ก็ได้ค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-b2b-02",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "สาขาเชียงใหม่ [[PHONE:053-743-870]] สาขาขอนแก่น [[PHONE:043 559 939]] สาขาอุบล [[PHONE:๐๔๕-๓๑๔-๕๙๗]] ให้ส่งของแยกกันนะคะ"
+        },
+        { "from": "shop", "text": "รับทราบค่ะ แยกส่ง [[~QTY:3]] สาขานะคะ" },
+        { "from": "customer", "text": "ขอบคุณค่ะ" }
+      ]
+    },
+    {
+      "id": "hold-b2b-03",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ออกใบกำกับในนามร้าน ร้านเป็นบุคคลธรรมดานะคะ เลขผู้เสียภาษี [[TH_NATIONAL_ID:3066904195601]] ชื่อ นายสุรชัย ค้าขาย"
+        },
+        { "from": "shop", "text": "รับทราบค่ะ ส่ง e-Tax Invoice ไปที่อีเมลไหนดีคะ" },
+        { "from": "customer", "text": "[[EMAIL:surachai.shop@gmail.com]]" },
+        { "from": "shop", "text": "ส่งแล้วค่ะ เลขที่ [[~INVOICE:INV-6810-00321]]" }
+      ]
+    },
+    {
+      "id": "hold-b2b-04",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "ค่าสินค้าล็อตนี้ [[~AMOUNT:48,500]] บาท โอนเข้าบัญชีกสิกร [[BANK_ACCOUNT:274-3-43224-9]] ชื่อ นายพิชิต ธนากร นะครับ"
+        },
+        { "from": "shop", "text": "รับทราบครับ จะโอนภายใน [[~DATE:17 ต.ค.]] ครับ" },
+        { "from": "shop", "text": "โอนเข้า [[BANK_ACCOUNT:274-3-43224-9]] เรียบร้อยครับ" },
+        { "from": "customer", "text": "ขอบคุณครับ" }
+      ]
+    },
+    {
+      "id": "hold-b2b-05",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "รายชื่อพนักงานที่ต้องเปิดเบอร์ค่ะ\nลำดับ\tชื่อ\tเลขบัตรประชาชน\n1\tสมพร\t[[TH_NATIONAL_ID:1885090211010]]\n2\tจิราพร\t[[TH_NATIONAL_ID:1724200813965]]\n3\tธวัชชัย\t[[TH_NATIONAL_ID:6146472458543]]"
+        },
+        { "from": "shop", "text": "ได้รับครบ [[~QTY:3]] รายชื่อค่ะ" },
+        {
+          "from": "tool",
+          "text": "bulk_sim_register → [[PHONE:0897522192]]:ok, [[PHONE:0962256872]]:ok, [[PHONE:0868448851]]:ok batch=[[~REF:BULK-2210]]"
+        },
+        {
+          "from": "shop",
+          "text": "เปิดเบอร์ให้แล้วค่ะ [[PHONE:089-752-2192]], [[PHONE:096-225-6872]], [[PHONE:086-844-8851]] ตามลำดับนะคะ"
+        }
+      ]
+    }
+  ]
+}

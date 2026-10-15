@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "id": "email-plus-tag-subdomain",
+      "text": "อีเมล [[EMAIL:somchai.k+shop@mail.ku.ac.th]] ค่ะ"
+    },
+    {
+      "id": "email-glued-thai-both-sides",
+      "text": "ส่งใบเสร็จมาที่อีเมล[[EMAIL:somsri.j@gmail.com]]ค่ะ"
+    },
+    {
+      "id": "email-all-caps-co-th",
+      "text": "EMAIL: [[EMAIL:NATTAYA_P@HOTMAIL.CO.TH]]"
+    },
+    {
+      "id": "email-spaces-around-at",
+      "text": "เมลค่ะ [[EMAIL:somchai1990 @ gmail.com]]",
+      "note": "customer typed spaces around @"
+    },
+    {
+      "id": "email-fullwidth-at",
+      "text": "[[EMAIL:pimchanok＠outlook.com]] ค่ะ",
+      "note": "full-width @ from an IME"
+    },
+    {
+      "id": "email-at-dot-spelled-out",
+      "text": "ส่งมาที่ [[EMAIL:kanya99 at gmail dot com]] นะ",
+      "note": "evasion: at / dot spelled out"
+    },
+    {
+      "id": "email-retina-filename-decoy",
+      "text": "รูปสินค้า [[~FILENAME:banner@2x.png]] โหลดไม่ขึ้นค่ะ",
+      "note": "image filename shaped like an email"
+    },
+    {
+      "id": "email-inside-json",
+      "text": "{\"name\":\"แอน\",\"email\":\"[[EMAIL:t.wong@company.co.th]]\"}"
+    }
+  ]
+}
