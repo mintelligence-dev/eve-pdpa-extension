@@ -32,7 +32,11 @@ jobs:
           # paths unless told otherwise (v4.4+), and the gates job then finds
           # nothing to measure.
           include-hidden-files: true
+          # package.json too: the smoke jobs run this artifact with no checkout,
+          # and without its "type": "module" Node 18 reads dist/index.js as
+          # CommonJS. Newer Node detects the syntax, which hid this.
           path: |
+            packages/core/package.json
             packages/core/dist
             packages/core/.size
             packages/core/smoke

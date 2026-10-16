@@ -37,6 +37,7 @@
     "@changesets/cli": "3.0.3",
     "@size-limit/file": "14.0.0",
     "@types/node": "24.10.1",
+    "@vitest/coverage-v8": "5.0.1",
     "ajv": "8.20.0",
     "bun": "1.4.2",
     "deno": "2.9.6",
