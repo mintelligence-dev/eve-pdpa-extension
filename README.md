@@ -4,7 +4,7 @@
 
 *Detect and protect Thai personal data before it reaches an AI model, a tool, a log or a human reviewer.*
 
-- สถานะ: กำลังทำ 0.1 · ยังไม่ publish ขึ้น npm
+- สถานะ: 0.1.0 — release แรก
 
 ## แพ็กเกจ
 

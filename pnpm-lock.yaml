@@ -251,7 +251,7 @@ importers:
   packages/cli:
     dependencies:
       '@eve-pdpa-extension/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       '@types/node':

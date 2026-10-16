@@ -2,7 +2,7 @@
 
 ## 0.1.0
 
-First release. Not yet published.
+First release.
 
 - `eve-pdpa scan <file>` reports what personal data a file holds — counts per entity type, line numbers and message ids. The report never contains a value, a masked value, or the text around one — and an id that is itself personal data, such as a phone number or a LINE userId, is left out and shown as `(id hidden: PHONE)`.
 - Reads JSONL, CSV and TSV. CSV columns are found by header name; quoted fields may span lines; a row with the wrong number of fields is reported and skipped.
