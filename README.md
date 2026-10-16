@@ -12,6 +12,7 @@
 |---|---|---|
 | [`@eve-pdpa-extension/core`](packages/core) | ไลบรารีที่แอปเรียกทุกข้อความ · ตรวจ 6 ประเภท · ปิด 6 แบบตาม policy · audit ที่ไม่มีค่าจริง · zero dependency · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser | [ไทย](packages/core/README.th.md) · [English](packages/core/README.md) |
 | [`@eve-pdpa-extension/cli`](packages/cli) | ตรวจไฟล์แชทเก่าโดยไม่ต้องเขียนโค้ด · JSONL · CSV · ไฟล์ export จาก LINE OA · `policy validate` | [ไทย](packages/cli/README.th.md) · [English](packages/cli/README.md) |
+| [`@eve-pdpa-extension/http`](packages/http) | webhook ที่ลงลายเซ็น ตั้งคั่นระหว่างแอปแชทกับ AI · ปิดข้อมูลทั้งขาเข้าและขาออก · แลก token เป็นค่าจริงตาม purpose · Upstash Redis สำหรับ serverless · Node 20+ · Vercel · Deno · Bun · Cloudflare Workers · ยังไม่ขึ้น npm | [ไทย](packages/http/README.th.md) · [English](packages/http/README.md) |
 
 วิธีใช้ ตัวอย่าง ข้อควรรู้ และข้อจำกัด อยู่ใน README ของแต่ละแพ็กเกจ ซึ่งเป็นหน้าเดียวกับที่ขึ้นบน npm · ไฟล์นี้ไม่เขียนซ้ำ จะได้ไม่มีสองที่ที่ต้องแก้ให้ตรงกัน
 
@@ -22,8 +23,10 @@
 ```
 packages/core/       @eve-pdpa-extension/core   zero deps · ทุก runtime · งบขนาด 150 KB
 packages/cli/        @eve-pdpa-extension/cli    Node เท่านั้น
-packages/{policy,ner,ner-model-th,http,mcp,eve}/   มีแต่ README · ยังไม่เริ่ม (หลัง 0.1)
-examples/            ไฟล์ policy ตัวอย่าง (มีเทสบังคับว่าโหลดผ่าน)
+packages/http/       @eve-pdpa-extension/http   webhook · web standard เท่านั้น · Node 20+
+packages/eve/        adapter สำหรับ eve · มีแต่ README · กำลังทำ
+packages/{policy,ner,ner-model-th,mcp}/   มีแต่ README · ยังไม่เริ่ม (หลัง 0.1)
+examples/            ไฟล์ policy ตัวอย่าง · examples/vercel ตัวอย่าง deploy webhook (มีเทสบังคับว่า policy โหลดผ่าน)
 bench/               แม่แบบแชทและโปรแกรมวัดความแม่นยำ · ข้อมูลที่สร้างแล้วไม่ขึ้น git
 internal/            consumer fixture 3 ตัว พิสูจน์ว่า exports map ใช้ได้จริง
 scripts/             gate ที่บังคับข้อจำกัดของ core · smoke test 5 runtime · demo

@@ -273,6 +273,19 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/http:
+    dependencies:
+      '@eve-pdpa-extension/core':
+        specifier: workspace:^
+        version: link:../core
+    devDependencies:
+      tsdown:
+        specifier: 0.23.0
+        version: 0.23.0(@arethetypeswrong/core@0.18.5)(publint@0.3.24)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
 packages:
 
   '@andrewbranch/untar.js@1.0.4':
