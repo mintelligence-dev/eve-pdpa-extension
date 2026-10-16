@@ -37,7 +37,7 @@ First release.
 
 ### Platform
 
-- Zero dependencies, about 26 KB minified, ESM and CommonJS with types.
+- Zero dependencies, about 38 KB minified (14 KB gzip), ESM and CommonJS with types.
 - Node 18.18+ (Node 18 needs `randomSource` for `tokenise`), Deno, Bun, Cloudflare Workers and browsers. Run the guard on a server: keys and tokens in a browser are readable by anyone.
 
 ### Not in this release

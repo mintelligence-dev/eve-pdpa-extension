@@ -4,7 +4,7 @@ Detect and protect Thai personal data in text before it reaches an AI model, a t
 
 - Thai national ID · phone number · email · bank account · credit card · LINE user ID
 - 6 ways to protect a value, chosen per type by your policy · every scan emits an audit event that **never contains the real value**
-- Zero dependencies · ~26 KB minified · runs on Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers
+- Zero dependencies · ~38 KB minified (~14 KB gzip) · runs on Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers
 
 > **This is a technical tool, not a certification of compliance with Thailand's Personal Data Protection Act (PDPA).**
 > Using this library does not by itself make your system compliant.
