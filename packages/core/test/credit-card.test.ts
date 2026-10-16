@@ -151,10 +151,10 @@ describe('choosing among the readings of one run', () => {
 
   it('reads a long run of single digits in linear time', () => {
     let text = ''
-    for (let i = 0; text.length < 10 * 1024; i++) text += `${(i * 7) % 10} `
+    for (let i = 0; text.length < 100 * 1024; i++) text += `${(i * 7) % 10} `
     const started = performance.now()
     detect(text)
-    expect(performance.now() - started).toBeLessThan(200)
+    expect(performance.now() - started).toBeLessThan(2000)
   })
 })
 

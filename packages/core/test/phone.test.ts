@@ -238,10 +238,10 @@ describe('cost', () => {
     // Every pair of groups was scored: 2 KB of "0 1 2 …" took 1.6 s.
     for (const sep of [' ', '.', '\n']) {
       let text = ''
-      for (let i = 0; text.length < 10 * 1024; i++) text += `${i % 10}${sep}`
+      for (let i = 0; text.length < 100 * 1024; i++) text += `${i % 10}${sep}`
       const started = performance.now()
       detect(text)
-      expect(performance.now() - started).toBeLessThan(200)
+      expect(performance.now() - started).toBeLessThan(2000)
     }
   })
 })
@@ -274,6 +274,15 @@ describe('a list, one number a line', () => {
       '861234567',
       '871234567',
     ])
+  })
+
+  it('reads an indented list line, up to 64 characters of lead', () => {
+    // The lead is bounded so the check stays linear on a long line (16 Oct);
+    // the bound is far past any indent a chat has.
+    for (const n of [16, 17, 64]) {
+      expect(spans(`เบอร์ค่ะ\n851234567\n${' '.repeat(n)}861234567`)).toHaveLength(2)
+    }
+    expect(spans(`เบอร์ค่ะ\n851234567\n${' '.repeat(65)}861234567`)).toHaveLength(1)
   })
 
   it('starts a number after the bracket of a list item, which closes no area code', () => {

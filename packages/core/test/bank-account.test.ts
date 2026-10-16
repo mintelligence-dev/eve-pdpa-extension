@@ -160,11 +160,16 @@ describe('a run longer than an account', () => {
   })
 
   it('reads a long run of single digits under a cue in linear time', () => {
+    // Big enough that a return to quadratic takes seconds, and a limit far
+    // enough from linear that coverage or a slow CI runner never reaches it —
+    // the rule many-values.test.ts set. 200 ms on 10 KB failed under coverage.
+    // Quadratic here (a list check that read back to the start of the line)
+    // took 3.8 s on 100 KB.
     let text = 'บัญชี '
-    for (let i = 0; text.length < 10 * 1024; i++) text += `${i % 10} `
+    for (let i = 0; text.length < 100 * 1024; i++) text += `${i % 10} `
     const started = performance.now()
     detect(text)
-    expect(performance.now() - started).toBeLessThan(200)
+    expect(performance.now() - started).toBeLessThan(2000)
   })
 })
 

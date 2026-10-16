@@ -134,24 +134,24 @@ describe('confidence', () => {
 describe('cost', () => {
   it('reads a long run with no @ in it in linear time', () => {
     for (const unit of ['7', 'a', 'a.']) {
-      const text = unit.repeat(Math.ceil((20 * 1024) / unit.length))
+      const text = unit.repeat(Math.ceil((200 * 1024) / unit.length))
       const started = performance.now()
       detect(text)
-      expect(performance.now() - started).toBeLessThan(100)
+      expect(performance.now() - started).toBeLessThan(2000)
     }
   })
 
   it('reads a long run with an @ at either end, or many of them, in linear time', () => {
-    const digits = '7'.repeat(20 * 1024)
+    const digits = '7'.repeat(200 * 1024)
     for (const text of [
       `${digits}@`,
       `@${digits}`,
       `${digits}@example.com`,
-      'a@'.repeat(10 * 1024),
+      'a@'.repeat(100 * 1024),
     ]) {
       const started = performance.now()
       detect(text)
-      expect(performance.now() - started).toBeLessThan(100)
+      expect(performance.now() - started).toBeLessThan(2000)
     }
   })
 

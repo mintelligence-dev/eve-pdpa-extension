@@ -239,8 +239,26 @@ const ITEM_NUMBER = /^\d{1,2}[.)] /
 export function continuesList(text: string, start: number, previousEnd: number): boolean {
   if (previousEnd < 0 || previousEnd > start) return false
   if (ITEM_NUMBER.test(text.slice(start, start + 4))) return false
-  const lineStart = text.lastIndexOf('\n', start - 1) + 1
-  if (lineStart <= previousEnd) return false
-  if (text.lastIndexOf('\n', lineStart - 2) >= previousEnd) return false
+  // Looked for no further back than a list lead can reach. Searched to the
+  // start of the text instead, every reading on a long line with no break in
+  // it read the whole line again: 100 KB under one cue took 3.8 s (CI, 16 Oct).
+  let lineStart = -1
+  // The break itself sits one before the lead, so MAX_LEAD + 1 characters back.
+  for (let at = start - 1; at >= Math.max(previousEnd, start - MAX_LEAD - 1); at--) {
+    if (text[at] === '\n') {
+      lineStart = at + 1
+      break
+    }
+  }
+  if (lineStart === -1) return false
+  // The line above is the one the last value ended on: no break in between.
+  if (text.indexOf('\n', previousEnd) !== lineStart - 1) return false
   return LIST_LEAD.test(text.slice(lineStart, start))
 }
+
+/**
+ * The longest bullet, number and indent a list line may open with. Anything
+ * longer reads as the next line of text, not of the list, and falls back to
+ * the cue words around the value. A constant, so the check stays linear.
+ */
+const MAX_LEAD = 64
