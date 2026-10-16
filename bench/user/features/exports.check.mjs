@@ -35,7 +35,7 @@ const DETECTORS = [
 ]
 const CONSTANTS = ['ENTITY_TYPES', 'ACTIONS', 'BOUNDARIES', 'BUILTIN_DETECTORS', 'VERSION']
 // What the installed package's manifest says (read by hand: code here may not open package files).
-const MANIFEST_VERSION = '0.0.0'
+const MANIFEST_VERSION = '0.1.0'
 const CHANGELOG_RELEASE = '0.1.0'
 
 check('EX1 every function and constant in the types exists at runtime', () => {

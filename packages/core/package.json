@@ -1,8 +1,22 @@
 {
   "name": "@eve-pdpa-extension/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Detect and protect Thai personal data before it reaches an AI model, tool, log or human reviewer.",
+  "keywords": [
+    "pdpa",
+    "thai",
+    "pii",
+    "privacy",
+    "personal-data",
+    "redact",
+    "llm",
+    "ai"
+  ],
+  "bugs": {
+    "email": "kunlachat@m-intelligence.tech"
+  },
   "license": "Apache-2.0",
+  "author": "M Intelligence",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mintelligence-dev/eve-pdpa-extension.git",

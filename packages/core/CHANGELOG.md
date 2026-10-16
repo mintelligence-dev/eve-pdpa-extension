@@ -2,7 +2,7 @@
 
 ## 0.1.0
 
-First release. Not yet published.
+First release.
 
 ### Detection
 
