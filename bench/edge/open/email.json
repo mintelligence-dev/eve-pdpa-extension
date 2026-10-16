@@ -2,15 +2,15 @@
   "cases": [
     {
       "id": "email-plus-tag-subdomain",
-      "text": "อีเมล [[EMAIL:somchai.k+shop@mail.ku.ac.th]] ค่ะ"
+      "text": "อีเมล [[EMAIL:somchai.k+shop@mail.ku.ac.example]] ค่ะ"
     },
     {
       "id": "email-glued-thai-both-sides",
-      "text": "ส่งใบเสร็จมาที่อีเมล[[EMAIL:somsri.j@gmail.com]]ค่ะ"
+      "text": "ส่งใบเสร็จมาที่อีเมล[[EMAIL:somsri.j@gmail.example]]ค่ะ"
     },
     {
       "id": "email-all-caps-co-th",
-      "text": "EMAIL: [[EMAIL:NATTAYA_P@HOTMAIL.CO.TH]]"
+      "text": "EMAIL: [[EMAIL:NATTAYA_P@HOTMAIL.CO.EXAMPLE]]"
     },
     {
       "id": "email-spaces-around-at",
@@ -34,7 +34,7 @@
     },
     {
       "id": "email-inside-json",
-      "text": "{\"name\":\"แอน\",\"email\":\"[[EMAIL:t.wong@company.co.th]]\"}"
+      "text": "{\"name\":\"แอน\",\"email\":\"[[EMAIL:t.wong@company.co.example]]\"}"
     }
   ]
 }

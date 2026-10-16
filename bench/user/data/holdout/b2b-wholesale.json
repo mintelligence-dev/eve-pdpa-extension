@@ -5,11 +5,11 @@
       "turns": [
         {
           "from": "customer",
-          "text": "PO เลขที่ [[~REF:PO-6810-0057]] สั่งแก้วกาแฟ [[~QTY:500]] ใบ ติดต่อจัดซื้อ คุณวรรณา [[PHONE:02-691-5520]] ต่อ [[~EXT:2231]] / [[EMAIL:wanna.p@cafe-supply.co.th]]"
+          "text": "PO เลขที่ [[~REF:PO-6810-0057]] สั่งแก้วกาแฟ [[~QTY:500]] ใบ ติดต่อจัดซื้อ คุณวรรณา [[PHONE:02-691-5520]] ต่อ [[~EXT:2231]] / [[EMAIL:wanna.p@cafe-supply.co.example]]"
         },
         {
           "from": "shop",
-          "text": "รับ PO แล้วค่ะ จะส่งใบแจ้งหนี้ไปที่ [[EMAIL:wanna.p@cafe-supply.co.th]] นะคะ"
+          "text": "รับ PO แล้วค่ะ จะส่งใบแจ้งหนี้ไปที่ [[EMAIL:wanna.p@cafe-supply.co.example]] นะคะ"
         },
         { "from": "customer", "text": "ส่งของได้ [[~DATE:20 ต.ค.]] ไหมคะ" },
         { "from": "shop", "text": "ได้ค่ะ" },
@@ -35,7 +35,7 @@
           "text": "ออกใบกำกับในนามร้าน ร้านเป็นบุคคลธรรมดานะคะ เลขผู้เสียภาษี [[TH_NATIONAL_ID:3066904195601]] ชื่อ นายสุรชัย ค้าขาย"
         },
         { "from": "shop", "text": "รับทราบค่ะ ส่ง e-Tax Invoice ไปที่อีเมลไหนดีคะ" },
-        { "from": "customer", "text": "[[EMAIL:surachai.shop@gmail.com]]" },
+        { "from": "customer", "text": "[[EMAIL:surachai.shop@gmail.example]]" },
         { "from": "shop", "text": "ส่งแล้วค่ะ เลขที่ [[~INVOICE:INV-6810-00321]]" }
       ]
     },

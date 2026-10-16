@@ -20,11 +20,11 @@
       "turns": [
         {
           "from": "customer",
-          "text": "ขอเปลี่ยนอีเมลที่ผูกกับบัญชีค่ะ จาก[[EMAIL:pimploy.s@hotmail.com]]เป็น [[EMAIL:PimPloy.Sri+shop@gmail.com]]"
+          "text": "ขอเปลี่ยนอีเมลที่ผูกกับบัญชีค่ะ จาก[[EMAIL:pimploy.s@hotmail.example]]เป็น [[EMAIL:PimPloy.Sri+shop@gmail.example]]"
         },
         {
           "from": "shop",
-          "text": "รับทราบค่ะ ระบบส่งลิงก์ยืนยันไปที่ [[EMAIL:PimPloy.Sri+shop@gmail.com]] แล้วนะคะ"
+          "text": "รับทราบค่ะ ระบบส่งลิงก์ยืนยันไปที่ [[EMAIL:PimPloy.Sri+shop@gmail.example]] แล้วนะคะ"
         },
         { "from": "customer", "text": "ไม่เห็นเลยค่ะ เช็คถังขยะแล้ว" },
         { "from": "shop", "text": "รบกวนลองเช็คโฟลเดอร์โปรโมชันด้วยนะคะ ลิงก์มีอายุ [[~QTY:30 นาที]]ค่ะ" },

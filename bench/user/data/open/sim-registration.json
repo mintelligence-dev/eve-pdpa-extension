@@ -27,11 +27,11 @@
         },
         {
           "from": "customer",
-          "text": "เลขบัตร ปชช [[TH_NATIONAL_ID:๓๕๖๙๑๗๖๗๓๔๐๑๓]]\nเบอร์ [[PHONE:๐๙๓-๘๖๖-๘๑๕๒]]\nอีเมล [[EMAIL:kittipong.ch@gmail.com]]\nบัตรที่จะผ่อน [[CREDIT_CARD:4183425527098909]]"
+          "text": "เลขบัตร ปชช [[TH_NATIONAL_ID:๓๕๖๙๑๗๖๗๓๔๐๑๓]]\nเบอร์ [[PHONE:๐๙๓-๘๖๖-๘๑๕๒]]\nอีเมล [[EMAIL:kittipong.ch@gmail.example]]\nบัตรที่จะผ่อน [[CREDIT_CARD:4183425527098909]]"
         },
         {
           "from": "shop",
-          "text": "รับทราบค่ะ บัตรเครดิตไม่ต้องส่งในแชทนะคะ ทางร้านจะส่งลิงก์ผ่อนชำระไปที่ [[EMAIL:kittipong.ch@gmail.com]] ค่ะ"
+          "text": "รับทราบค่ะ บัตรเครดิตไม่ต้องส่งในแชทนะคะ ทางร้านจะส่งลิงก์ผ่อนชำระไปที่ [[EMAIL:kittipong.ch@gmail.example]] ค่ะ"
         },
         { "from": "customer", "text": "โอเคครับ" }
       ]

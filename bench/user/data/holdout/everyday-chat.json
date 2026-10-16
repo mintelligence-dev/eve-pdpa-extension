@@ -63,10 +63,13 @@
     {
       "id": "hold-day-06",
       "turns": [
-        { "from": "customer", "text": "ลืมรหัสผ่านค่ะ สมัครไว้ด้วยเมล [[EMAIL:nuttida.w@icloud.com]]" },
+        {
+          "from": "customer",
+          "text": "ลืมรหัสผ่านค่ะ สมัครไว้ด้วยเมล [[EMAIL:nuttida.w@icloud.example]]"
+        },
         {
           "from": "shop",
-          "text": "ส่งลิงก์รีเซ็ตไปที่ [[EMAIL:nuttida.w@icloud.com]] แล้วค่ะ 🔑 ถ้าไม่ได้รับ ติดต่อ [[~SHORTNUM:1175]] ได้ค่ะ"
+          "text": "ส่งลิงก์รีเซ็ตไปที่ [[EMAIL:nuttida.w@icloud.example]] แล้วค่ะ 🔑 ถ้าไม่ได้รับ ติดต่อ [[~SHORTNUM:1175]] ได้ค่ะ"
         },
         { "from": "customer", "text": "ได้แล้วค่ะ" }
       ]

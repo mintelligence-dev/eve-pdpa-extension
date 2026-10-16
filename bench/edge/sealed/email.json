@@ -2,7 +2,7 @@
   "cases": [
     {
       "id": "email-sealed-label-glued-comma",
-      "text": "mail:[[EMAIL:aree.s@yahoo.com]],ขอบคุณค่ะ"
+      "text": "mail:[[EMAIL:aree.s@yahoo.example]],ขอบคุณค่ะ"
     },
     {
       "id": "email-sealed-bracket-at",

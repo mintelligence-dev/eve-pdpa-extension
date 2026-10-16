@@ -59,11 +59,11 @@
         },
         {
           "from": "customer",
-          "text": "บัตรปชช [[TH_NATIONAL_ID:7-6357-74202-87-1]]\nอีเมล [[EMAIL:jintana.p@hotmail.com]]\nบัตร KTC [[CREDIT_CARD:4739451937880396]]"
+          "text": "บัตรปชช [[TH_NATIONAL_ID:7-6357-74202-87-1]]\nอีเมล [[EMAIL:jintana.p@hotmail.example]]\nบัตร KTC [[CREDIT_CARD:4739451937880396]]"
         },
         {
           "from": "shop",
-          "text": "รับทราบค่ะ จะส่งสัญญาไปที่ [[EMAIL:jintana.p@hotmail.com]] ภายในวันนี้นะคะ เลขบัตรเครดิตไม่ต้องส่งในแชทนะคะ"
+          "text": "รับทราบค่ะ จะส่งสัญญาไปที่ [[EMAIL:jintana.p@hotmail.example]] ภายในวันนี้นะคะ เลขบัตรเครดิตไม่ต้องส่งในแชทนะคะ"
         },
         { "from": "customer", "text": "ok ค่ะ" }
       ]

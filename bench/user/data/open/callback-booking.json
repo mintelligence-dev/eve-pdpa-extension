@@ -36,7 +36,7 @@
         { "from": "customer", "text": "เบอร์ติดต่อค่ะ [[PHONE:０９６－６４２－５９９２]]" },
         { "from": "shop", "text": "ขอบคุณค่ะ" },
         { "from": "customer", "text": "ส่งอีกเบอร์จากโน้ตในมือถือค่ะ [[PHONE:090​311​6864]]" },
-        { "from": "customer", "text": "แล้วก็อีเมลนะคะ [[EMAIL:aom.siriporn@icloud.com]]​" },
+        { "from": "customer", "text": "แล้วก็อีเมลนะคะ [[EMAIL:aom.siriporn@icloud.example]]​" },
         { "from": "shop", "text": "รับทราบค่ะ จะให้ฝ่ายขายติดต่อกลับภายในวันนี้ค่ะ" }
       ]
     },

@@ -70,7 +70,7 @@ async function everyVariant() {
   g.processSync('บัตร 4111 1111 1111 1111', { sessionId: 's1' }) // blocked
   for (const boundary of ['prompt', 'tool_input', 'tool_output'])
     g.processSync(`x ${t1}`, { sessionId: 's1', boundary })
-  const hashed = g.processSync('เมล somchai@gmail.com', { sessionId: 's1' }).text.slice(4)
+  const hashed = g.processSync('เมล somchai@gmail.example', { sessionId: 's1' }).text.slice(4)
   g.processSync(`${t1} ${t2} [tok:bbbbbbbbbbbbbbbb] ${hashed}`, {
     sessionId: 's1',
     boundary: 'outbound',

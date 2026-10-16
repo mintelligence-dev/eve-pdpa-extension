@@ -213,7 +213,7 @@ check('TK14 tokens and resolve values for other formats (observed, not documente
   for (const text of [
     'เบอร์ +66 91 888 7777',
     'เบอร์ ０９１８８８７７７７',
-    'เมล Somchai.K@Gmail.com',
+    'เมล Somchai.K@Gmail.example',
   ]) {
     const res = guard.processSync(text, { sessionId: 's' })
     const purpose = res.findings[0].entity === 'EMAIL' ? 'send_receipt' : 'otp_send'

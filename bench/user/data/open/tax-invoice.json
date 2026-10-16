@@ -7,7 +7,7 @@
         { "from": "shop", "text": "ได้ค่ะ รบกวนขอชื่อ ที่อยู่ เลขประจำตัวผู้เสียภาษี และอีเมลสำหรับส่ง e-Tax ค่ะ" },
         {
           "from": "customer",
-          "text": "นายณัฐวุฒิ บุญมา\n[[~HOUSE:199/45]] ถ.รามคำแหง แขวงหัวหมาก เขตบางกะปิ กทม. [[~POSTCODE:10240]]\nเลขผู้เสียภาษี [[TH_NATIONAL_ID:2-7261-52474-71-0]]\n[[EMAIL:nattawut.boonma@gmail.com]]"
+          "text": "นายณัฐวุฒิ บุญมา\n[[~HOUSE:199/45]] ถ.รามคำแหง แขวงหัวหมาก เขตบางกะปิ กทม. [[~POSTCODE:10240]]\nเลขผู้เสียภาษี [[TH_NATIONAL_ID:2-7261-52474-71-0]]\n[[EMAIL:nattawut.boonma@gmail.example]]"
         },
         {
           "from": "shop",
@@ -31,10 +31,10 @@
       "turns": [
         {
           "from": "customer",
-          "text": "ออกใบกำกับในนามส่วนตัวค่ะ เลขบัตร[[TH_NATIONAL_ID:5762075717481]]ค่ะ ส่งไปที่ [[EMAIL:Supaporn.K@SCG.com]] นะคะ"
+          "text": "ออกใบกำกับในนามส่วนตัวค่ะ เลขบัตร[[TH_NATIONAL_ID:5762075717481]]ค่ะ ส่งไปที่ [[EMAIL:Supaporn.K@Scg.example]] นะคะ"
         },
         { "from": "shop", "text": "ได้ค่ะ คุณสุภาพร" },
-        { "from": "customer", "text": "ถ้าส่งไม่ถึงส่งที่[[EMAIL:supaporn_k1988@yahoo.co.th]]แทนค่ะ" },
+        { "from": "customer", "text": "ถ้าส่งไม่ถึงส่งที่[[EMAIL:supaporn_k1988@yahoo.co.example]]แทนค่ะ" },
         { "from": "shop", "text": "รับทราบค่ะ 🙏" }
       ]
     },
@@ -43,7 +43,7 @@
       "turns": [
         {
           "from": "customer",
-          "text": "ส่งข้อมูลออกใบกำกับให้ทั้งทีมค่ะ ก๊อปมาจาก excel นะคะ\nชื่อ\tเลขบัตร\tเบอร์\tอีเมล\nสมศักดิ์ มีสุข\t[[TH_NATIONAL_ID:1807836568611]]\t[[PHONE:848994599]]\t[[EMAIL:somsak.m@kbank.co.th]]\nอรอุมา แสงทอง\t[[TH_NATIONAL_ID:4511103796443]]\t[[PHONE:918507729]]\t[[EMAIL:orauma.s@kbank.co.th]]"
+          "text": "ส่งข้อมูลออกใบกำกับให้ทั้งทีมค่ะ ก๊อปมาจาก excel นะคะ\nชื่อ\tเลขบัตร\tเบอร์\tอีเมล\nสมศักดิ์ มีสุข\t[[TH_NATIONAL_ID:1807836568611]]\t[[PHONE:848994599]]\t[[EMAIL:somsak.m@kbank.co.example]]\nอรอุมา แสงทอง\t[[TH_NATIONAL_ID:4511103796443]]\t[[PHONE:918507729]]\t[[EMAIL:orauma.s@kbank.co.example]]"
         },
         {
           "from": "shop",
@@ -58,11 +58,11 @@
       "turns": [
         {
           "from": "customer",
-          "text": "Need a tax invoice pls. Thai ID [[TH_NATIONAL_ID:3145​6220​48641]] , name Pakorn T., email [[EMAIL:pakorn.t@live.com]]"
+          "text": "Need a tax invoice pls. Thai ID [[TH_NATIONAL_ID:3145​6220​48641]] , name Pakorn T., email [[EMAIL:pakorn.t@live.example]]"
         },
         {
           "from": "shop",
-          "text": "Noted ka, we will send the e-tax invoice to [[EMAIL:pakorn.t@live.com]] 🙏"
+          "text": "Noted ka, we will send the e-tax invoice to [[EMAIL:pakorn.t@live.example]] 🙏"
         },
         { "from": "customer", "text": "thx" }
       ]

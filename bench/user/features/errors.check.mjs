@@ -15,7 +15,7 @@ const tokenise = definePolicy({
   entitySet: '0.1',
   entities: { PHONE: { action: 'tokenise', allowedPurposes: ['otp_send'] } },
 })
-const VALUES = ['0918887777', '091-888-7777', 'somchai.k@gmail.com', '1103702071811']
+const VALUES = ['0918887777', '091-888-7777', 'somchai.k@gmail.example', '1103702071811']
 
 check('ER1 PdpaError is exported, extends Error and carries code', () => {
   const e = new PdpaError('ERR_PDPA_NO_SESSION', 'test')
@@ -94,13 +94,13 @@ check('ER3 error messages never contain real values', async (t) => {
     }
   }
   const g = createGuard({ policy: tokenise, onAudit: () => {} })
-  grab(() => g.processSync('เบอร์ 0918887777 เมล somchai.k@gmail.com'))
+  grab(() => g.processSync('เบอร์ 0918887777 เมล somchai.k@gmail.example'))
   await grabAsync(() => g.resolve('0918887777', { purpose: 'otp_send' }))
   grab(() =>
     definePolicy({
       entitySet: '0.1',
       entities: { PHONE: { action: 'redact' } },
-      allowlist: { exact: ['0918887777'], exacts: ['somchai.k@gmail.com'] },
+      allowlist: { exact: ['0918887777'], exacts: ['somchai.k@gmail.example'] },
     }),
   )
   grab(() =>
@@ -112,7 +112,7 @@ check('ER3 error messages never contain real values', async (t) => {
   grab(() => parsePolicy('{"entitySet":"0.1","entities":{},"allowlist":{"exact":["0918887777",]}}'))
   grab(() =>
     parsePolicy(
-      '{"entitySet":"0.1","entities":{},"allowlist":{"exact":["somchai.k@gmail.com" "x"]}}',
+      '{"entitySet":"0.1","entities":{},"allowlist":{"exact":["somchai.k@gmail.example" "x"]}}',
     ),
   )
   const asyncStore = {

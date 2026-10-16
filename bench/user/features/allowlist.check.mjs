@@ -118,7 +118,7 @@ check('AL7 the allowlist applies to every entity', () => {
 check('AL8 a real value next to an allowlisted one is still protected', () => {
   const g = shop({ exact: ['02-123-4567', 'support@myshop.co.th'] })
   const r = g.guard.processSync(
-    'ร้าน 02-123-4567 support@myshop.co.th หรือมือถือคุณนก 0918887777 nok@gmail.com',
+    'ร้าน 02-123-4567 support@myshop.co.th หรือมือถือคุณนก 0918887777 nok@gmail.example',
   )
   assert.equal(r.text, 'ร้าน 02-123-4567 support@myshop.co.th หรือมือถือคุณนก [เบอร์โทร] [อีเมล]')
 })

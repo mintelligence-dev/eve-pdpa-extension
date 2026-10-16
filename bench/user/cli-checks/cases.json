@@ -562,8 +562,8 @@
     "id": "CL-leak-noheader",
     "args": ["scan", "cli-checks/fixtures/noheader.csv"],
     "exit": 2,
-    "stdoutExcludes": ["089-123-4567", "somchai.k@gmail.com"],
-    "note": "a CSV with no header row. manual run: FAIL — 'columns are: m1, เบอร์ 089-123-4567 ค่ะ, somchai.k@gmail.com'. If that line goes to stderr this case cannot catch it (the case format has no stderrExcludes)"
+    "stdoutExcludes": ["089-123-4567", "somchai.k@gmail.example"],
+    "note": "a CSV with no header row. manual run: FAIL — 'columns are: m1, เบอร์ 089-123-4567 ค่ะ, somchai.k@gmail.example'. If that line goes to stderr this case cannot catch it (the case format has no stderrExcludes)"
   },
   {
     "id": "CL-zip",

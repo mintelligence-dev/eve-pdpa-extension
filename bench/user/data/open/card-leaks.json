@@ -44,7 +44,7 @@
           "from": "shop",
           "text": "รับทราบค่ะ ขอยืนยันบัตรลงท้าย [[~MASKED:0271]] นะคะ ใบเสนอราคาเลขที่ [[~INVOICE:QT-2568-0412]] ส่งให้ทางอีเมลค่ะ"
         },
-        { "from": "customer", "text": "ส่งที่ [[EMAIL:siriwan.k@thaiunion-trading.co.th]] นะคะ" },
+        { "from": "customer", "text": "ส่งที่ [[EMAIL:siriwan.k@thaiunion-trading.co.example]] นะคะ" },
         { "from": "shop", "text": "ส่งเรียบร้อยค่ะ 📧" },
         { "from": "customer", "text": "ได้รับแล้วค่ะ" }
       ]

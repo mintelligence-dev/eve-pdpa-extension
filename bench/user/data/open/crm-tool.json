@@ -6,7 +6,7 @@
         { "from": "customer", "text": "เช็คแต้มสะสมให้หน่อยค่ะ" },
         {
           "from": "tool",
-          "text": "{\"lineUserId\":\"[[LINE_USER_ID:U08ae79a3abfc7272f1f9739b21e7031e]]\",\"name\":\"กมลชนก\",\"tier\":\"Gold\",\"points\":[[~QTY:1520]],\"phone\":\"[[PHONE:0623087554]]\",\"email\":\"[[EMAIL:kamonchanok.r@gmail.com]]\"}"
+          "text": "{\"lineUserId\":\"[[LINE_USER_ID:U08ae79a3abfc7272f1f9739b21e7031e]]\",\"name\":\"กมลชนก\",\"tier\":\"Gold\",\"points\":[[~QTY:1520]],\"phone\":\"[[PHONE:0623087554]]\",\"email\":\"[[EMAIL:kamonchanok.r@gmail.example]]\"}"
         },
         { "from": "shop", "text": "คุณกมลชนกมีแต้มสะสม [[~QTY:1,520]] แต้มค่ะ ระดับ Gold นะคะ ✨" },
         { "from": "customer", "text": "ขอบคุณค่า" }
@@ -53,12 +53,12 @@
       "turns": [
         {
           "from": "tool",
-          "text": "merge_candidates: [{\"userId\":\"[[LINE_USER_ID:U079effc0f1edb4a4cb2e8bbfd8f6d60f]]\",\"email\":\"[[EMAIL:noppadol.w@outlook.com]]\"},{\"userId\":\"[[LINE_USER_ID:U0c1884f418f65bbd855afa78845e3739]]\",\"email\":\"[[EMAIL:noppadol.w@outlook.com]]\"}] source_group=[[~GROUPID:C3795a0364a18a03d17f2a649fce10264]]"
+          "text": "merge_candidates: [{\"userId\":\"[[LINE_USER_ID:U079effc0f1edb4a4cb2e8bbfd8f6d60f]]\",\"email\":\"[[EMAIL:noppadol.w@outlook.example]]\"},{\"userId\":\"[[LINE_USER_ID:U0c1884f418f65bbd855afa78845e3739]]\",\"email\":\"[[EMAIL:noppadol.w@outlook.example]]\"}] source_group=[[~GROUPID:C3795a0364a18a03d17f2a649fce10264]]"
         },
         { "from": "shop", "text": "คุณนพดลมีบัญชีสมาชิก 2 บัญชี ต้องการรวมแต้มไหมคะ" },
         {
           "from": "customer",
-          "text": "รวมเลยครับ ใช้อีเมล [[EMAIL:Noppadol.W@outlook.com]] อันเดียวกัน"
+          "text": "รวมเลยครับ ใช้อีเมล [[EMAIL:Noppadol.W@outlook.example]] อันเดียวกัน"
         },
         {
           "from": "tool",
@@ -73,7 +73,7 @@
         { "from": "customer", "text": "อยากอัปเดตที่อยู่จัดส่งค่ะ" },
         {
           "from": "tool",
-          "text": "profile(user=[[LINE_USER_ID:Uede80d2e202e1d8dbcb0026ab8957860]]) name=ธีรวัฒน์ phone=[[PHONE:+66 65 385 9419]] email=[[EMAIL:teerawat.p@ku.th]] default_card=[[CREDIT_CARD:5432750270914150]] address=\"[[~HOUSE:9/99]] ซ.ลาดพร้าว 101\""
+          "text": "profile(user=[[LINE_USER_ID:Uede80d2e202e1d8dbcb0026ab8957860]]) name=ธีรวัฒน์ phone=[[PHONE:+66 65 385 9419]] email=[[EMAIL:teerawat.p@ku.example]] default_card=[[CREDIT_CARD:5432750270914150]] address=\"[[~HOUSE:9/99]] ซ.ลาดพร้าว 101\""
         },
         { "from": "shop", "text": "ได้ค่ะ แจ้งที่อยู่ใหม่ได้เลยค่ะ" },
         {

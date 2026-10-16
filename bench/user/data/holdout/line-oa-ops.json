@@ -17,7 +17,7 @@
         { "from": "customer", "text": "สั่งไปเมื่อวานด้วยเบอร์ [[PHONE:064-657-6007]] ค่ะ" },
         {
           "from": "tool",
-          "text": "crm.find(phone=[[PHONE:0646576007]]) → {user:[[LINE_USER_ID:Ub80239e51fef705a9ea791f2af43e258]], email:[[EMAIL:sasithorn.b@gmail.com]], orders:([[~ORDER:SO2510-0450]])}"
+          "text": "crm.find(phone=[[PHONE:0646576007]]) → {user:[[LINE_USER_ID:Ub80239e51fef705a9ea791f2af43e258]], email:[[EMAIL:sasithorn.b@gmail.example]], orders:([[~ORDER:SO2510-0450]])}"
         },
         { "from": "shop", "text": "เจอออเดอร์แล้วค่ะ [[~ORDER:SO2510-0450]] กำลังแพ็คค่ะ" },
         { "from": "customer", "text": "ขอบคุณค่ะ" }
@@ -69,7 +69,7 @@
       "turns": [
         {
           "from": "tool",
-          "text": "broadcast_report: delivered=[[~QTY:1204]] failed=[[~QTY:2]]\nfailed: [[LINE_USER_ID:U4fb0423fdf913571fa08d27cbc960c8f]] (blocked), [[LINE_USER_ID:U268a3b10604bbf3253804b78add8c4f1]] (blocked)\nfallback_email: [[EMAIL:thanyarat.k@yahoo.com]], [[EMAIL:mongkol_99@hotmail.com]]"
+          "text": "broadcast_report: delivered=[[~QTY:1204]] failed=[[~QTY:2]]\nfailed: [[LINE_USER_ID:U4fb0423fdf913571fa08d27cbc960c8f]] (blocked), [[LINE_USER_ID:U268a3b10604bbf3253804b78add8c4f1]] (blocked)\nfallback_email: [[EMAIL:thanyarat.k@yahoo.example]], [[EMAIL:mongkol_99@hotmail.example]]"
         },
         { "from": "shop", "text": "ส่งอีเมลแจ้งโปรสำรองให้ลูกค้า [[~QTY:2]] ท่านแล้วค่ะ" },
         { "from": "customer", "text": "ok ค่ะ" }

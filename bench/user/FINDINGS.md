@@ -25,7 +25,7 @@ only; causes are left to whoever fixes them.
    - English shorthand: `refund to my acc 4535567048 bangkok bank`, `a/c 453-5-56704-8`
    - tool fields: `topup(msisdn=66616699461, …)`
    - a correction with no cue: `เอ้ย ผิด 425-6-46627-3 อันนี้ถูกค่ะ`
-   - a Thai IDN address: `สมชาย@ไทยแลนด์.ไทย` (documented as out of scope)
+   - a Thai IDN address: `สมชาย@ตัวอย่าง.ไทย` (documented as out of scope)
 
 ## 🟡 Wrong or undocumented behaviour
 

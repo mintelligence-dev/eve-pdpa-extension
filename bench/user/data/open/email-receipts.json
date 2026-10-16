@@ -5,8 +5,8 @@
       "turns": [
         { "from": "customer", "text": "ขอใบเสร็จทางอีเมลได้ไหมคะ" },
         { "from": "shop", "text": "ได้ค่ะ แจ้งอีเมลได้เลยค่ะ" },
-        { "from": "customer", "text": "[[EMAIL:WANNISA.TH@GMAIL.COM]]" },
-        { "from": "shop", "text": "ส่งใบเสร็จไปที่ [[EMAIL:wannisa.th@gmail.com]]. แล้วนะคะ" },
+        { "from": "customer", "text": "[[EMAIL:WANNISA.TH@GMAIL.EXAMPLE]]" },
+        { "from": "shop", "text": "ส่งใบเสร็จไปที่ [[EMAIL:wannisa.th@gmail.example]]. แล้วนะคะ" },
         { "from": "customer", "text": "ได้รับแล้วค่ะ ขอบคุณค่า" }
       ]
     },
@@ -15,15 +15,15 @@
       "turns": [
         {
           "from": "tool",
-          "text": "form_response #[[~REF:2025101400231]]\nชื่อ: ปิยะพงษ์ ศรีวงศ์\nอีเมล: [[EMAIL:piyapong.sri@mahidol.ac.th]]\nเบอร์: [[PHONE:065-939-2653]]\nสินค้าที่สนใจ: ชุดของขวัญ [[~SKU:GIFT-SET-B]] จำนวน [[~QTY:20]] ชุด"
+          "text": "form_response #[[~REF:2025101400231]]\nชื่อ: ปิยะพงษ์ ศรีวงศ์\nอีเมล: [[EMAIL:piyapong.sri@mahidol.ac.example]]\nเบอร์: [[PHONE:065-939-2653]]\nสินค้าที่สนใจ: ชุดของขวัญ [[~SKU:GIFT-SET-B]] จำนวน [[~QTY:20]] ชุด"
         },
         {
           "from": "shop",
-          "text": "สวัสดีค่ะคุณปิยะพงษ์ ได้รับแบบฟอร์มแล้วนะคะ ใบเสนอราคาจะส่งไปที่ [[EMAIL:piyapong.sri@mahidol.ac.th]] ค่ะ"
+          "text": "สวัสดีค่ะคุณปิยะพงษ์ ได้รับแบบฟอร์มแล้วนะคะ ใบเสนอราคาจะส่งไปที่ [[EMAIL:piyapong.sri@mahidol.ac.example]] ค่ะ"
         },
         {
           "from": "customer",
-          "text": "ขอบคุณครับ ช่วยส่งสำเนาให้ฝ่ายจัดซื้อด้วย [[EMAIL:kanokwan.procure@mahidol.ac.th]]"
+          "text": "ขอบคุณครับ ช่วยส่งสำเนาให้ฝ่ายจัดซื้อด้วย [[EMAIL:kanokwan.procure@mahidol.ac.example]]"
         },
         { "from": "shop", "text": "ได้ค่ะ ส่งให้ทั้งสองอีเมลเรียบร้อยค่ะ" }
       ]
@@ -33,12 +33,12 @@
       "turns": [
         {
           "from": "customer",
-          "text": "ติดต่อกลับทางเมลนะคะ 📧<[[EMAIL:chompoo_pink99@hotmail.com]]>"
+          "text": "ติดต่อกลับทางเมลนะคะ 📧<[[EMAIL:chompoo_pink99@hotmail.example]]>"
         },
         { "from": "shop", "text": "รับทราบค่ะ" },
         {
           "from": "customer",
-          "text": "หรือเมลที่ทำงาน mailto:[[EMAIL:chompoonuch.s@siamcement.co.th]] ก็ได้ค่ะ"
+          "text": "หรือเมลที่ทำงาน mailto:[[EMAIL:chompoonuch.s@siamcement.co.example]] ก็ได้ค่ะ"
         },
         { "from": "shop", "text": "จะส่งรายละเอียดไปที่อีเมลส่วนตัวนะคะ 🙏" },
         { "from": "customer", "text": "ค่า" }
@@ -48,15 +48,15 @@
       "id": "open-mail-04",
       "turns": [
         { "from": "shop", "text": "รบกวนขออีเมลสำหรับส่งคูปองค่ะ" },
-        { "from": "customer", "text": "[[EMAIL:tanaporn.k@gmial.com]]" },
-        { "from": "customer", "text": "ขอโทษค่ะ พิมพ์ผิด [[EMAIL:tanaporn.k@gmail.com]] ค่ะ" },
+        { "from": "customer", "text": "[[EMAIL:tanaporn.k@gmial.example]]" },
+        { "from": "customer", "text": "ขอโทษค่ะ พิมพ์ผิด [[EMAIL:tanaporn.k@gmail.example]] ค่ะ" },
         {
           "from": "shop",
-          "text": "ส่งคูปอง [[~PROMO:BDAY200]] ไปที่ [[EMAIL:tanaporn.k@gmail.com]] แล้วค่ะ 🎂"
+          "text": "ส่งคูปอง [[~PROMO:BDAY200]] ไปที่ [[EMAIL:tanaporn.k@gmail.example]] แล้วค่ะ 🎂"
         },
         {
           "from": "customer",
-          "text": "เจ้านายใช้อีเมลภาษาไทยด้วยนะคะ [[EMAIL:สมชาย@ไทยแลนด์.ไทย]] ส่งให้ด้วยได้ไหม"
+          "text": "เจ้านายใช้อีเมลภาษาไทยด้วยนะคะ [[EMAIL:สมชาย@ตัวอย่าง.ไทย]] ส่งให้ด้วยได้ไหม"
         },
         { "from": "shop", "text": "ขออภัยค่ะ ระบบยังส่งไปอีเมลภาษาไทยไม่ได้ค่ะ" }
       ]
@@ -66,7 +66,7 @@
       "turns": [
         {
           "from": "customer",
-          "text": "Please add these to the wholesale newsletter: [[EMAIL:mark.h@bkk-imports.com]], [[EMAIL:jenny.w@bkk-imports.com]], [[EMAIL:nok.accounting@bkk-imports.com]]"
+          "text": "Please add these to the wholesale newsletter: [[EMAIL:mark.h@bkk-imports.example]], [[EMAIL:jenny.w@bkk-imports.example]], [[EMAIL:nok.accounting@bkk-imports.example]]"
         },
         {
           "from": "shop",

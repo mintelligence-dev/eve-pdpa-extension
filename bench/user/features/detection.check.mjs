@@ -131,10 +131,10 @@ check('DT10 a phone inside a tracking number, or right after a letter, is found'
 
 check('DT11 EMAIL — plain, capitals, plus-addressing, sub-domain, Thai text around it', () => {
   for (const v of [
-    'somchai.k@gmail.com',
-    'SOMCHAI.K@GMAIL.COM',
-    'pim+shop@hotmail.co.th',
-    'a.b-c_d@mail.cmu.ac.th',
+    'somchai.k@gmail.example',
+    'SOMCHAI.K@GMAIL.EXAMPLE',
+    'pim+shop@hotmail.co.example',
+    'a.b-c_d@mail.cmu.ac.example',
   ]) {
     assertFound(`ส่งไปที่ ${v} นะคะ`, v, 'EMAIL')
     assertFound(`อีเมล${v}ค่ะ`, v, 'EMAIL')

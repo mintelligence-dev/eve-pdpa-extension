@@ -49,7 +49,7 @@ const SAMPLES = {
   PHONE: '091-888-7777',
   BANK_ACCOUNT: '123-4-56789-0',
   CREDIT_CARD: '4111 1111 1111 1111',
-  EMAIL: 'somchai.k@gmail.com',
+  EMAIL: 'somchai.k@gmail.example',
   LINE_USER_ID: 'U4af4980629f1ae0b2b5c2f7a7b2e9c3d',
 }
 const CUE = {
@@ -94,7 +94,7 @@ check('AC9 mask + keep last4 leaves the last four characters visible — every e
     PHONE: 'xxx-xxx-7777',
     BANK_ACCOUNT: 'xxx-x-xx789-0',
     CREDIT_CARD: 'xxxx xxxx xxxx 1111',
-    EMAIL: 'xxxxxxxxxxxxxxx.com',
+    EMAIL: 'xxxxxxxxxxxxxxxxxxxmple',
     LINE_USER_ID: `${'x'.repeat(29)}9c3d`,
   }
   for (const e of Object.keys(SAMPLES))

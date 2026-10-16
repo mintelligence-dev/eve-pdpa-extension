@@ -8,7 +8,7 @@ import { BUILTIN_DETECTORS, createEngine, normalise } from '@eve-pdpa-extension/
 import { check, makeGuard } from '../lib/kit.mjs'
 
 const SAME = 'โอนเข้าพร้อมเพย์ 0918887777 ค่ะ' // PHONE and BANK_ACCOUNT claim the same 10 digits
-const NESTED = 'เมล 0918887777@gmail.com นะคะ' // PHONE inside EMAIL
+const NESTED = 'เมล 0918887777@gmail.example นะคะ' // PHONE inside EMAIL
 const IN_LINE = 'userId U0918887777abcdef0123456789abcdef' // PHONE inside LINE_USER_ID
 const CUED = 'เลขบัญชี 091-888-7777 (พร้อมเพย์)' // a mobile number after the account cue
 const ctx = { sessionId: 's', boundary: 'inbound' }
@@ -44,7 +44,7 @@ check('OV1 a match under its threshold never hides another', () => {
   )
   assert.equal(
     run({ PHONE: { action: 'redact' }, EMAIL: { action: 'redact', minConfidence: 1 } }, NESTED),
-    'เมล [เบอร์โทร]@gmail.com นะคะ',
+    'เมล [เบอร์โทร]@gmail.example นะคะ',
   )
 })
 

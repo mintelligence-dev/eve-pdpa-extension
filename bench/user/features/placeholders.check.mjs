@@ -7,7 +7,7 @@ import { allRules, check, makeGuard } from '../lib/kit.mjs'
 const SAMPLES = {
   TH_NATIONAL_ID: 'เลขบัตร 1-1037-02071-81-1',
   PHONE: 'เบอร์ 091-888-7777',
-  EMAIL: 'เมล somchai.k@gmail.com',
+  EMAIL: 'เมล somchai.k@gmail.example',
   BANK_ACCOUNT: 'เลขบัญชี 123-4-56789-0',
   CREDIT_CARD: 'บัตร 4111 1111 1111 1111',
   LINE_USER_ID: 'userId U4af4980629f1ae0b2b5c2f7a7b2e9c3d',

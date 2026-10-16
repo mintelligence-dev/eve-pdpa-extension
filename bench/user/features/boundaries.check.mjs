@@ -48,7 +48,7 @@ check('BD4 detection and actions are the same at every boundary', () => {
   const { guard } = makeGuard({ entities: allRules({ action: 'redact' }) })
   for (const boundary of BOUNDARIES) {
     assert.equal(
-      guard.processSync('เบอร์ 091-888-7777 เมล a.b@gmail.com', { boundary }).text,
+      guard.processSync('เบอร์ 091-888-7777 เมล a.b@gmail.example', { boundary }).text,
       'เบอร์ [เบอร์โทร] เมล [อีเมล]',
       boundary,
     )

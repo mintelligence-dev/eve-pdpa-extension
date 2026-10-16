@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict'
 import { check, makeGuard } from '../lib/kit.mjs'
 
-const TEXT = 'เบอร์ 091-888-7777 เมล somchai.k@gmail.com'
+const TEXT = 'เบอร์ 091-888-7777 เมล somchai.k@gmail.example'
 
 check('UN1 default redact: an unlisted entity is redacted, its finding says unmapped: true', () => {
   const { guard, scans } = makeGuard({ entities: { PHONE: { action: 'redact' } } })
@@ -19,7 +19,7 @@ check('UN1 default redact: an unlisted entity is redacted, its finding says unma
 check('UN2 flag: left as is, reported unmapped with action flag', () => {
   const { guard } = makeGuard({ entities: { PHONE: { action: 'redact' } }, onUnmapped: 'flag' })
   const r = guard.processSync(TEXT)
-  assert.equal(r.text, 'เบอร์ [เบอร์โทร] เมล somchai.k@gmail.com')
+  assert.equal(r.text, 'เบอร์ [เบอร์โทร] เมล somchai.k@gmail.example')
   const email = r.findings.find((f) => f.entity === 'EMAIL')
   assert.deepEqual([email.action, email.unmapped], ['flag', true])
 })
@@ -30,7 +30,7 @@ check('UN3 ignore: left as is, silently', () => {
     onUnmapped: 'ignore',
   })
   const r = guard.processSync(TEXT)
-  assert.equal(r.text, 'เบอร์ [เบอร์โทร] เมล somchai.k@gmail.com')
+  assert.equal(r.text, 'เบอร์ [เบอร์โทร] เมล somchai.k@gmail.example')
   assert.equal(
     r.findings.some((f) => f.entity === 'EMAIL'),
     false,

@@ -36,7 +36,7 @@ check('CX3 a phone with no leading 0 is found when the context asks for a phone'
 check('CX4 context is not scanned: values inside it are neither reported nor acted on', () => {
   const { guard, scans } = makeGuard({ entities: allRules({ action: 'redact' }) })
   const r = guard.processSync('โอเคค่ะ', {
-    context: 'โทรหาร้านที่ 0918887777 หรือเมล shop.owner@gmail.com นะคะ',
+    context: 'โทรหาร้านที่ 0918887777 หรือเมล shop.owner@gmail.example นะคะ',
   })
   assert.equal(r.text, 'โอเคค่ะ')
   assert.deepEqual(r.findings, [])

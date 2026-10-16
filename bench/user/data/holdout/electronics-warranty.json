@@ -7,11 +7,11 @@
         { "from": "shop", "text": "ขอชื่อ เลขบัตรประชาชน และอีเมลค่ะ" },
         {
           "from": "customer",
-          "text": "ชาตรี ศักดิ์ดี / [[TH_NATIONAL_ID:8820355704879]] / [[EMAIL:chatree.sakdee@gmail.com]]"
+          "text": "ชาตรี ศักดิ์ดี / [[TH_NATIONAL_ID:8820355704879]] / [[EMAIL:chatree.sakdee@gmail.example]]"
         },
         {
           "from": "tool",
-          "text": "warranty_register(serial=[[~SERIAL:HP7K2M90314]], owner_id=[[TH_NATIONAL_ID:8820355704879]], email=[[EMAIL:chatree.sakdee@gmail.com]]) → until [[~DATE:2027-10-14]]"
+          "text": "warranty_register(serial=[[~SERIAL:HP7K2M90314]], owner_id=[[TH_NATIONAL_ID:8820355704879]], email=[[EMAIL:chatree.sakdee@gmail.example]]) → until [[~DATE:2027-10-14]]"
         },
         { "from": "shop", "text": "ลงทะเบียนเรียบร้อยค่ะ รับประกันถึง [[~DATE:14 ต.ค. 2570]] ค่ะ" }
       ]
@@ -67,7 +67,7 @@
         { "from": "customer", "text": "ส่งเครื่องไปซ่อมนานแล้ว ยังไม่ได้คืนเลย" },
         {
           "from": "tool",
-          "text": "{\"rma\":\"[[~REF:RMA-68-02214]]\",\"customer\":{\"citizen_id\":\"[[TH_NATIONAL_ID:8524728810454]]\",\"phone\":\"[[PHONE:+66658743147]]\",\"email\":\"[[EMAIL:benjamas.t@hotmail.com]]\"},\"status\":\"waiting_parts\",\"eta\":\"[[~DATE:2025-10-21]]\"}"
+          "text": "{\"rma\":\"[[~REF:RMA-68-02214]]\",\"customer\":{\"citizen_id\":\"[[TH_NATIONAL_ID:8524728810454]]\",\"phone\":\"[[PHONE:+66658743147]]\",\"email\":\"[[EMAIL:benjamas.t@hotmail.example]]\"},\"status\":\"waiting_parts\",\"eta\":\"[[~DATE:2025-10-21]]\"}"
         },
         { "from": "shop", "text": "เครื่องรออะไหล่อยู่ค่ะ คาดว่าจะเสร็จ [[~DATE:21 ต.ค.]] นะคะ" },
         { "from": "customer", "text": "โอเคค่ะ" }
@@ -89,11 +89,11 @@
         { "from": "shop", "text": "ได้ค่ะ ขอเลขบัตรประชาชนและอีเมลสำหรับส่งสัญญาเช่าค่ะ" },
         {
           "from": "customer",
-          "text": "เลขบัตร: [[TH_NATIONAL_ID:6341444935506]]\nemail: [[EMAIL:pongsakorn.photo@gmail.com]]"
+          "text": "เลขบัตร: [[TH_NATIONAL_ID:6341444935506]]\nemail: [[EMAIL:pongsakorn.photo@gmail.example]]"
         },
         {
           "from": "tool",
-          "text": "rental_contract(id_no=[[TH_NATIONAL_ID:6341444935506]], email=[[EMAIL:pongsakorn.photo@gmail.com]]) → contract=[[~REF:RT-6810-118]]"
+          "text": "rental_contract(id_no=[[TH_NATIONAL_ID:6341444935506]], email=[[EMAIL:pongsakorn.photo@gmail.example]]) → contract=[[~REF:RT-6810-118]]"
         },
         { "from": "shop", "text": "ส่งสัญญาเช่าแล้วค่ะ 📄" }
       ]

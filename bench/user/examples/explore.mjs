@@ -7,7 +7,7 @@ const KEY = 'explore-key-0123456789abcdef0123456789'
 const samples = {
   TH_NATIONAL_ID: 'เลขบัตร 1-1037-02071-81-1 ค่ะ',
   PHONE: 'เบอร์ 091-888-7777 ค่ะ',
-  EMAIL: 'เมล somchai.k@gmail.com ค่ะ',
+  EMAIL: 'เมล somchai.k@gmail.example ค่ะ',
   BANK_ACCOUNT: 'เลขบัญชี 123-4-56789-0 ค่ะ',
   CREDIT_CARD: 'บัตร 4111 1111 1111 1111 ค่ะ',
   LINE_USER_ID: 'userId U4af4980629f1ae0b2b5c2f7a7b2e9c3d ค่ะ',
@@ -57,6 +57,6 @@ for (const lang of ['th', 'en']) {
 // unmapped
 for (const onUnmapped of ['redact', 'flag', 'ignore']) {
   const g = run({ PHONE: { action: 'redact' } }, { onUnmapped })
-  const r = g.processSync('เบอร์ 091-888-7777 เมล somchai.k@gmail.com')
+  const r = g.processSync('เบอร์ 091-888-7777 เมล somchai.k@gmail.example')
   console.log('onUnmapped', onUnmapped, JSON.stringify(r))
 }

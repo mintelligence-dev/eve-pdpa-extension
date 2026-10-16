@@ -11,6 +11,7 @@ import { check, makeGuard } from '../lib/kit.mjs'
 
 // Every runtime export the type declarations list (types-only exports are not runtime values).
 const FUNCTIONS = [
+  'allowlistDigestForm',
   'isValidLuhn',
   'createEngine',
   'definePolicy',

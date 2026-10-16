@@ -33,7 +33,7 @@ writeFileSync(
 // TSV
 writeFileSync(
   `${dir}/chats.tsv`,
-  'id\ttext\nt1\tเบอร์ 089-123-4567 ค่ะ\nt2\tสวัสดี, มีของไหม\nt3\tเมล nok.pattra@gmail.com\n',
+  'id\ttext\nt1\tเบอร์ 089-123-4567 ค่ะ\nt2\tสวัสดี, มีของไหม\nt3\tเมล nok.pattra@gmail.example\n',
 )
 // An empty but valid zip archive (end-of-central-directory record only).
 writeFileSync(`${dir}/chats.zip`, Buffer.from([0x50, 0x4b, 0x05, 0x06, ...new Array(18).fill(0)]))

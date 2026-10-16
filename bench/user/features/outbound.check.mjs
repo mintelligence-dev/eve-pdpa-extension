@@ -105,7 +105,9 @@ check('OB7 text that only resembles a token ([tok:abc]) is sent as written', () 
 
 check('OB8 a hash written into a reply → the placeholder, rendered kind hash', (t) => {
   const x = g()
-  const hashed = x.guard.processSync('เมล somchai.k@gmail.com', { sessionId: 's' }).text.slice(4)
+  const hashed = x.guard
+    .processSync('เมล somchai.k@gmail.example', { sessionId: 's' })
+    .text.slice(4)
   assert.match(hashed, /^\[EMAIL:[a-z]{16}\]$/)
   assert.equal(
     x.guard.processSync(`ส่งใบเสร็จไปที่ ${hashed} แล้ว`, { sessionId: 's', boundary: 'outbound' }).text,

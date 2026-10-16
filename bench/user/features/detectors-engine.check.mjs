@@ -34,7 +34,7 @@ check(
   () => {
     const cases = [
       [phoneDetector, 'เบอร์ 091-888-7777', 'PHONE'],
-      [emailDetector, 'เมล a.b@gmail.com', 'EMAIL'],
+      [emailDetector, 'เมล a.b@gmail.example', 'EMAIL'],
       [bankAccountDetector, 'เลขบัญชี 123-4-56789-0', 'BANK_ACCOUNT'],
       [creditCardDetector, 'บัตร 4111 1111 1111 1111', 'CREDIT_CARD'],
       [lineUserIdDetector, 'U4af4980629f1ae0b2b5c2f7a7b2e9c3d', 'LINE_USER_ID'],
@@ -138,7 +138,7 @@ check(
     )
     assert.deepEqual([...engine.entitiesSupported].sort(), [...ENTITY_TYPES].sort())
     const res = engine.runSync(
-      normalise('เมล 0918887777@gmail.com และ ID 1-1037-02071-81-1 โทร 02-123-4567'),
+      normalise('เมล 0918887777@gmail.example และ ID 1-1037-02071-81-1 โทร 02-123-4567'),
       ctx,
     )
     assert.ok(res.raw.length >= res.candidates.length)

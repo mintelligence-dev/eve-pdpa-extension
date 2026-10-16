@@ -43,9 +43,9 @@
       "turns": [
         {
           "from": "customer",
-          "text": "ขอใบเสร็จส่งเมลค่ะ (คุณแอน: [[EMAIL:Ann.Pattra@Outlook.co.th]])"
+          "text": "ขอใบเสร็จส่งเมลค่ะ (คุณแอน: [[EMAIL:Ann.Pattra@Outlook.co.example]])"
         },
-        { "from": "shop", "text": "ส่งแล้วค่ะ เช็คที่ [[EMAIL:ann.pattra@outlook.co.th]] นะคะ" },
+        { "from": "shop", "text": "ส่งแล้วค่ะ เช็คที่ [[EMAIL:ann.pattra@outlook.co.example]] นะคะ" },
         { "from": "customer", "text": "ได้รับแล้วค่ะ" }
       ]
     },

@@ -58,7 +58,7 @@ check('HS6 one person written differently gives one hash ("recognise the same pe
       'เบอร์ +66 91 888 7777',
       'เบอร์ ０９１８８８７７７７',
     ],
-    email: ['เมล somchai.k@gmail.com', 'เมล Somchai.K@Gmail.com'],
+    email: ['เมล somchai.k@gmail.example', 'เมล Somchai.K@Gmail.example'],
     id: ['เลขบัตร 1103702071811', 'เลขบัตร 1-1037-02071-81-1', 'เลขบัตร 1 1037 02071 81 1'],
     card: ['บัตร 4111111111111111', 'บัตร 4111 1111 1111 1111', 'บัตร 4111-1111-1111-1111'],
   }

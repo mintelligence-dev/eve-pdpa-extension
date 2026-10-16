@@ -51,7 +51,7 @@
       "turns": [
         {
           "from": "customer",
-          "text": "ซื้อประกันจอแตกค่ะ เลขบัตร [[TH_NATIONAL_ID:20833 23638 294]] เบอร์ [[PHONE:066-713-6837]] เมล [[EMAIL:naruemol.j@gmail.com]]"
+          "text": "ซื้อประกันจอแตกค่ะ เลขบัตร [[TH_NATIONAL_ID:20833 23638 294]] เบอร์ [[PHONE:066-713-6837]] เมล [[EMAIL:naruemol.j@gmail.example]]"
         },
         {
           "from": "tool",
@@ -59,7 +59,7 @@
         },
         {
           "from": "shop",
-          "text": "ออกกรมธรรม์เรียบร้อยค่ะ เลขที่ [[~REF:PH-2568-118204]] ส่งไปที่ [[EMAIL:naruemol.j@gmail.com]] แล้วนะคะ"
+          "text": "ออกกรมธรรม์เรียบร้อยค่ะ เลขที่ [[~REF:PH-2568-118204]] ส่งไปที่ [[EMAIL:naruemol.j@gmail.example]] แล้วนะคะ"
         },
         { "from": "customer", "text": "ขอบคุณค่ะ" }
       ]
