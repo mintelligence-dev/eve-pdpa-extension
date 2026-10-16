@@ -169,8 +169,8 @@ function isAsciiLetter(ch: string | undefined): boolean {
 
 /**
  * The words of a key name that say its value is a point in time. A LINE
- * webhook sends `"timestamp":1760259091075`, thirteen digits that pass the id
- * checksum one time in eleven; a tool logs `ts=` and `updated=` the same way
+ * webhook sends `"timestamp":` with thirteen digits of milliseconds, which
+ * pass the id checksum one time in eleven; a tool logs `ts=` and `updated=` the same way
  * (user benchmark, 14 Oct, D20). No one stores a person's id, phone or account
  * under one of these.
  */
@@ -217,9 +217,10 @@ const LIST_LEAD = /^[ \t\-*•·>)(.\d]*$/
 
 /**
  * The number of a numbered line, "3. " or "3) ". A reading that starts on it
- * takes the item's number as its first digit: "3. 2 0882 84039 53 9" read as
- * the thirteen digits 3-2-0882-84039-53, passed the checksum by chance, and
- * left the id's last digit in the clear (user benchmark, 14 Oct).
+ * takes the item's number as its first digit: "3. " before an id typed
+ * 1-4-5-2-1 was read as thirteen digits starting with the 3, passed the
+ * checksum by chance, and left the id's last digit in the clear (user
+ * benchmark, 14 Oct).
  */
 const ITEM_NUMBER = /^\d{1,2}[.)] /
 

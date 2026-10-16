@@ -60,7 +60,7 @@ function hasKnownIssuer(d: string): boolean {
 // or a narrow chat bubble arrives split across two lines.
 //
 // Deliberately not capped at 19 digits. A cap lets the regex decide where the
-// card ends, and it decides wrong: "4532 0151 1283 0366 11/27" became an
+// card ends, and it decides wrong: "4012 8888 8888 1881 11/27" became an
 // 18-digit run that failed Luhn, and the card in front of the expiry was never
 // tried on its own (edge cases, 13 Oct). The run is split into groups and read
 // below instead, the way the phone detector does it (D17).
@@ -92,7 +92,7 @@ function belongsToRun(ch: string): boolean {
  * is scored as Luhn alone: still reported, below the default threshold.
  *
  * Only words for a reference. An order number is not on the list: a customer
- * pays for an order with a card, and "order 1234 จ่ายด้วย 4532…" must still
+ * pays for an order with a card, and "order 1234 จ่ายด้วย 4012…" must still
  * hide the card. The id detector takes no such cue on purpose — a Thai bill
  * payment's Ref1 is the payer's national id more often than not.
  */
@@ -128,7 +128,7 @@ function asReference(text: string, start: number, end: number): boolean {
  * card's gaps fall after each fourth digit (4-4-4-4, and the 13- and 19-digit
  * cards), or after the fourth and tenth (Amex 4-6-5, Diners 4-6-4).
  *
- * Except a single space under a real issuer: "4532 0151 128 30366" and a card
+ * Except a single space under a real issuer: "4012 888 8888 81881" and a card
  * typed a digit at a time were found before 13 Oct and missed after (code
  * review, 13 Oct). A phone or a young id has no issuer, and an id that starts
  * like one is covered at 0.98, not dropped as a 0.6 reading would drop it. A
@@ -195,7 +195,7 @@ interface Reading {
 /**
  * Which of two overlapping readings is the card: a real issuer, then the
  * card's own gaps, then the wider, then the earlier. Widest-first from the
- * left took the 0.6 "1000 4532 0151 1283" and never tried the Visa after 1000
+ * left took the 0.6 "1006 4012 8888 8888" and never tried the Visa after 1006
  * (code review, 13 Oct).
  */
 function stronger(a: Reading, b: Reading): number {

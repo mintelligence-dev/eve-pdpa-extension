@@ -36,9 +36,9 @@ const CARD_GROUPING = '1-4-5-2-1'
 /**
  * Words that say a number is a national id, so any spacing will do.
  *
- * Customers retype an id from memory, not off the card: "เลขบัตร 822 263 034
- * 9016", or 5-5-3 — the card's grouping alone missed them, and 20833 23638 294
- * came out as a phone number with the first five digits in the clear (user
+ * Customers retype an id from memory, not off the card: 3-3-3-4 after เลขบัตร,
+ * or 5-5-3 — the card's grouping alone missed them, and an id typed 5-5-3
+ * came out as a phone number with its first five digits in the clear (user
  * benchmark, 13 Oct, D19). With one of these words near and the check digit
  * right, the "0812345678 123" coincidence needs both at once.
  */
@@ -70,7 +70,7 @@ const CONFIDENCE_CHECKSUM = 0.99
 const CONFIDENCE_LOOSE = 0.97
 /**
  * Right shape, wrong check digit — or right check digit under a key that names
- * a time (`keyedAsTime`): a LINE webhook's `"timestamp":1760259091075` is
+ * a time (`keyedAsTime`): a LINE webhook's `"timestamp"` is
  * thirteen digits in milliseconds and passes the checksum one time in eleven
  * (user benchmark, 14 Oct, D20). Kept so a policy can ask to see near misses.
  */

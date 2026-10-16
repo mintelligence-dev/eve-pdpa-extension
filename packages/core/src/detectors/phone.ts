@@ -180,7 +180,7 @@ function nationalGrouping(groups: readonly string[], prefix: Prefix): string {
   return sizes.join('-')
 }
 
-// Letters do not count, on purpose. "TH0956318274" is a tracking number and is
+// Letters do not count, on purpose. "TH0812345678" is a tracking number and is
 // caught as a phone number (benchmark, 6 Oct) — but if glued letters ended the
 // run, anyone could hide a real number by typing "x0918887777". A false
 // positive costs readability; a false negative costs the number.

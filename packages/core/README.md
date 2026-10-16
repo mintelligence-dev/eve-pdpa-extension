@@ -262,7 +262,7 @@ All are `PdpaError`; check `error.code` · error messages never contain real val
 - **Bank accounts need a cue** such as "เลขบัญชี" (account number) or "โอนเข้า" (transfer to), or pass `context` · a bare 10-digit number cannot be told apart from an order number
 - **A phone number with no leading 0 needs a cue** such as "เบอร์" or "โทร", or pass `context` · `918887777` (Excel drops the 0) and `66918887777` (66 without the +) alone cannot be told apart from an order number · the same goes for a landline written with dots, `02.123.4567`
 - **Short public numbers are not detected, on purpose** · `191`, `1669` and the like identify no one, and hiding them would stop a bot from saying "call 1669"
-- **Phone numbers inside parcel tracking numbers are caught too**, e.g. `TH0956318274` · this is deliberate: if letters before the digits stopped detection, anyone could hide a real number by typing `x0918887777`
+- **Phone numbers inside parcel tracking numbers are caught too**, e.g. `TH0812345678` · this is deliberate: if letters before the digits stopped detection, anyone could hide a real number by typing `x0918887777`
 - **Credit cards from an unknown issuer** get confidence 0.6, below the default 0.95 · to protect them too, set `minConfidence: 0.6`
 - **Confidence values and cues were set by reasoning**, not yet tuned on real customer data
 
