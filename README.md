@@ -29,10 +29,7 @@ internal/            consumer fixture 3 ตัว พิสูจน์ว่า
 scripts/             gate ที่บังคับข้อจำกัดของ core · smoke test 5 runtime · demo
 ```
 
-โฟลเดอร์ใน `packages/` ที่มีแต่ `README.md` **ไม่มี `package.json` โดยตั้งใจ** — pnpm จึงมองไม่เห็น
-และ CI ไม่รายงานว่า build/test ผ่านสำหรับแพ็กเกจที่ยังไม่มีโค้ด
 
-เอกสารออกแบบและบันทึกการตัดสินใจ (D1–D15) เก็บไว้นอก repo
 
 ## พัฒนา
 
