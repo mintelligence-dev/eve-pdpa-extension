@@ -23,3 +23,6 @@ packages/*/NOTICE
 
 # Claude Code agents, hooks and skills for this machine (edge-loop, user-bench) — kept local
 .claude/
+
+# Vercel CLI link and build state (apps/webhook) — project and team ids, never committed
+.vercel/
