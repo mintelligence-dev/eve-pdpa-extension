@@ -110,6 +110,73 @@ describe('round trip', () => {
   })
 })
 
+// D21: the token reaches resolve through an AI's tool call, spelt however the
+// model copied it — read it the way an outbound reply is read.
+describe('resolve reads a token the way an outbound reply does', () => {
+  function issued() {
+    const { guard, resolves } = guardWith()
+    const token = tokenIn(guard.processSync('เบอร์ 0918887777').text)
+    return { guard, resolves, id: token.slice(5, -1) }
+  }
+
+  it('takes the brackets dropped, half dropped, or with spaces inside', () => {
+    const { guard, id } = issued()
+    for (const t of [`tok:${id}`, `[tok:${id}`, `tok:${id}]`, `[ tok:${id} ]`]) {
+      expect(guard.resolveSync(t, { purpose: 'otp_send' }), t).toEqual({
+        ok: true,
+        value: '0918887777',
+      })
+    }
+  })
+
+  it('takes spaces and quotes round the whole value', () => {
+    const { guard, id } = issued()
+    for (const t of [
+      ` [tok:${id}] `,
+      `"[tok:${id}]"`,
+      `'tok:${id}'`,
+      `“[tok:${id}]”`,
+      `\n${id}\n`,
+    ]) {
+      expect(guard.resolveSync(t, { purpose: 'otp_send' }).ok, t).toBe(true)
+    }
+  })
+
+  it('reads the same token in a reply and in a tool call', async () => {
+    const { guard, id } = issued()
+    const spelt = `tok:${id}`
+    const reply = guard.processSync(`ส่งไปที่ ${spelt} แล้วค่ะ`, { boundary: 'outbound' })
+    expect(reply.text).not.toContain(id)
+    await expect(guard.resolve(spelt, { purpose: 'otp_send' })).resolves.toMatchObject({ ok: true })
+  })
+
+  it('still refuses anything that is not one token on its own', () => {
+    const { guard, resolves, id } = issued()
+    for (const t of [
+      `เบอร์ [tok:${id}] ค่ะ`,
+      `[tok:${id}] [tok:${id}]`,
+      `[TOK:${id}]`,
+      `tok: ${id}`,
+      `[tok:${id.slice(1)}]`,
+    ]) {
+      expect(guard.resolveSync(t, { purpose: 'otp_send' }), t).toEqual({
+        ok: false,
+        reason: 'not_found',
+      })
+    }
+    // What was passed in never reaches audit — only an id this guard issued would.
+    expect(JSON.stringify(resolves())).not.toContain('เบอร์')
+  })
+
+  it('changes nothing else: another purpose is still refused', () => {
+    const { guard, id } = issued()
+    expect(guard.resolveSync(`tok:${id}`, { purpose: 'marketing' })).toEqual({
+      ok: false,
+      reason: 'purpose_not_allowed',
+    })
+  })
+})
+
 describe('same value, same session, same token — D8.4', () => {
   it('reuses the token for a repeated value', () => {
     const { guard } = guardWith()

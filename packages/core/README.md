@@ -60,6 +60,9 @@ out.text   // 'ส่ง OTP ไปที่ xxx-xxx-๗๗๗๗ แล้ว�
 - `process` returns a Promise · with a sync token store (the default) you can use `processSync`
 - Returned text **keeps the customer's own formatting**: Thai digits stay Thai digits, and characters that are not personal data are left untouched
 - A token lasts `ttlSec` (300 s by default, at most 3600) · after that `resolve` returns `{ ok: false, reason: 'expired' }` and an outbound reply shows `[ข้อมูลที่ปิดไว้]` · have the tool tell the AI to ask the customer for the value again, and set `ttlSec` to fit how long your flow takes
+- **Tell the AI to pass the token on as it sees it** · in the system prompt, e.g. "customer details appear as `[tok:…]` · pass them to tools exactly as written, never guess the real value", and in the tool's parameter description · the AI never needs the real value, and never gets it: the tool resolves, then answers "sent", not the number
+- `resolve` takes the token however the model copied it — with the brackets, without them or with one missing, with spaces inside them, wrapped in quotes, or the bare id · one token on its own, never a sentence containing one
+- **OTP:** to verify who someone is, send to the number on record, not one typed in the chat · `tokenise` fits a tool that needs a value from the chat — sending a code to a new number, looking a customer up by phone, updating a CRM · the tool must limit how often it sends, since nothing here stops a chat asking for code after code
 
 ### `context` — when the customer replies with just a number
 
