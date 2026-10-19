@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PdpaError } from '../src/errors.js'
+import { createTokeniser } from '../src/actions/tokenise.js'
 import { createGuard } from '../src/guard.js'
 import { definePolicy } from '../src/policy.js'
 import { createMemoryTokenStore } from '../src/tokens/memory-store.js'
@@ -178,7 +179,9 @@ describe('resolve reads a token the way an outbound reply does', () => {
         reason: 'not_found',
       })
     }
-    expect(performance.now() - started).toBeLessThan(200)
+    // Generous for coverage on a CI runner, as many-values.test.ts is; the old
+    // regex took about 20 s on the 200,000-space case alone.
+    expect(performance.now() - started).toBeLessThan(2000)
     // Up to 256 characters is read; a real token wrapped in that much is not.
     expect(guard.resolveSync(`${' '.repeat(230)}[tok:${id}]`, { purpose: 'otp_send' }).ok).toBe(
       true,
@@ -429,20 +432,23 @@ describe('the memory store', () => {
 
 describe('the reuse index past its limit (D22)', () => {
   it('is trimmed from its own records, without asking the store about each entry', () => {
-    const inner = createMemoryTokenStore({ maxTokens: 30_000 })
+    // The tokeniser alone, not the guard: 20,001 messages through every
+    // detector overran the 5 s limit under coverage on CI.
+    const tokeniser = createTokeniser((n) => globalThis.crypto.getRandomValues(new Uint8Array(n)))
     let gets = 0
-    const store: TokenStore = {
-      ...inner,
-      get(id) {
-        gets++
-        return inner.get(id)
-      },
-    }
-    const { guard } = guardWith({ tokenStore: store })
     // 20,001 different numbers: one past the index limit. Each is new, so no
     // issue asks the store anything; only a prune that reads the store would.
     for (let i = 0; i <= 20_000; i++) {
-      guard.processSync(`เบอร์ 08${String(i).padStart(8, '0')}`)
+      const steps = tokeniser.issue(
+        's1',
+        'PHONE',
+        `08${String(i).padStart(8, '0')}`,
+        PHONE_RULE,
+        undefined,
+      )
+      for (let step = steps.next(); !step.done; step = steps.next(undefined)) {
+        if (step.value.op === 'get') gets++
+      }
     }
     expect(gets).toBe(0)
   })
