@@ -19,7 +19,7 @@ webhook ที่ deploy จริง · คั่นระหว่างแอ
 | `policies/otp.json` | บอทที่ส่ง OTP · tokenise แค่เบอร์ แลกได้เฉพาะ `otp_send` |
 | `lib/webhook.ts` | สร้าง webhook ครั้งเดียวต่อ cold start · audit ลง `console.log` |
 | `api/*.ts` | 4 route · แต่ละไฟล์เรียก handler หนึ่งตัว |
-| `vercel.json` | install เฉพาะแอปนี้กับแพ็กเกจที่มันใช้ · build core + http ก่อน · ส่ง `policies/` ไปกับทุก function |
+| `vercel.json` | function รันที่สิงคโปร์ (`sin1`) · install เฉพาะแอปนี้กับแพ็กเกจที่มันใช้ · build core + http ก่อน · ส่ง `policies/` ไปกับทุก function |
 | `package.json` · `tsconfig.json` | core + http แบบ `workspace:*` · `pnpm typecheck` ตรวจแอปนี้ด้วย |
 
 ## deploy
@@ -30,8 +30,9 @@ webhook ที่ deploy จริง · คั่นระหว่างแอ
 2. ไม่ต้องตั้ง Install / Build Command เอง — `vercel.json` สั่งแล้ว:
    - install: `pnpm install --frozen-lockfile --filter @eve-pdpa-extension/webhook...` (แอปนี้กับสิ่งที่มันใช้ ไม่ลง bun / deno / playwright ของทั้ง repo)
    - build: `pnpm --filter @eve-pdpa-extension/webhook^... build` (core + http)
-3. Node.js 22.x · repo ใช้ pnpm 12 (`packageManager` ใน `package.json` ที่ root) · ถ้า Vercel ใช้ pnpm คนละรุ่น ตั้งตัวแปร `ENABLE_EXPERIMENTAL_COREPACK=1`
-4. ตั้งตัวแปรตามตารางด้านล่าง แล้ว deploy
+3. **region:** `vercel.json` ตั้ง `sin1` (สิงคโปร์) ไว้แล้ว — ไม่ตั้ง Vercel จะรันที่สหรัฐ (`iad1`) ข้อความลูกค้าจะถูกประมวลผลที่นั่นก่อนถูกปิด · สร้าง Upstash ที่ `ap-southeast-1` ให้อยู่ที่เดียวกัน · แจ้ง DPO ว่าข้อมูลประมวลผลและเก็บ token ที่สิงคโปร์
+4. Node.js 22.x · repo ใช้ pnpm 12 (`packageManager` ใน `package.json` ที่ root) · ถ้า Vercel ใช้ pnpm คนละรุ่น ตั้งตัวแปร `ENABLE_EXPERIMENTAL_COREPACK=1`
+5. ตั้งตัวแปรตามตารางด้านล่าง แล้ว deploy
 
 ลองในเครื่องก่อน: รันสองคำสั่งใน `vercel.json` จากโฟลเดอร์นี้ แล้ว `pnpm typecheck`
 

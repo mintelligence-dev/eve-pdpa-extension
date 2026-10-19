@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["sin1"],
   "installCommand": "pnpm install --frozen-lockfile --filter @eve-pdpa-extension/webhook...",
   "buildCommand": "pnpm --filter @eve-pdpa-extension/webhook^... build",
   "functions": {
