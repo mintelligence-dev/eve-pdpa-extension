@@ -44,7 +44,7 @@ webhook ที่ deploy จริง · คั่นระหว่างแอ
 | `FORWARD_URL` · `REPLY_URL` | **ไม่บังคับ** · ค่าตั้งต้นเมื่อ request ไม่ได้ระบุ `forwardTo` / `replyTo` |
 | `ALLOWED_DESTINATIONS` | **ไม่บังคับ** · URL แบบ https คั่นด้วย `,` · ตั้งแล้ว request ระบุได้เฉพาะปลายทางในรายการ |
 | `PDPA_RESOLVE_SECRET` | `openssl rand -hex 32` อีกค่า · ให้เฉพาะระบบที่ต้องใช้ค่าจริง |
-| `UPSTASH_REDIS_REST_URL` · `UPSTASH_REDIS_REST_TOKEN` | Vercel → Storage → Upstash Redis · Vercel ใส่ให้เมื่อเชื่อมกับโปรเจกต์ |
+| `KV_REST_API_URL` · `KV_REST_API_TOKEN` | Vercel → Storage → Upstash → Upstash for Redis (Singapore · Free) · Vercel ใส่ให้เมื่อเชื่อมกับโปรเจกต์ · ต่อ Upstash เองไม่ผ่าน Vercel ใช้ `UPSTASH_REDIS_REST_URL` · `UPSTASH_REDIS_REST_TOKEN` ได้ · **ไม่ใช่** integration "Redis" (Redis Cloud) ซึ่งไม่มี REST |
 
 ไม่มีบอทไหนต้องใช้ค่าจริง: ลบ `otp` ออกจาก `policies` แล้วลบ `resolveSecret` กับ `tokenStore` ใน `lib/webhook.ts` · ไม่ต้องตั้งสามค่าล่าง ไม่ต้องมี Upstash
 

@@ -16,6 +16,19 @@ function env(name: string): string {
   return value
 }
 
+/**
+ * The first of `names` that is set. The same value goes by different names:
+ * Vercel's Upstash integration sets KV_REST_API_*, Upstash's own console
+ * shows UPSTASH_REDIS_REST_*.
+ */
+function envOneOf(...names: string[]): string {
+  for (const name of names) {
+    const value = process.env[name]
+    if (value !== undefined && value !== '') return value
+  }
+  throw new Error(`set ${names.join(' or ')} in the project's environment variables`)
+}
+
 /** An environment variable that may be left unset: the option, or nothing at all. */
 function optional<K extends string>(key: K, name: string): { [P in K]?: string } {
   const value = process.env[name]
@@ -46,8 +59,8 @@ export const webhook: Webhook = createWebhook({
   // nothing needs Upstash.
   resolveSecret: env('PDPA_RESOLVE_SECRET'),
   tokenStore: createUpstashTokenStore({
-    url: env('UPSTASH_REDIS_REST_URL'),
-    token: env('UPSTASH_REDIS_REST_TOKEN'),
+    url: envOneOf('KV_REST_API_URL', 'UPSTASH_REDIS_REST_URL'),
+    token: envOneOf('KV_REST_API_TOKEN', 'UPSTASH_REDIS_REST_TOKEN'),
   }),
 
   // Into the function logs, which Vercel keeps for an hour (Hobby) or a day
