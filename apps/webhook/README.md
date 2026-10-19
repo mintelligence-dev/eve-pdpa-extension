@@ -1,8 +1,8 @@
-# ตัวอย่าง: webhook บน Vercel
+# webhook บน Vercel
 
-ตั้ง `@eve-pdpa-extension/http` เป็น webhook คั่นระหว่างแอปแชทกับระบบที่ตอบ (เช่น AI) · ปิดข้อมูลส่วนบุคคลทั้งขาเข้าและขาออก
+webhook ที่ deploy จริง · คั่นระหว่างแอปแชทกับระบบที่ตอบ (เช่น AI) · ปิดข้อมูลส่วนบุคคลทั้งขาเข้าและขาออก
 
-> ⚠️ **ยัง deploy ไม่ได้** — ตัวอย่างดึง `@eve-pdpa-extension/http` จาก npm ซึ่งยังไม่ได้ปล่อย
+ใช้ `@eve-pdpa-extension/core` และ `@eve-pdpa-extension/http` **จาก repo นี้** (`workspace:*`) · 0.1 ไม่ปล่อย `http` ขึ้น npm
 
 ```
 แอปแชท ──POST /api/inbound──▶  webhook  ──▶ FORWARD_URL (ระบบที่ตอบ)
@@ -19,7 +19,21 @@
 | `policies/otp.json` | บอทที่ส่ง OTP · tokenise แค่เบอร์ แลกได้เฉพาะ `otp_send` |
 | `lib/webhook.ts` | สร้าง webhook ครั้งเดียวต่อ cold start · audit ลง `console.log` |
 | `api/*.ts` | 4 route · แต่ละไฟล์เรียก handler หนึ่งตัว |
-| `vercel.json` | ส่ง `policies/` ไปกับทุก function |
+| `vercel.json` | install เฉพาะแอปนี้กับแพ็กเกจที่มันใช้ · build core + http ก่อน · ส่ง `policies/` ไปกับทุก function |
+| `package.json` · `tsconfig.json` | core + http แบบ `workspace:*` · `pnpm typecheck` ตรวจแอปนี้ด้วย |
+
+## deploy
+
+> ⚠️ **ยังไม่เคย deploy จริง** · ขั้นตอนตามแบบ monorepo ที่ใช้ pnpm · ลองครั้งแรกแล้วแก้ข้อนี้ให้ตรง
+
+1. Vercel → Add New → Project → เลือก repo · **Root Directory = `apps/webhook`** · ต้องเปิด *Include files outside the Root Directory* (แอปใช้ `packages/core` และ `packages/http`)
+2. ไม่ต้องตั้ง Install / Build Command เอง — `vercel.json` สั่งแล้ว:
+   - install: `pnpm install --frozen-lockfile --filter @eve-pdpa-extension/webhook...` (แอปนี้กับสิ่งที่มันใช้ ไม่ลง bun / deno / playwright ของทั้ง repo)
+   - build: `pnpm --filter @eve-pdpa-extension/webhook^... build` (core + http)
+3. Node.js 22.x · repo ใช้ pnpm 12 (`packageManager` ใน `package.json` ที่ root) · ถ้า Vercel ใช้ pnpm คนละรุ่น ตั้งตัวแปร `ENABLE_EXPERIMENTAL_COREPACK=1`
+4. ตั้งตัวแปรตามตารางด้านล่าง แล้ว deploy
+
+ลองในเครื่องก่อน: รันสองคำสั่งใน `vercel.json` จากโฟลเดอร์นี้ แล้ว `pnpm typecheck`
 
 ## ตั้งค่า (Vercel → Project → Settings → Environment Variables)
 
@@ -80,4 +94,4 @@ export async function POST(request: Request) {
 
 ## audit
 
-ตัวอย่างพิมพ์ audit ลง log ของ Vercel ซึ่งเก็บ 1 ชั่วโมง (Hobby) หรือ 1 วัน (Pro) · **ก่อนใช้กับลูกค้าจริงต้องส่งไปที่ที่เก็บถาวร** เช่น log drain หรือฐานข้อมูล โดยเฉพาะ event `token.resolve` ที่บอกว่าใครแลกค่าจริงไปเพื่ออะไร · audit ไม่มีค่าจริงอยู่เลย
+ตอนนี้ webhook พิมพ์ audit ลง log ของ Vercel ซึ่งเก็บ 1 ชั่วโมง (Hobby) หรือ 1 วัน (Pro) · **ก่อนใช้กับลูกค้าจริงต้องส่งไปที่ที่เก็บถาวร** เช่น log drain หรือฐานข้อมูล โดยเฉพาะ event `token.resolve` ที่บอกว่าใครแลกค่าจริงไปเพื่ออะไร · audit ไม่มีค่าจริงอยู่เลย

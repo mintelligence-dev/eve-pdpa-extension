@@ -1,4 +1,4 @@
-// The policies in examples/vercel are what someone copies first. They must
+// The policies in apps/webhook are what the deployed webhook runs with. They must
 // load, and a webhook must start with them the way lib/webhook.ts starts it.
 import { readFileSync } from 'node:fs'
 import { createMemoryTokenStore, parsePolicy } from '@eve-pdpa-extension/core'
@@ -8,13 +8,10 @@ import { FORWARD_TO, REPLY_TO, RESOLVE_SECRET, SECRET } from './helpers.js'
 
 const policy = (name: string) =>
   parsePolicy(
-    readFileSync(
-      new URL(`../../../examples/vercel/policies/${name}.json`, import.meta.url),
-      'utf8',
-    ),
+    readFileSync(new URL(`../../../apps/webhook/policies/${name}.json`, import.meta.url), 'utf8'),
   )
 
-describe('examples/vercel', () => {
+describe('apps/webhook', () => {
   it('default does not tokenise, otp tokenises only the phone number for otp_send', () => {
     const tokenised = (name: string) =>
       Object.entries(policy(name).entities)

@@ -1,5 +1,0 @@
-{
-  "functions": {
-    "api/*.ts": { "includeFiles": "policies/**" }
-  }
-}

@@ -1,0 +1,20 @@
+{
+  "name": "@eve-pdpa-extension/webhook",
+  "private": true,
+  "description": "The webhook deployed to Vercel: core and http from this repo, never from npm.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@eve-pdpa-extension/core": "workspace:*",
+    "@eve-pdpa-extension/http": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3"
+  }
+}

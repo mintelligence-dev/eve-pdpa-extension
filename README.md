@@ -26,7 +26,8 @@ packages/cli/        @eve-pdpa-extension/cli    Node เท่านั้น
 packages/http/       @eve-pdpa-extension/http   webhook · web standard เท่านั้น · Node 20+
 packages/eve/        adapter สำหรับ eve · มีแต่ README · กำลังทำ
 packages/{policy,ner,ner-model-th,mcp}/   มีแต่ README · ยังไม่เริ่ม (หลัง 0.1)
-examples/            ไฟล์ policy ตัวอย่าง · examples/vercel ตัวอย่าง deploy webhook (มีเทสบังคับว่า policy โหลดผ่าน)
+apps/webhook/        webhook ที่ deploy ขึ้น Vercel · ใช้ core + http จาก repo ไม่ใช่จาก npm (มีเทสบังคับว่า policy โหลดผ่าน)
+examples/            ไฟล์ policy ตัวอย่าง
 bench/               แม่แบบแชทและโปรแกรมวัดความแม่นยำ · ข้อมูลที่สร้างแล้วไม่ขึ้น git
 internal/            consumer fixture 3 ตัว พิสูจน์ว่า exports map ใช้ได้จริง
 scripts/             gate ที่บังคับข้อจำกัดของ core · smoke test 5 runtime · demo

@@ -218,6 +218,22 @@ importers:
         specifier: 5.0.1
         version: 5.0.1(@types/node@24.10.1)(@vitest/coverage-v8@5.0.1)(vite@8.3.0(@types/node@24.10.1)(yaml@2.9.1))
 
+  apps/webhook:
+    dependencies:
+      '@eve-pdpa-extension/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@eve-pdpa-extension/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+    devDependencies:
+      '@types/node':
+        specifier: 24.10.1
+        version: 24.10.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   internal/consumer-bundler:
     dependencies:
       '@eve-pdpa-extension/core':
