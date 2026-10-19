@@ -125,16 +125,23 @@ export function createUpstashTokenStore(options: UpstashTokenStoreOptions): Toke
     return reply.result
   }
 
-  async function pipeline(commands: readonly (readonly string[])[]): Promise<void> {
-    const replies = await post('/pipeline', commands)
+  /**
+   * Commands run as one transaction (MULTI/EXEC): no other client's command
+   * lands between them. A pipeline only saves round trips — another machine's
+   * write can fall in the middle, and one command can fail while the rest
+   * apply (D22). The results, in order.
+   */
+  async function transaction(commands: readonly (readonly string[])[]): Promise<unknown[]> {
+    const replies = await post('/multi-exec', commands)
     if (!Array.isArray(replies) || replies.length !== commands.length) {
-      throw storeError('Upstash answered a pipeline with the wrong number of replies')
+      throw storeError('Upstash answered a transaction with the wrong number of replies')
     }
-    for (const reply of replies) {
+    return replies.map((reply) => {
       if (reply === null || typeof reply !== 'object' || 'error' in reply) {
         throw storeError('Upstash refused a command')
       }
-    }
+      return (reply as { result?: unknown }).result
+    })
   }
 
   return {
@@ -144,7 +151,9 @@ export function createUpstashTokenStore(options: UpstashTokenStoreOptions): Toke
       const now = Date.now()
       const ttl = Math.max(1, rec.expiresAt - now)
       const session = sessionKey(rec.sessionId)
-      await pipeline([
+      // Together: a token stored but missing from its chat's list could never
+      // be found by clearSession.
+      await transaction([
         ['SET', tokKey(id), JSON.stringify(rec), 'PX', String(ttl)],
         ['SADD', session, id],
         ['PEXPIRE', session, String(Math.max(SESSION_INDEX_MS, ttl))],
@@ -161,12 +170,19 @@ export function createUpstashTokenStore(options: UpstashTokenStoreOptions): Toke
     },
 
     async clearSession(sessionId) {
+      // The list is read and removed in one step. Read, then removed later, a
+      // token another machine added in between lost its place on the list
+      // while it stayed resolvable (D22). Added after this step, it starts a
+      // new list, and the next clearSession finds it.
       const session = sessionKey(sessionId)
-      const ids = await command(['SMEMBERS', session])
+      const [ids] = await transaction([
+        ['SMEMBERS', session],
+        ['DEL', session],
+      ])
       if (!Array.isArray(ids))
         throw storeError('Upstash returned a session list that is not a list')
       const keys = ids.filter((id): id is string => typeof id === 'string').map(tokKey)
-      await command(['DEL', ...keys, session])
+      if (keys.length > 0) await command(['DEL', ...keys])
     },
   }
 }

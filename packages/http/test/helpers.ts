@@ -53,11 +53,14 @@ export async function signed(
 export function fakeUpstash(): {
   fetch: typeof fetch
   commands: string[][]
+  /** The REST path each request went to: '' for one command, '/pipeline', '/multi-exec'. */
+  paths: string[]
   keys: () => string[]
 } {
   const strings = new Map<string, { value: string; expiresAt: number | null }>()
   const sets = new Map<string, { members: Set<string>; expiresAt: number | null }>()
   const commands: string[][] = []
+  const paths: string[] = []
 
   const live = <T extends { expiresAt: number | null }>(map: Map<string, T>, key: string) => {
     const entry = map.get(key)
@@ -109,7 +112,10 @@ export function fakeUpstash(): {
 
   const fake = async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
     const body = JSON.parse(String(init?.body))
-    if (String(url).endsWith('/pipeline')) {
+    const path = /\/(pipeline|multi-exec)$/.exec(String(url))?.[0] ?? ''
+    paths.push(path)
+    // One process, run in turn: a transaction here is atomic by construction.
+    if (path !== '') {
       return Response.json((body as string[][]).map((cmd) => ({ result: run(cmd) })))
     }
     return Response.json({ result: run(body as string[]) })
@@ -118,6 +124,7 @@ export function fakeUpstash(): {
   return {
     fetch: fake as typeof fetch,
     commands,
+    paths,
     keys: () =>
       [...strings.keys(), ...sets.keys()].filter((k) => live(strings, k) ?? live(sets, k)),
   }

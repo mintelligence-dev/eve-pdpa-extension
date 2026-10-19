@@ -58,6 +58,37 @@ describe('createUpstashTokenStore', () => {
     expect(await store.get('dddddddddddddddd')).toBeDefined()
   })
 
+  // D22: other machines write to the same database between this one's requests.
+  it('writes a token and its place on the list in one transaction', async () => {
+    const upstash = fakeUpstash()
+    const store = createUpstashTokenStore({ url: URL_, token: REST_TOKEN, fetch: upstash.fetch })
+    await store.set('bbbbbbbbbbbbbbbb', record())
+    expect(upstash.paths).toEqual(['/multi-exec'])
+  })
+
+  it('a token added while a chat is being cleared keeps its place on the list', async () => {
+    const upstash = fakeUpstash()
+    let store: ReturnType<typeof createUpstashTokenStore>
+    let raced = false
+    // Another machine issues a token right after clearSession's first request.
+    const racing = (async (url: string, init: RequestInit) => {
+      const res = await upstash.fetch(url, init)
+      if (!raced && String(init.body).includes('SMEMBERS')) {
+        raced = true
+        await store.set('cccccccccccccccc', record())
+      }
+      return res
+    }) as typeof fetch
+    store = createUpstashTokenStore({ url: URL_, token: REST_TOKEN, fetch: racing })
+    await store.set('bbbbbbbbbbbbbbbb', record())
+    await store.clearSession('conv_8f2a')
+    expect(await store.get('bbbbbbbbbbbbbbbb')).toBeUndefined()
+    // Issued after the clear began: still live, and on the list, so the next clear finds it.
+    expect(await store.get('cccccccccccccccc')).toBeDefined()
+    await store.clearSession('conv_8f2a')
+    expect(await store.get('cccccccccccccccc')).toBeUndefined()
+  })
+
   it('sends the REST token as a bearer token, and a prefix in front of every key', async () => {
     const seen: Headers[] = []
     const upstash = fakeUpstash()
