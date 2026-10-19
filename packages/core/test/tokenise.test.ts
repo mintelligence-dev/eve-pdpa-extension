@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { PdpaError } from '../src/errors.js'
 import { createTokeniser } from '../src/actions/tokenise.js'
+import { PdpaError } from '../src/errors.js'
 import { createGuard } from '../src/guard.js'
 import { definePolicy } from '../src/policy.js'
 import { createMemoryTokenStore } from '../src/tokens/memory-store.js'
