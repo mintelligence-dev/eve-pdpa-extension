@@ -223,6 +223,35 @@ describe('allowedDestinations', () => {
   })
 })
 
+describe('a destination that carries personal data (D22)', () => {
+  it('is refused, by field, without repeating the value', async () => {
+    const { webhook, sent } = setup()
+    for (const [field, url] of [
+      ['forwardTo', 'https://ai.shop-b.example/reply/0918887777'],
+      ['forwardTo', 'https://ai.shop-b.example/in?user=somchai%40example.com'],
+      ['replyTo', 'https://chat.shop-b.example/reply?to=U4af4980629a1b2c3d4e5f60718293a4b'],
+    ] as const) {
+      const res = await webhook.inbound(
+        await signed({ sessionId: 's1', text: 'x', forwardTo: AI, [field]: url }),
+      )
+      expect(res.status, url).toBe(400)
+      const text = await res.text()
+      expect(JSON.parse(text)).toMatchObject({ field })
+      expect(text).not.toContain('0918887777')
+    }
+    expect(sent).toHaveLength(0)
+  })
+
+  it('lets through the ids a system puts in its own URLs', async () => {
+    const { webhook, sent } = setup()
+    const res = await webhook.inbound(
+      await signed({ sessionId: 's1', text: 'x', forwardTo: `${AI}/conv/8f2a?ref=12345` }),
+    )
+    expect(res.status).toBe(200)
+    expect(sent).toHaveLength(1)
+  })
+})
+
 describe('a destination that redirects', () => {
   // D22: following it would send the signed POST past every check above.
   it('is not followed: the forward counts as failed, and is recorded with its status', async () => {

@@ -316,6 +316,18 @@ describe('/resolve', () => {
     }
   })
 
+  it('refuses a purpose that is itself personal data, before it reaches audit (D22)', async () => {
+    const { webhook, token, events } = await issue()
+    const res = await webhook.resolve(
+      await signed(resolveBody(token, { purpose: '0918887777' }), { secret: RESOLVE_SECRET }),
+    )
+    expect(res.status).toBe(400)
+    const text = await res.text()
+    expect(JSON.parse(text)).toMatchObject({ field: 'purpose' })
+    expect(text).not.toContain('0918887777')
+    expect(JSON.stringify(events)).not.toContain('0918887777')
+  })
+
   it('refuses another purpose, another chat, and an expired token', async () => {
     const { webhook, token } = await issue()
     const ask = async (extra: Record<string, string>) =>

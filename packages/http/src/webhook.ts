@@ -385,15 +385,33 @@ export function createWebhook(options: WebhookOptions): Webhook {
     return found.raw.some((c) => c.confidence >= ID_CONFIDENCE)
   }
 
-  /** sessionId, ref and caller go into audit as written. 400 if one is itself personal data. D10.5. */
+  /**
+   * sessionId, ref, caller and purpose go into audit as written. 400 if one is
+   * itself personal data. D10.5, and purpose since D22.
+   */
   function checkIds(fields: Fields): Response | null {
-    for (const field of ['sessionId', 'ref', 'caller'] as const) {
+    for (const field of ['sessionId', 'ref', 'caller', 'purpose'] as const) {
       const value = fields[field]
       if (value !== undefined && looksPersonal(value)) {
-        return invalid(field, `${field} looks like personal data — use an id your system issues`)
+        const instead =
+          field === 'purpose' ? 'a purpose your policy names' : 'an id your system issues'
+        return invalid(field, `${field} looks like personal data — use ${instead}`)
       }
     }
     return null
+  }
+
+  /**
+   * A destination from the request, read the way an id is: /inbound passes
+   * replyTo on to the answering system as written, and onForward records the
+   * path. A LINE userId or a phone number in it would skip the guard (D22).
+   */
+  function carriesPersonalData(url: URL): boolean {
+    let readable = `${url.hostname}${url.pathname}${url.search}`
+    try {
+      readable = decodeURIComponent(readable)
+    } catch {}
+    return looksPersonal(readable)
   }
 
   function pick(name: string | undefined): { name: string; guard: Guard } | Response {
@@ -485,6 +503,12 @@ export function createWebhook(options: WebhookOptions): Webhook {
     if (named !== undefined) {
       const checked = checkDestination(named, allowed)
       if (typeof checked === 'string') return invalid(field, `${field} ${checked}`)
+      if (carriesPersonalData(checked)) {
+        return invalid(
+          field,
+          `${field} looks like it carries personal data — address the system, not the person`,
+        )
+      }
       return { url: checked, from: 'request' }
     }
     if (fallback !== null) return { url: new URL(fallback), from: 'default' }
