@@ -1,0 +1,19 @@
+# What `vercel deploy` uploads from this repository: only what building
+# apps/webhook needs. Everything else stays here — above all docs/, notes and
+# anything else outside git, which the CLI would otherwise upload with the rest.
+/*
+!/apps
+!/packages
+!/internal
+!/package.json
+!/pnpm-lock.yaml
+!/pnpm-workspace.yaml
+!/.npmrc
+!/tsconfig.base.json
+!/tsconfig.json
+
+# Rebuilt or reinstalled on Vercel.
+**/node_modules
+**/dist
+**/.size
+**/coverage
