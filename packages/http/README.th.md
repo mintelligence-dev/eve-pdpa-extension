@@ -143,6 +143,26 @@ if (!(await verifyRequest(PDPA_SECRET, request.headers, body))) return new Respo
 
 → `{ "ok": true, "value": "0918887777" }` หรือ `{ "ok": false, "reason": "purpose_not_allowed" }` (`not_found` · `session_mismatch` · `expired` · `purpose_not_allowed` · `store_unavailable`) · ทุกครั้งไม่ว่าได้หรือไม่ได้ เป็น audit event `token.resolve`
 
+**โค้ดของ tool เป็นคนเรียก `/resolve` ไม่ใช่ AI** · AI เห็น `[tok:…]` ในข้อความแล้วใส่ใน tool call · tool แลกค่า ใช้ค่า แล้วตอบ AI ว่า "ส่งแล้ว" ไม่ใช่ตัวเบอร์
+
+```ts
+async function sendOtp({ phone }: { phone: string }, sessionId: string) {
+  const body = JSON.stringify({ policy: 'otp', token: phone, sessionId, purpose: 'otp_send', caller: 'otp-service' })
+  const res = await fetch(`${WEBHOOK_URL}/resolve`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_RESOLVE_SECRET, body)) },
+    body,
+  })
+  const r = await res.json()
+  if (!r.ok) return 'ส่งรหัสไม่ได้ ให้ขอเบอร์จากลูกค้าอีกครั้ง'
+  await sms.send(r.value, code)
+  return 'ส่งรหัสแล้ว'
+}
+```
+
+- บอก AI ใน system prompt และคำอธิบายพารามิเตอร์ของ tool ให้ส่ง `[tok:…]` ต่อตามที่เห็น · `token` มาแบบที่ AI คัดลอกได้ — วงเล็บหาย มี quote มีช่องว่างข้างใน — แต่ต้องเป็น token ตัวเดียว
+- **OTP:** ยืนยันตัวตน ให้ส่งไปเบอร์ที่ลงทะเบียนไว้ ไม่ใช่เบอร์ที่พิมพ์ในแชท · tool ต้องจำกัดจำนวนครั้งที่ส่งเอง ไม่มีอะไรในแพ็กเกจนี้กันแชทที่ขอรหัสซ้ำรัว ๆ
+
 `/end-session` ส่ง `{ "sessionId": "conv_8f2a" }` ลบ token ทุกตัวของห้องนั้น · ทั้งสอง route ตอบ 404 ถ้าไม่มีชุดกฎไหน tokenise
 
 ## token บน serverless: `createUpstashTokenStore`

@@ -305,6 +305,17 @@ describe('/resolve', () => {
     expect(await answer(res)).toEqual({ ok: true, value: PHONE_DIGITS })
   })
 
+  it('takes the token however the model copied it into the tool call (D21)', async () => {
+    const { webhook, token } = await issue()
+    const id = token.slice(5, -1)
+    for (const spelt of [`tok:${id}`, `"[tok:${id}]"`, `[ tok:${id} ]`]) {
+      const res = await webhook.resolve(
+        await signed(resolveBody(spelt), { secret: RESOLVE_SECRET }),
+      )
+      expect(await answer(res), spelt).toEqual({ ok: true, value: PHONE_DIGITS })
+    }
+  })
+
   it('refuses another purpose, another chat, and an expired token', async () => {
     const { webhook, token } = await issue()
     const ask = async (extra: Record<string, string>) =>

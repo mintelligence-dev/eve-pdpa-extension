@@ -143,6 +143,26 @@ Signed with **`resolveSecret`**, not `secret` — an app that may send messages 
 
 → `{ "ok": true, "value": "0918887777" }`, or `{ "ok": false, "reason": "purpose_not_allowed" }` (`not_found` · `session_mismatch` · `expired` · `purpose_not_allowed` · `store_unavailable`). Every attempt, allowed or not, is a `token.resolve` audit event.
 
+**The tool's code calls `/resolve`, never the AI.** The AI sees `[tok:…]` in the text and puts it in a tool call; the tool exchanges it, uses the value, and tells the AI "sent" — not the number:
+
+```ts
+async function sendOtp({ phone }: { phone: string }, sessionId: string) {
+  const body = JSON.stringify({ policy: 'otp', token: phone, sessionId, purpose: 'otp_send', caller: 'otp-service' })
+  const res = await fetch(`${WEBHOOK_URL}/resolve`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_RESOLVE_SECRET, body)) },
+    body,
+  })
+  const r = await res.json()
+  if (!r.ok) return 'Could not send the code — ask the customer for the number again'
+  await sms.send(r.value, code)
+  return 'Code sent'
+}
+```
+
+- Tell the AI, in the system prompt and the tool's parameter description, to pass `[tok:…]` on exactly as it sees it · `token` may arrive as the model copied it — brackets dropped, quoted, spaces inside — but must be one token on its own
+- **OTP:** to verify who someone is, send to the number on record, not one typed in the chat · limit how often the tool sends: nothing here stops a chat asking for code after code
+
 `/end-session` with `{ "sessionId": "conv_8f2a" }` deletes every token of that chat. Both routes answer 404 when no policy tokenises.
 
 ## Tokens on serverless: `createUpstashTokenStore`
