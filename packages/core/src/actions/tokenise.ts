@@ -1,14 +1,11 @@
 import { sha256 } from '../crypto/sha256.js'
-import { encodeLetters, tokenId } from '../random.js'
+import { encodeLetters, TOKEN_ID_PATTERN, tokenId } from '../random.js'
 import type { EntityRule, EntityType, RandomSource, ResolveReason, TokenRecord } from '../types.js'
 
 /** D6: long enough for an OTP flow. */
 export const DEFAULT_TTL_SEC = 300
 /** D6: the most a policy may set. */
 export const MAX_TTL_SEC = 3600
-
-/** A token id: sixteen letters with no vowels, so an id never spells a word. */
-export const TOKEN_ID_PATTERN = '[bcdfghjkmnpqrstv]{16}'
 
 /**
  * One token, spelt any way an outbound reply is read in (`TOKEN_IN_REPLY` in
@@ -19,8 +16,30 @@ export const TOKEN_ID_PATTERN = '[bcdfghjkmnpqrstv]{16}'
  */
 const TOKEN = new RegExp(`^(?:\\[?\\s*tok:(${TOKEN_ID_PATTERN})\\s*\\]?|(${TOKEN_ID_PATTERN}))$`)
 
-/** Spaces and quotes round the whole value — a model often quotes what it copies. */
-const WRAPPING = /^[\s"'`“”‘’]+|[\s"'`“”‘’]+$/g
+/** Quotes a model may put round what it copies. Spaces are trimmed as well. */
+const QUOTES = new Set(['"', "'", '`', '“', '”', '‘', '’'])
+
+/**
+ * Longer than any way of writing one token: `[tok:` + 16 letters + `]` with
+ * spaces and quotes round it. Anything longer is not a token, and is not read
+ * further — resolve takes a model's tool argument, which has no length limit.
+ */
+const MAX_TOKEN_INPUT = 256
+
+const wrapping = (ch: string): boolean => QUOTES.has(ch) || ch.trim() === ''
+
+/**
+ * The value without the spaces and quotes round it. Two index walks, not a
+ * regex: `^[…]+|[…]+$` retries from every position of a long inner run, and
+ * took 0.8 s on 40,000 spaces (D22).
+ */
+function unwrap(value: string): string {
+  let start = 0
+  let end = value.length
+  while (start < end && wrapping(value[start] as string)) start++
+  while (end > start && wrapping(value[end - 1] as string)) end--
+  return value.slice(start, end)
+}
 
 const encoder = new TextEncoder()
 
@@ -36,7 +55,8 @@ const REUSE_INDEX_LIMIT = 20_000
  * is not written down anywhere.
  */
 export function parseTokenId(token: string): string | null {
-  const m = TOKEN.exec(token.replace(WRAPPING, ''))
+  if (token.length > MAX_TOKEN_INPUT) return null
+  const m = TOKEN.exec(unwrap(token))
   return m === null ? null : (m[1] ?? m[2] ?? null)
 }
 

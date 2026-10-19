@@ -168,6 +168,26 @@ describe('resolve reads a token the way an outbound reply does', () => {
     expect(JSON.stringify(resolves())).not.toContain('เบอร์')
   })
 
+  it('reads a long value in linear time, and refuses one too long to be a token (D22)', () => {
+    const { guard, id } = issued()
+    // A trim regex backtracks on a long inner run: this took 0.8 s before.
+    const started = performance.now()
+    for (const t of [`a${' '.repeat(40_000)}a`, ' '.repeat(200_000), `"${' '.repeat(100_000)}`]) {
+      expect(guard.resolveSync(t, { purpose: 'otp_send' })).toEqual({
+        ok: false,
+        reason: 'not_found',
+      })
+    }
+    expect(performance.now() - started).toBeLessThan(200)
+    // Up to 256 characters is read; a real token wrapped in that much is not.
+    expect(guard.resolveSync(`${' '.repeat(230)}[tok:${id}]`, { purpose: 'otp_send' }).ok).toBe(
+      true,
+    )
+    expect(guard.resolveSync(`${' '.repeat(240)}[tok:${id}]`, { purpose: 'otp_send' }).ok).toBe(
+      false,
+    )
+  })
+
   it('changes nothing else: another purpose is still refused', () => {
     const { guard, id } = issued()
     expect(guard.resolveSync(`tok:${id}`, { purpose: 'marketing' })).toEqual({

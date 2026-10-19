@@ -1,6 +1,6 @@
 import { createHmac, type Hmac } from '../crypto/hmac.js'
 import { PdpaError } from '../errors.js'
-import { encodeLetters } from '../random.js'
+import { encodeLetters, lettersPattern } from '../random.js'
 import type { EntityType } from '../types.js'
 
 /**
@@ -11,6 +11,9 @@ const MIN_KEY_BYTES = 32
 
 /** 64 bits — the same as a token id. Enough to join records, short enough for a prompt. */
 const OUTPUT_BYTES = 8
+
+/** A hash placeholder's letters, as text holds them. */
+export const HASH_ID_PATTERN: string = lettersPattern(OUTPUT_BYTES)
 
 const encoder = new TextEncoder()
 
