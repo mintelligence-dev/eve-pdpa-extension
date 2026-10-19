@@ -79,7 +79,7 @@ const body = JSON.stringify({
 })
 await fetch(WEBHOOK_URL + '/inbound', {
   method: 'POST',
-  headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_SECRET, body)) },
+  headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_SECRET, 'inbound', body)) },
   body,
 })
 ```
@@ -96,14 +96,25 @@ await fetch(WEBHOOK_URL + '/inbound', {
 
 Any other field is refused, so a value in a field the webhook does not read cannot pass for checked.
 
-What the receiver gets, signed with the same secret: `{ "policy": "otp", "sessionId": "conv_8f2a", "ref": "msg_10293", "text": "เบอร์ [tok:…] ค่ะ", "replyTo": "https://chat.example.com/reply" }`. It sends its answer to `/outbound` with the same `policy`, `sessionId` and `replyTo`. Check what arrives with `verifyRequest`:
+What the receiver gets, signed with the same secret: `{ "policy": "otp", "sessionId": "conv_8f2a", "ref": "msg_10293", "text": "เบอร์ [tok:…] ค่ะ", "replyTo": "https://chat.example.com/reply" }`. It sends its answer to `/outbound` with the same `policy`, `sessionId` and `replyTo`, signed for `outbound`. Check what arrives with `verifyRequest`:
 
 ```ts
 import { verifyRequest } from '@eve-pdpa-extension/http'
 
 const body = await request.text()
-if (!(await verifyRequest(PDPA_SECRET, request.headers, body))) return new Response(null, { status: 401 })
+if (!(await verifyRequest(PDPA_SECRET, 'forward', request.headers, body))) return new Response(null, { status: 401 })
 ```
+
+**Every signature names what it is for**, and one signed for anything else is refused:
+
+| Scope | Signed by | Checked by |
+|---|---|---|
+| `inbound` · `outbound` · `end-session` | the chat app · the answering system · the chat app, with `secret` | the webhook |
+| `resolve` | the system that needs real values, with `resolveSecret` | the webhook |
+| `forward` | the webhook, sending to `forwardTo` | the answering system |
+| `reply` | the webhook, sending to `replyTo` | the chat app |
+
+One secret signs both directions, so without this the message the webhook forwards would also be a valid `/outbound` request: whoever received it could send it back within the tolerance and have it pushed to the customer. A captured request can still be sent again to the same route within the tolerance — use `ref` to drop repeats.
 
 ## Where messages may go
 
@@ -151,7 +162,7 @@ async function sendOtp({ phone }: { phone: string }, sessionId: string) {
   const body = JSON.stringify({ policy: 'otp', token: phone, sessionId, purpose: 'otp_send', caller: 'otp-service' })
   const res = await fetch(`${WEBHOOK_URL}/resolve`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_RESOLVE_SECRET, body)) },
+    headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_RESOLVE_SECRET, 'resolve', body)) },
     body,
   })
   const r = await res.json()

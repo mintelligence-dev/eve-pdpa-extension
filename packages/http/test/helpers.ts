@@ -1,4 +1,4 @@
-import { signRequest } from '../src/signature.js'
+import { type Scope, signRequest } from '../src/signature.js'
 
 // At least 32 bytes each, and different: the webhook refuses anything else.
 export const SECRET = 'test-webhook-secret-0123456789abcdef'
@@ -27,13 +27,17 @@ export function recorder(status: number | 'throw' = 200): {
   return { sent, fetch: fake as typeof fetch }
 }
 
-/** A POST to the webhook, signed with `secret` at `now`. */
+/** A POST to the webhook, signed with `secret` at `now` for `scope` — /inbound unless named. */
 export async function signed(
   body: unknown,
-  { secret = SECRET, now }: { secret?: string; now?: number } = {},
+  {
+    secret = SECRET,
+    now,
+    scope = 'inbound',
+  }: { secret?: string; now?: number; scope?: Scope } = {},
 ): Promise<Request> {
   const text = typeof body === 'string' ? body : JSON.stringify(body)
-  const headers = await signRequest(secret, text, now)
+  const headers = await signRequest(secret, scope, text, now)
   return new Request('https://hook.example/', {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...headers },

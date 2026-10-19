@@ -45,7 +45,12 @@ describe('destinations named in the request', () => {
 
   it('/outbound goes to the replyTo the answering system sends back', async () => {
     const { webhook, sent } = setup()
-    await webhook.outbound(await signed({ sessionId: 'conv_8f2a', text: 'ได้เลยค่ะ', replyTo: APP }))
+    await webhook.outbound(
+      await signed(
+        { sessionId: 'conv_8f2a', text: 'ได้เลยค่ะ', replyTo: APP },
+        { scope: 'outbound' },
+      ),
+    )
     expect(sent[0]?.url).toBe(APP)
     expect(bodyOf(sent[0] as Sent)).not.toHaveProperty('replyTo')
   })
@@ -53,14 +58,16 @@ describe('destinations named in the request', () => {
   it('without one in the request, the webhook falls back to its own', async () => {
     const { webhook, sent } = setup({ forwardTo: FORWARD_TO, replyTo: REPLY_TO })
     await webhook.inbound(await signed({ sessionId: 's1', text: 'x' }))
-    await webhook.outbound(await signed({ sessionId: 's1', text: 'x' }))
+    await webhook.outbound(await signed({ sessionId: 's1', text: 'x' }, { scope: 'outbound' }))
     expect(sent.map((s) => s.url)).toEqual([FORWARD_TO, REPLY_TO])
   })
 
   it('without either, it is a 400 that says which is missing', async () => {
     const { webhook, sent } = setup()
     const inbound = await webhook.inbound(await signed({ sessionId: 's1', text: 'x' }))
-    const outbound = await webhook.outbound(await signed({ sessionId: 's1', text: 'x' }))
+    const outbound = await webhook.outbound(
+      await signed({ sessionId: 's1', text: 'x' }, { scope: 'outbound' }),
+    )
     expect(inbound.status).toBe(400)
     expect(await inbound.json()).toMatchObject({ field: 'forwardTo' })
     expect(await outbound.json()).toMatchObject({ field: 'replyTo' })
@@ -70,7 +77,10 @@ describe('destinations named in the request', () => {
   it('/outbound does not take a forwardTo', async () => {
     const { webhook } = setup()
     const res = await webhook.outbound(
-      await signed({ sessionId: 's1', text: 'x', replyTo: APP, forwardTo: AI }),
+      await signed(
+        { sessionId: 's1', text: 'x', replyTo: APP, forwardTo: AI },
+        { scope: 'outbound' },
+      ),
     )
     expect(res.status).toBe(400)
   })

@@ -1,9 +1,13 @@
 /**
  * Signing the requests that cross the webhook, both ways.
  *
- * The signature covers the timestamp and the body together, so neither can be
- * changed alone, and a request kept and sent again later is refused once the
- * timestamp falls outside the tolerance. HMAC-SHA256 through crypto.subtle,
+ * The signature covers the timestamp, the scope and the body together, so none
+ * can be changed alone, and a request kept and sent again later is refused once
+ * the timestamp falls outside the tolerance. The scope says what the request is
+ * for: one secret signs messages in, replies, and what the webhook forwards,
+ * and without it a body signed for one of those was a valid request for any
+ * other — the message forwarded to the AI could be replayed to /outbound and
+ * pushed back to the customer (D22). HMAC-SHA256 through crypto.subtle,
  * which checks a signature in constant time — no hand-written comparison that
  * could stop at the first differing byte.
  */
@@ -19,6 +23,28 @@ export const MIN_SECRET_BYTES = 32
 export const DEFAULT_TOLERANCE_SEC = 300
 
 const SCHEME = 'v1='
+
+/**
+ * What a signature is for. A request to the webhook is signed for its route;
+ * what the webhook sends on is signed `forward` (to forwardTo) or `reply` (to
+ * replyTo), and its receiver checks that scope.
+ */
+export type Scope = 'inbound' | 'outbound' | 'resolve' | 'end-session' | 'forward' | 'reply'
+
+export const SCOPES: readonly Scope[] = [
+  'inbound',
+  'outbound',
+  'resolve',
+  'end-session',
+  'forward',
+  'reply',
+]
+
+function checkScope(scope: Scope): void {
+  if (!SCOPES.includes(scope)) {
+    throw new PdpaHttpError('ERR_PDPA_HTTP_CONFIG', `scope must be one of: ${SCOPES.join(', ')}`)
+  }
+}
 const encoder = new TextEncoder()
 
 export type Secret = string | Uint8Array
@@ -47,9 +73,13 @@ function subtle(): SubtleCrypto {
   return s
 }
 
-/** `${timestamp}.` followed by the body, as bytes — exactly what is signed. */
-function signedBytes(timestamp: string, body: string | Uint8Array): Uint8Array<ArrayBuffer> {
-  const head = encoder.encode(`${timestamp}.`)
+/** `${timestamp}.${scope}.` followed by the body, as bytes — exactly what is signed. */
+function signedBytes(
+  timestamp: string,
+  scope: Scope,
+  body: string | Uint8Array,
+): Uint8Array<ArrayBuffer> {
+  const head = encoder.encode(`${timestamp}.${scope}.`)
   const tail = typeof body === 'string' ? encoder.encode(body) : body
   const out = new Uint8Array(head.byteLength + tail.byteLength)
   out.set(head, 0)
@@ -77,10 +107,15 @@ export interface CheckOptions {
 }
 
 export interface Signer {
-  /** The two headers to send with `body`. */
-  sign(body: string, now?: number): Promise<Record<string, string>>
-  /** true when the headers carry a valid, current signature of `body`. */
-  check(headers: Headers, body: string | Uint8Array, options?: CheckOptions): Promise<boolean>
+  /** The two headers to send with `body`, signed for `scope`. */
+  sign(scope: Scope, body: string, now?: number): Promise<Record<string, string>>
+  /** true when the headers carry a valid, current signature of `body` for `scope`. */
+  check(
+    scope: Scope,
+    headers: Headers,
+    body: string | Uint8Array,
+    options?: CheckOptions,
+  ): Promise<boolean>
 }
 
 /** One secret, its key imported once and reused for every request. */
@@ -102,13 +137,15 @@ export function createSigner(secret: Secret, name: string = 'secret'): Signer {
   }
 
   return {
-    async sign(body, now = Date.now()) {
+    async sign(scope, body, now = Date.now()) {
+      checkScope(scope)
       const timestamp = String(Math.floor(now / 1000))
-      const mac = await subtle().sign('HMAC', await keyFor(), signedBytes(timestamp, body))
+      const mac = await subtle().sign('HMAC', await keyFor(), signedBytes(timestamp, scope, body))
       return { [TIMESTAMP_HEADER]: timestamp, [SIGNATURE_HEADER]: `${SCHEME}${toHex(mac)}` }
     },
 
-    async check(headers, body, options = {}) {
+    async check(scope, headers, body, options = {}) {
+      checkScope(scope)
       const timestamp = headers.get(TIMESTAMP_HEADER)
       const signature = headers.get(SIGNATURE_HEADER)
       if (timestamp === null || signature === null) return false
@@ -118,32 +155,35 @@ export function createSigner(secret: Secret, name: string = 'secret'): Signer {
       if (Math.abs(now - Number(timestamp)) > tolerance) return false
       const mac = fromHex(signature.slice(SCHEME.length))
       if (mac === null) return false
-      return subtle().verify('HMAC', await keyFor(), mac, signedBytes(timestamp, body))
+      return subtle().verify('HMAC', await keyFor(), mac, signedBytes(timestamp, scope, body))
     },
   }
 }
 
 /**
- * The headers to send with a request to the webhook — for the app that sends
- * messages in, and for the system that sends replies to /outbound.
+ * The headers to send with a request to the webhook, signed for the route it
+ * goes to — `inbound` from the app that sends messages in, `outbound` from the
+ * system that answers, `resolve` and `end-session` for those two.
  */
 export async function signRequest(
   secret: Secret,
+  scope: Scope,
   body: string,
   now?: number,
 ): Promise<Record<string, string>> {
-  return createSigner(secret).sign(body, now)
+  return createSigner(secret).sign(scope, body, now)
 }
 
 /**
- * Checks a request the webhook sent — for the system at forwardTo or replyTo.
- * Read the body as text first, and pass the text you read.
+ * Checks a request the webhook sent: `forward` at forwardTo, `reply` at
+ * replyTo. Read the body as text first, and pass the text you read.
  */
 export async function verifyRequest(
   secret: Secret,
+  scope: Scope,
   headers: Headers,
   body: string,
   options?: CheckOptions,
 ): Promise<boolean> {
-  return createSigner(secret).check(headers, body, options)
+  return createSigner(secret).check(scope, headers, body, options)
 }

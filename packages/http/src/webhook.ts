@@ -28,7 +28,13 @@ import {
 } from '@eve-pdpa-extension/core'
 import { type AllowedPrefix, checkDestination, describe, parseAllowed } from './destination.js'
 import { PdpaHttpError } from './errors.js'
-import { createSigner, DEFAULT_TOLERANCE_SEC, type Secret, type Signer } from './signature.js'
+import {
+  createSigner,
+  DEFAULT_TOLERANCE_SEC,
+  type Scope,
+  type Secret,
+  type Signer,
+} from './signature.js'
 
 export interface WebhookOptions {
   /**
@@ -480,10 +486,14 @@ export function createWebhook(options: WebhookOptions): Webhook {
     return { name: chosen, guard }
   }
 
-  /** Method, size and signature, in that order. The body's bytes and text, or the answer. */
+  /**
+   * Method, size and signature, in that order. The body's bytes and text, or the
+   * answer. The signature must be for this route's scope.
+   */
   async function receive(
     request: Request,
     check: Signer,
+    scope: Scope,
   ): Promise<{ bytes: Uint8Array; text: string } | Response> {
     if (request.method !== 'POST') {
       return json(405, { error: 'method_not_allowed', message: 'use POST' }, { allow: 'POST' })
@@ -505,7 +515,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
     }
     let valid: boolean
     try {
-      valid = await check.check(request.headers, bytes, { toleranceSec })
+      valid = await check.check(scope, request.headers, bytes, { toleranceSec })
     } catch {
       // Web Crypto failed underneath: the request may be fine, so not a 401.
       return json(500, {
@@ -527,11 +537,12 @@ export function createWebhook(options: WebhookOptions): Webhook {
   async function forward(
     url: string,
     body: string,
+    scope: 'forward' | 'reply',
   ): Promise<{ delivered: boolean; status: number | null }> {
     try {
       const res = await doFetch(url, {
         method: 'POST',
-        headers: { 'content-type': 'application/json', ...(await signer.sign(body)) },
+        headers: { 'content-type': 'application/json', ...(await signer.sign(scope, body)) },
         body,
         // A redirect is not followed: fetch would resend the signed POST to
         // wherever it points, past every check on the destination (D22). A 3xx
@@ -577,7 +588,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
   }
 
   async function protect(request: Request, boundary: 'inbound' | 'outbound'): Promise<Response> {
-    const received = await receive(request, signer)
+    const received = await receive(request, signer, boundary)
     if (received instanceof Response) return received
     const fields = parseFields(received.text, boundary === 'inbound' ? INBOUND : OUTBOUND)
     if (fields instanceof Response) return fields
@@ -633,7 +644,11 @@ export function createWebhook(options: WebhookOptions): Webhook {
       text: result.text,
       ...(replyOn === undefined ? {} : { replyTo: replyOn.href }),
     })
-    const { delivered, status } = await forward(to.url.href, onward)
+    const { delivered, status } = await forward(
+      to.url.href,
+      onward,
+      boundary === 'inbound' ? 'forward' : 'reply',
+    )
     recordForward({
       at: new Date().toISOString(),
       boundary,
@@ -663,7 +678,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
 
     async resolve(request) {
       if (resolveSigner === null) return noTokens()
-      const received = await receive(request, resolveSigner)
+      const received = await receive(request, resolveSigner, 'resolve')
       if (received instanceof Response) return received
       const fields = parseFields(received.text, RESOLVE)
       if (fields instanceof Response) return fields
@@ -691,7 +706,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
 
     async endSession(request) {
       if (resolveSigner === null) return noTokens()
-      const received = await receive(request, signer)
+      const received = await receive(request, signer, 'end-session')
       if (received instanceof Response) return received
       const fields = parseFields(received.text, END_SESSION)
       if (fields instanceof Response) return fields

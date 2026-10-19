@@ -79,7 +79,7 @@ const body = JSON.stringify({
 })
 await fetch(WEBHOOK_URL + '/inbound', {
   method: 'POST',
-  headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_SECRET, body)) },
+  headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_SECRET, 'inbound', body)) },
   body,
 })
 ```
@@ -96,14 +96,25 @@ await fetch(WEBHOOK_URL + '/inbound', {
 
 ช่องอื่นถูกปฏิเสธ ค่าที่อยู่ในช่องที่ webhook ไม่ได้อ่านจะได้ไม่ถูกเข้าใจว่าตรวจแล้ว
 
-ฝั่งที่รับได้แบบนี้ เซ็นด้วย secret เดียวกัน: `{ "policy": "otp", "sessionId": "conv_8f2a", "ref": "msg_10293", "text": "เบอร์ [tok:…] ค่ะ", "replyTo": "https://chat.example.com/reply" }` · ส่งคำตอบไปที่ `/outbound` ด้วย `policy` `sessionId` และ `replyTo` เดิม · ตรวจของที่ได้รับด้วย `verifyRequest`:
+ฝั่งที่รับได้แบบนี้ เซ็นด้วย secret เดียวกัน: `{ "policy": "otp", "sessionId": "conv_8f2a", "ref": "msg_10293", "text": "เบอร์ [tok:…] ค่ะ", "replyTo": "https://chat.example.com/reply" }` · ส่งคำตอบไปที่ `/outbound` ด้วย `policy` `sessionId` และ `replyTo` เดิม เซ็นเป็น `outbound` · ตรวจของที่ได้รับด้วย `verifyRequest`:
 
 ```ts
 import { verifyRequest } from '@eve-pdpa-extension/http'
 
 const body = await request.text()
-if (!(await verifyRequest(PDPA_SECRET, request.headers, body))) return new Response(null, { status: 401 })
+if (!(await verifyRequest(PDPA_SECRET, 'forward', request.headers, body))) return new Response(null, { status: 401 })
 ```
+
+**ลายเซ็นทุกอันระบุว่าเซ็นไว้ใช้กับอะไร** · เซ็นไว้กับอย่างอื่นจะถูกปฏิเสธ:
+
+| scope | ใครเซ็น | ใครตรวจ |
+|---|---|---|
+| `inbound` · `outbound` · `end-session` | แอปแชท · ระบบที่ตอบ · แอปแชท ด้วย `secret` | webhook |
+| `resolve` | ระบบที่ต้องใช้ค่าจริง ด้วย `resolveSecret` | webhook |
+| `forward` | webhook ตอนส่งไป `forwardTo` | ระบบที่ตอบ |
+| `reply` | webhook ตอนส่งไป `replyTo` | แอปแชท |
+
+secret ตัวเดียวเซ็นทั้งขาไปและขากลับ ถ้าไม่มี scope ข้อความที่ webhook ส่งต่อจะเป็น request `/outbound` ที่ถูกต้องด้วย ใครได้รับไปก็ส่งกลับมาได้ภายในเวลาที่ยอม แล้วมันจะถูกส่งไปหาลูกค้า · request ที่ถูกดักไว้ยังส่งซ้ำไปที่ route เดิมได้ภายในเวลาที่ยอม — ใช้ `ref` ตัดตัวซ้ำ
 
 ## ปลายทางที่ส่งได้
 
@@ -151,7 +162,7 @@ async function sendOtp({ phone }: { phone: string }, sessionId: string) {
   const body = JSON.stringify({ policy: 'otp', token: phone, sessionId, purpose: 'otp_send', caller: 'otp-service' })
   const res = await fetch(`${WEBHOOK_URL}/resolve`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_RESOLVE_SECRET, body)) },
+    headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_RESOLVE_SECRET, 'resolve', body)) },
     body,
   })
   const r = await res.json()

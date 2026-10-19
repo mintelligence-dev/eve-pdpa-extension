@@ -64,13 +64,13 @@ const body = JSON.stringify({
 })
 await fetch('https://<project>.vercel.app/api/inbound', {
   method: 'POST',
-  headers: { 'content-type': 'application/json', ...(await signRequest(process.env.PDPA_SECRET, body)) },
+  headers: { 'content-type': 'application/json', ...(await signRequest(process.env.PDPA_SECRET, 'inbound', body)) },
   body,
 })
 ```
 
 - `sessionId` ใช้ id ห้องแชทที่ระบบของคุณออกเอง ห้ามใช้ LINE userId หรือเบอร์ (ตอบ 400)
-- ระบบที่ตอบได้รับ `replyTo` ไปด้วย · ส่งคำตอบมาที่ `/api/outbound` พร้อม `policy` `sessionId` และ `replyTo` เดิม
+- ระบบที่ตอบได้รับ `replyTo` ไปด้วย · ส่งคำตอบมาที่ `/api/outbound` พร้อม `policy` `sessionId` และ `replyTo` เดิม เซ็นเป็น `'outbound'`
 - `forwardTo` / `replyTo` ต้องเป็น https และห้ามเป็นที่อยู่ภายในเครือข่าย · ใครถือ `PDPA_SECRET` ก็ระบุปลายทางได้ จึงควรตั้ง `ALLOWED_DESTINATIONS` ถ้ารู้ปลายทางแล้ว
 
 ## ฝั่งที่รับ (`FORWARD_URL` · `REPLY_URL`)
@@ -80,7 +80,8 @@ import { verifyRequest } from '@eve-pdpa-extension/http'
 
 export async function POST(request: Request) {
   const body = await request.text()
-  if (!(await verifyRequest(process.env.PDPA_SECRET, request.headers, body))) {
+  // FORWARD_URL ตรวจ 'forward' · REPLY_URL ตรวจ 'reply' — ลายเซ็นของอีกขาใช้ไม่ได้
+  if (!(await verifyRequest(process.env.PDPA_SECRET, 'forward', request.headers, body))) {
     return new Response('unauthorized', { status: 401 })
   }
   const { policy, sessionId, ref, text, replyTo } = JSON.parse(body)

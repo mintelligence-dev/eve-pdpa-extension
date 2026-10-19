@@ -94,7 +94,35 @@ describe('/inbound', () => {
       ref: 'msg_10293',
       text: 'เบอร์ xxx-xxx-xxxx ค่ะ',
     })
-    expect(await verifyRequest(SECRET, out.headers, out.body)).toBe(true)
+    // Signed for where it goes: the AI checks `forward`.
+    expect(await verifyRequest(SECRET, 'forward', out.headers, out.body)).toBe(true)
+    expect(await verifyRequest(SECRET, 'outbound', out.headers, out.body)).toBe(false)
+  })
+
+  // D22: one secret signs every direction, so a signature says which one it is for.
+  it('what it forwards cannot be replayed to /outbound and pushed back to the customer', async () => {
+    const { webhook, sent } = setup()
+    await webhook.inbound(
+      await signed({ sessionId: 'conv_8f2a', text: `เบอร์ ${PHONE} ค่ะ`, replyTo: REPLY_TO }),
+    )
+    const out = sent[0] as Sent
+    const replay = new Request('https://hook.example/', {
+      method: 'POST',
+      headers: out.headers,
+      body: out.body,
+    })
+    expect((await webhook.outbound(replay)).status).toBe(401)
+    expect(sent).toHaveLength(1)
+  })
+
+  it('a request signed for one route is refused by another', async () => {
+    const { webhook } = setup()
+    const forInbound = { sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' }
+    expect((await webhook.outbound(await signed(forInbound))).status).toBe(401)
+    expect((await webhook.inbound(await signed(forInbound, { scope: 'outbound' }))).status).toBe(
+      401,
+    )
+    expect((await webhook.endSession(await signed({ sessionId: 'conv_8f2a' }))).status).toBe(401)
   })
 
   it('reads context for cue words and does not send it on', async () => {
@@ -167,7 +195,10 @@ describe('/outbound', () => {
     )
     const token = (bodyOf(sent[0] as Sent).text as string).match(TOKEN)?.[0] as string
     const res = await webhook.outbound(
-      await signed({ policy: 'otp', sessionId: 'conv_8f2a', text: `ส่ง OTP ไปที่ ${token} แล้วค่ะ` }),
+      await signed(
+        { policy: 'otp', sessionId: 'conv_8f2a', text: `ส่ง OTP ไปที่ ${token} แล้วค่ะ` },
+        { scope: 'outbound' },
+      ),
     )
     expect(res.status).toBe(200)
     const out = sent[1] as Sent
@@ -177,7 +208,12 @@ describe('/outbound', () => {
 
   it('catches a value the model wrote itself', async () => {
     const { webhook, sent } = setup()
-    await webhook.outbound(await signed({ sessionId: 'conv_8f2a', text: `โทรหาคุณที่ ${PHONE} นะคะ` }))
+    await webhook.outbound(
+      await signed(
+        { sessionId: 'conv_8f2a', text: `โทรหาคุณที่ ${PHONE} นะคะ` },
+        { scope: 'outbound' },
+      ),
+    )
     expect(bodyOf(sent[0] as Sent).text).not.toContain(PHONE)
   })
 })
@@ -299,7 +335,9 @@ describe('/resolve', () => {
 
   it('gives the real value for an allowed purpose, marked not to be cached', async () => {
     const { webhook, token } = await issue()
-    const res = await webhook.resolve(await signed(resolveBody(token), { secret: RESOLVE_SECRET }))
+    const res = await webhook.resolve(
+      await signed(resolveBody(token), { scope: 'resolve', secret: RESOLVE_SECRET }),
+    )
     expect(res.status).toBe(200)
     expect(res.headers.get('cache-control')).toBe('no-store')
     expect(await answer(res)).toEqual({ ok: true, value: PHONE_DIGITS })
@@ -310,7 +348,7 @@ describe('/resolve', () => {
     const id = token.slice(5, -1)
     for (const spelt of [`tok:${id}`, `"[tok:${id}]"`, `[ tok:${id} ]`]) {
       const res = await webhook.resolve(
-        await signed(resolveBody(spelt), { secret: RESOLVE_SECRET }),
+        await signed(resolveBody(spelt), { scope: 'resolve', secret: RESOLVE_SECRET }),
       )
       expect(await answer(res), spelt).toEqual({ ok: true, value: PHONE_DIGITS })
     }
@@ -319,7 +357,10 @@ describe('/resolve', () => {
   it('refuses a purpose that is itself personal data, before it reaches audit (D22)', async () => {
     const { webhook, token, events } = await issue()
     const res = await webhook.resolve(
-      await signed(resolveBody(token, { purpose: '0918887777' }), { secret: RESOLVE_SECRET }),
+      await signed(resolveBody(token, { purpose: '0918887777' }), {
+        scope: 'resolve',
+        secret: RESOLVE_SECRET,
+      }),
     )
     expect(res.status).toBe(400)
     const text = await res.text()
@@ -332,7 +373,9 @@ describe('/resolve', () => {
     const { webhook, token } = await issue()
     const ask = async (extra: Record<string, string>) =>
       answer(
-        await webhook.resolve(await signed(resolveBody(token, extra), { secret: RESOLVE_SECRET })),
+        await webhook.resolve(
+          await signed(resolveBody(token, extra), { scope: 'resolve', secret: RESOLVE_SECRET }),
+        ),
       )
     expect(await ask({ purpose: 'marketing' })).toEqual({
       ok: false,
@@ -349,14 +392,17 @@ describe('/resolve', () => {
 
   it('the inbound secret cannot resolve', async () => {
     const { webhook, token } = await issue()
-    const res = await webhook.resolve(await signed(resolveBody(token)))
+    const res = await webhook.resolve(await signed(resolveBody(token), { scope: 'resolve' }))
     expect(res.status).toBe(401)
   })
 
   it('a policy that does not tokenise is a 400', async () => {
     const { webhook, token } = await issue()
     const res = await webhook.resolve(
-      await signed(resolveBody(token, { policy: 'default' }), { secret: RESOLVE_SECRET }),
+      await signed(resolveBody(token, { policy: 'default' }), {
+        scope: 'resolve',
+        secret: RESOLVE_SECRET,
+      }),
     )
     expect(res.status).toBe(400)
     expect(await answer(res)).toMatchObject({ field: 'policy' })
@@ -364,9 +410,14 @@ describe('/resolve', () => {
 
   it('every attempt is audited, and the real value is in no audit event', async () => {
     const { webhook, token, events } = await issue()
-    await webhook.resolve(await signed(resolveBody(token), { secret: RESOLVE_SECRET }))
     await webhook.resolve(
-      await signed(resolveBody(token, { purpose: 'marketing' }), { secret: RESOLVE_SECRET }),
+      await signed(resolveBody(token), { scope: 'resolve', secret: RESOLVE_SECRET }),
+    )
+    await webhook.resolve(
+      await signed(resolveBody(token, { purpose: 'marketing' }), {
+        scope: 'resolve',
+        secret: RESOLVE_SECRET,
+      }),
     )
     const resolves = events.filter((e) => e.type === 'token.resolve')
     expect(resolves.map((e) => e.type === 'token.resolve' && e.outcome)).toEqual([
@@ -383,17 +434,27 @@ describe('/resolve', () => {
 
   it('after /end-session the token is gone', async () => {
     const { webhook, token } = await issue()
-    const ended = await webhook.endSession(await signed({ sessionId: 'conv_8f2a' }))
+    const ended = await webhook.endSession(
+      await signed({ sessionId: 'conv_8f2a' }, { scope: 'end-session' }),
+    )
     expect(ended.status).toBe(200)
     expect(await answer(ended)).toEqual({ ok: true })
-    const res = await webhook.resolve(await signed(resolveBody(token), { secret: RESOLVE_SECRET }))
+    const res = await webhook.resolve(
+      await signed(resolveBody(token), { scope: 'resolve', secret: RESOLVE_SECRET }),
+    )
     expect(await answer(res)).toEqual({ ok: false, reason: 'not_found' })
   })
 
   it('with no policy that tokenises, /resolve and /end-session are 404', async () => {
     const { webhook } = setup({ policies: { default: DEFAULT } })
-    expect((await webhook.resolve(await signed({}, { secret: RESOLVE_SECRET }))).status).toBe(404)
-    expect((await webhook.endSession(await signed({ sessionId: 's1' }))).status).toBe(404)
+    expect(
+      (await webhook.resolve(await signed({}, { scope: 'resolve', secret: RESOLVE_SECRET })))
+        .status,
+    ).toBe(404)
+    expect(
+      (await webhook.endSession(await signed({ sessionId: 's1' }, { scope: 'end-session' })))
+        .status,
+    ).toBe(404)
   })
 })
 
