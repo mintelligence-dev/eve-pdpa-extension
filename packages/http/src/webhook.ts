@@ -454,6 +454,10 @@ export function createWebhook(options: WebhookOptions): Webhook {
         method: 'POST',
         headers: { 'content-type': 'application/json', ...(await signer.sign(body)) },
         body,
+        // A redirect is not followed: fetch would resend the signed POST to
+        // wherever it points, past every check on the destination (D22). A 3xx
+        // is an answer that is not a 2xx, so the forward failed.
+        redirect: 'manual',
         signal: AbortSignal.timeout(forwardTimeoutMs),
       })
       await res.body?.cancel().catch(() => {})

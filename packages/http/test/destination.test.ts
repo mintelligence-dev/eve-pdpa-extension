@@ -100,6 +100,22 @@ describe('destinations a request may not name', () => {
     'https://[fe80::1]/',
     'https://[::ffff:127.0.0.1]/',
     'https://[::ffff:192.168.1.1]/',
+    // D22: a trailing dot is the same name, and more ranges that are not public.
+    'https://localhost./',
+    'https://localhost%2e/',
+    'https://metadata.google.internal./',
+    'https://printer.local./',
+    'https://198.18.0.1/',
+    'https://192.0.0.1/',
+    'https://224.0.0.1/',
+    'https://255.255.255.255/',
+    'https://[::7f00:1]/',
+    'https://[64:ff9b::a9fe:a9fe]/',
+    'https://[64:ff9b:1::1]/',
+    'https://[::ffff:0:a9fe:a9fe]/',
+    'https://[2002:7f00:1::]/',
+    'https://[fec0::1]/',
+    'https://[ff02::1]/',
     'not a url',
     '/relative/path',
   ]
@@ -171,6 +187,9 @@ describe('allowedDestinations', () => {
       'https://ai.shop-a.example/inbound',
       'https://ai.shop-b.example.attacker.example/inbound',
       'https://chat.shop-b.example/admin',
+      // D22: the path must match, or continue past a /, not just start the same way.
+      'https://chat.shop-b.example/reply-admin',
+      'https://chat.shop-b.example/replyall',
     ]) {
       const res = await webhook.inbound(
         await signed({ sessionId: 's1', text: 'x', forwardTo: url }),
@@ -179,6 +198,15 @@ describe('allowedDestinations', () => {
       expect(await res.json()).toMatchObject({ field: 'forwardTo' })
     }
     expect(sent).toHaveLength(0)
+  })
+
+  it('lets through the path itself, as well as one below it', async () => {
+    const { webhook, sent } = setup(options)
+    const res = await webhook.inbound(
+      await signed({ sessionId: 's1', text: 'x', forwardTo: AI, replyTo: APP }),
+    )
+    expect(res.status).toBe(200)
+    expect(sent).toHaveLength(1)
   })
 
   it('refuses entries that are not https URLs without a query', () => {
@@ -192,6 +220,22 @@ describe('allowedDestinations', () => {
         }),
       ).toThrow(PdpaHttpError)
     }
+  })
+})
+
+describe('a destination that redirects', () => {
+  // D22: following it would send the signed POST past every check above.
+  it('is not followed: the forward counts as failed, and is recorded with its status', async () => {
+    const asked: RequestInit[] = []
+    const fetch = (async (_url: string, init?: RequestInit) => {
+      asked.push(init ?? {})
+      return new Response(null, { status: 307, headers: { location: 'http://169.254.169.254/' } })
+    }) as typeof globalThis.fetch
+    const { webhook, forwards } = setup({ fetch })
+    const res = await webhook.inbound(await signed({ sessionId: 's1', text: 'x', forwardTo: AI }))
+    expect(asked[0]?.redirect).toBe('manual')
+    expect(res.status).toBe(502)
+    expect(forwards[0]).toMatchObject({ delivered: false, status: 307 })
   })
 })
 
