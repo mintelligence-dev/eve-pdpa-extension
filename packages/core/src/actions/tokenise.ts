@@ -121,22 +121,37 @@ export interface Tokeniser {
  * second plaintext copy of anything the store already has.
  */
 export function createTokeniser(random: RandomSource): Tokeniser {
-  const reuse = new Map<string, Map<string, string>>()
+  /** Per session: value digest → the token issued for it, and when that token expires. */
+  const reuse = new Map<string, Map<string, { id: string; expiresAt: number }>>()
   let entries = 0
 
-  // Sessions that never call endSession would otherwise grow the index forever.
-  // Past the limit, drop every entry whose token the store no longer holds live.
-  function* prune(): Generator<StoreStep, void, unknown> {
+  /**
+   * Sessions that never call endSession would otherwise grow the index forever.
+   * Past the limit, drop every entry whose token has expired, then — if that is
+   * not enough — the oldest, until the index is back under it.
+   *
+   * Read from the index alone, never the store. Asking the store about each
+   * entry was 20,000 calls in one message against a remote store such as
+   * Upstash, and one failed call blocked a message whose token was already
+   * stored (D22). The index only decides reuse: an entry dropped early means a
+   * repeated value gets a second token, which is valid too.
+   */
+  function prune(): void {
     const now = Date.now()
     for (const [sessionId, session] of reuse) {
-      for (const [key, id] of session) {
-        const rec = (yield { op: 'get', id }) as TokenRecord | undefined
-        if (rec === undefined || rec.expiresAt <= now) {
+      for (const [key, entry] of session) {
+        if (entry.expiresAt <= now) {
           session.delete(key)
           entries--
         }
       }
       if (session.size === 0) reuse.delete(sessionId)
+    }
+    // Sessions in the order they were first indexed: the oldest go first.
+    for (const [sessionId, session] of reuse) {
+      if (entries <= REUSE_INDEX_LIMIT) break
+      entries -= session.size
+      reuse.delete(sessionId)
     }
   }
 
@@ -151,9 +166,12 @@ export function createTokeniser(random: RandomSource): Tokeniser {
 
       const existing = session?.get(key)
       if (existing !== undefined) {
-        const rec = (yield { op: 'get', id: existing }) as TokenRecord | undefined
-        if (rec !== undefined && rec.sessionId === sessionId && rec.expiresAt > Date.now()) {
-          return existing
+        // Expired by the index's own clock: no need to ask the store.
+        if (existing.expiresAt > Date.now()) {
+          const rec = (yield { op: 'get', id: existing.id }) as TokenRecord | undefined
+          if (rec !== undefined && rec.sessionId === sessionId && rec.expiresAt > Date.now()) {
+            return existing.id
+          }
         }
         session?.delete(key)
         entries--
@@ -177,9 +195,9 @@ export function createTokeniser(random: RandomSource): Tokeniser {
         session = new Map()
         reuse.set(sessionId, session)
       }
-      session.set(key, id)
+      session.set(key, { id, expiresAt: rec.expiresAt })
       entries++
-      if (entries > REUSE_INDEX_LIMIT) yield* prune()
+      if (entries > REUSE_INDEX_LIMIT) prune()
       return id
     },
 
