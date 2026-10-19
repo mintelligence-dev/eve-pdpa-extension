@@ -92,6 +92,12 @@ export interface WebhookOptions {
   readonly maxBodyBytes?: number
   /** A forward that takes longer is abandoned and answered with 502. Default 10 000 ms. */
   readonly forwardTimeoutMs?: number
+  /**
+   * The longest a handler waits for onAudit and onForward Promises before it
+   * answers. Default 5 000 ms. Past it the writes carry on, but nothing waits
+   * for them again (D22).
+   */
+  readonly auditWaitMs?: number
   /** For tests. */
   readonly fetch?: typeof fetch
 }
@@ -123,6 +129,7 @@ const POLICY_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/
 const DEFAULT_POLICY = 'default'
 const DEFAULT_MAX_BODY = 64 * 1024
 const DEFAULT_FORWARD_TIMEOUT_MS = 10_000
+const DEFAULT_AUDIT_WAIT_MS = 5_000
 /** sessionId and ref are written into every audit event. Personal data there is refused. */
 const ID_CONFIDENCE = 0.95
 
@@ -278,6 +285,35 @@ function parseFields(text: string, rules: Partial<Record<Field, FieldRule>>): Fi
 
 // ---- createWebhook ------------------------------------------------------------
 
+/**
+ * The body, read until it passes `limit` and no further. A content-length that
+ * is missing or not a number is not trusted: arrayBuffer() would hold every
+ * byte a sender streams before the size could be checked (D22).
+ */
+async function readBody(request: Request, limit: number): Promise<Uint8Array | 'too_large'> {
+  if (request.body === null) return new Uint8Array(0)
+  const reader = request.body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > limit) {
+      await reader.cancel().catch(() => {})
+      return 'too_large'
+    }
+    chunks.push(value)
+  }
+  const out = new Uint8Array(total)
+  let at = 0
+  for (const chunk of chunks) {
+    out.set(chunk, at)
+    at += chunk.byteLength
+  }
+  return out
+}
+
 export function createWebhook(options: WebhookOptions): Webhook {
   const names = Object.keys(options.policies ?? {})
   if (names.length === 0) throw configError('policies must name at least one policy')
@@ -312,6 +348,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
     DEFAULT_FORWARD_TIMEOUT_MS,
     'forwardTimeoutMs',
   )
+  const auditWaitMs = positiveInt(options.auditWaitMs, DEFAULT_AUDIT_WAIT_MS, 'auditWaitMs')
   const doFetch = options.fetch ?? globalThis.fetch
 
   // Tokenise is optional. Where a policy uses it, both the shared store and a
@@ -336,7 +373,6 @@ export function createWebhook(options: WebhookOptions): Webhook {
     }
   }
 
-  // Audit that is still being written when the response would go out.
   // Audit and forward records still being written when the response would go out.
   const pending = new Set<Promise<void>>()
   function track(result: unknown): void {
@@ -361,8 +397,24 @@ export function createWebhook(options: WebhookOptions): Webhook {
       track(options.onForward(record))
     } catch {}
   }
+  /**
+   * Waits for what is still being written, up to auditWaitMs. The set is shared
+   * by every request on this instance, so a write that never ends would hold up
+   * each one after it: past the wait, those writes carry on but are no longer
+   * waited for (D22).
+   */
   async function flush(): Promise<void> {
-    if (pending.size > 0) await Promise.all(pending)
+    if (pending.size === 0) return
+    const waiting = [...pending]
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const late = await Promise.race([
+      Promise.all(waiting).then(() => false),
+      new Promise<boolean>((done) => {
+        timer = setTimeout(() => done(true), auditWaitMs)
+      }),
+    ])
+    clearTimeout(timer)
+    if (late) for (const p of waiting) pending.delete(p)
   }
 
   const guards = new Map<string, Guard>()
@@ -440,18 +492,28 @@ export function createWebhook(options: WebhookOptions): Webhook {
     if (declared !== null && Number(declared) > maxBodyBytes) {
       return json(413, { error: 'too_large', message: `the body is over ${maxBodyBytes} bytes` })
     }
-    let bytes: Uint8Array
+    let bytes: Uint8Array | 'too_large'
     try {
-      bytes = new Uint8Array(await request.arrayBuffer())
+      bytes = await readBody(request, maxBodyBytes)
     } catch {
       // The sender's connection dropped mid-body, or the body was already read.
       // Answered like any other bad request, so no handler ever throws.
       return invalid('body', 'the body could not be read; send it again')
     }
-    if (bytes.byteLength > maxBodyBytes) {
+    if (bytes === 'too_large') {
       return json(413, { error: 'too_large', message: `the body is over ${maxBodyBytes} bytes` })
     }
-    if (!(await check.check(request.headers, bytes, { toleranceSec }))) return unauthorized()
+    let valid: boolean
+    try {
+      valid = await check.check(request.headers, bytes, { toleranceSec })
+    } catch {
+      // Web Crypto failed underneath: the request may be fine, so not a 401.
+      return json(500, {
+        error: 'error',
+        message: 'the signature could not be checked; send it again',
+      })
+    }
+    if (!valid) return unauthorized()
     let text: string
     try {
       text = new TextDecoder('utf-8', { fatal: true }).decode(bytes)
@@ -461,7 +523,6 @@ export function createWebhook(options: WebhookOptions): Webhook {
     return { bytes, text }
   }
 
-  /** POSTs a signed body on. true for a 2xx in time. */
   /** POSTs a signed body on. Delivered means a 2xx in time; status is null when no answer came. */
   async function forward(
     url: string,
@@ -639,8 +700,11 @@ export function createWebhook(options: WebhookOptions): Webhook {
       try {
         // Every tokenising guard: each also remembers, per session, which
         // token it gave which value, and that has to go too.
-        for (const name of tokenising)
-          await (guards.get(name) as Guard).endSession(fields.sessionId as string)
+        await Promise.all(
+          tokenising.map((name) =>
+            (guards.get(name) as Guard).endSession(fields.sessionId as string),
+          ),
+        )
       } catch {
         return json(500, { error: 'error', message: 'the session could not be ended; try again' })
       }

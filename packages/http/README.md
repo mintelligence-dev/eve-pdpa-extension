@@ -109,13 +109,16 @@ if (!(await verifyRequest(PDPA_SECRET, request.headers, body))) return new Respo
 
 A `forwardTo` or `replyTo` in a request must be **https**, carry no user name or password, and not be a local or private network address (`localhost`, `127.0.0.1`, `10.x`, `192.168.x`, `169.254.169.254`, `::1` …) — the webhook signs what it sends, and a signed POST to an internal service is the last thing it should make. The `forwardTo` and `replyTo` options are your own choice and are not limited.
 
+- **A redirect is not followed** · a destination that answers 3xx counts as not delivered (502) · following it would send the signed POST past every check above
+- **A destination that carries personal data is refused** (400) · a phone number or LINE userId in the path or query would reach the answering system and the logs unprotected · address the system, not the person
+
 > **The secret decides who may name a destination.** Anyone holding it can have the webhook send a signed message anywhere public. Keep it as closely as any credential, and if you know where messages should go, list them:
 >
 > ```ts
 > allowedDestinations: ['https://ai.example.com/', 'https://chat.example.com/reply']
 > ```
 >
-> A destination must then share one entry's origin and start with its path. A host name that points to a private address is not caught without this list: the webhook does not look names up.
+> A destination must then share one entry's origin and be its path or sit below it — `/reply` allows `/reply/line`, not `/reply-admin`. A host name that points to a private address is not caught without this list: the webhook does not look names up.
 
 `onForward` is told about every forward, delivered or not: `{ at, boundary, policy, sessionId, ref, destination, destinationFrom, delivered, status }`. `destination` is origin and path only — a query string can carry a token, so it is left out.
 
@@ -172,7 +175,7 @@ On a serverless platform each request may run on a different machine, and an idl
 
 ## Audit
 
-`onAudit` is required — pass `() => {}` to discard audit on purpose. Events carry positions, types and ids, never a real value. If it returns a Promise, the webhook waits for it before answering: a serverless platform may stop the function once the response is sent.
+`onAudit` is required — pass `() => {}` to discard audit on purpose. Events carry positions, types and ids, never a real value. If it returns a Promise, the webhook waits for it before answering — a serverless platform may stop the function once the response is sent — for up to `auditWaitMs` (5 s). Past that the write carries on but is no longer waited for, so one write that hangs cannot hold up every request on the instance.
 
 Vercel keeps function logs for an hour (Hobby) or a day (Pro). **Before real customers, send audit somewhere it is kept** — a log drain or a database — `token.resolve` events above all.
 
@@ -192,8 +195,9 @@ Vercel keeps function logs for an hour (Hobby) or a day (Pro). **Before real cus
 | `toleranceSec` | Signature age allowed either way · default 300 |
 | `maxBodyBytes` | Default 65 536 |
 | `forwardTimeoutMs` | Default 10 000 |
+| `auditWaitMs` | Longest wait for `onAudit` / `onForward` Promises before answering · default 5 000 |
 
-Startup problems throw `PdpaHttpError` with `code: 'ERR_PDPA_HTTP_CONFIG'`.
+Startup problems throw `PdpaHttpError` with `code: 'ERR_PDPA_HTTP_CONFIG'`, or `'ERR_PDPA_HTTP_NO_WEBCRYPTO'` on a runtime without Web Crypto.
 
 ## Limitations
 

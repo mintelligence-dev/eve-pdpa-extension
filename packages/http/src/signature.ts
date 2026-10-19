@@ -86,12 +86,18 @@ export interface Signer {
 /** One secret, its key imported once and reused for every request. */
 export function createSigner(secret: Secret, name: string = 'secret'): Signer {
   const raw = secretBytes(secret, name)
+  // At startup, not on the first request: a runtime without Web Crypto is a
+  // webhook that cannot work, and createWebhook should say so (D22).
+  subtle()
   let key: Promise<CryptoKey> | undefined
   const keyFor = (): Promise<CryptoKey> => {
-    key ??= subtle().importKey('raw', raw, { name: 'HMAC', hash: 'SHA-256' }, false, [
-      'sign',
-      'verify',
-    ])
+    key ??= subtle()
+      .importKey('raw', raw, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify'])
+      .catch((error: unknown) => {
+        // Not cached: one failed import must not fail every request after it.
+        key = undefined
+        throw error
+      })
     return key
   }
 
@@ -121,7 +127,7 @@ export function createSigner(secret: Secret, name: string = 'secret'): Signer {
  * The headers to send with a request to the webhook — for the app that sends
  * messages in, and for the system that sends replies to /outbound.
  */
-export function signRequest(
+export async function signRequest(
   secret: Secret,
   body: string,
   now?: number,
@@ -133,7 +139,7 @@ export function signRequest(
  * Checks a request the webhook sent — for the system at forwardTo or replyTo.
  * Read the body as text first, and pass the text you read.
  */
-export function verifyRequest(
+export async function verifyRequest(
   secret: Secret,
   headers: Headers,
   body: string,

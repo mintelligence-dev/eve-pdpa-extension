@@ -109,13 +109,16 @@ if (!(await verifyRequest(PDPA_SECRET, request.headers, body))) return new Respo
 
 `forwardTo` หรือ `replyTo` ใน request ต้องเป็น **https** · ห้ามมีชื่อผู้ใช้หรือรหัสผ่านใน URL · ห้ามเป็นที่อยู่ภายในเครือข่าย (`localhost` · `127.0.0.1` · `10.x` · `192.168.x` · `169.254.169.254` · `::1` …) เพราะ webhook เซ็นสิ่งที่ส่งออก และไม่ควรยิง POST ที่เซ็นแล้วเข้าระบบภายใน · ตัวเลือก `forwardTo` และ `replyTo` เป็นสิ่งที่คุณตั้งเอง ไม่ถูกจำกัด
 
+- **ไม่ตาม redirect** · ปลายทางที่ตอบ 3xx นับว่าส่งไม่สำเร็จ (502) · ถ้าตามไป POST ที่เซ็นแล้วจะข้ามการตรวจทั้งหมดข้างบน
+- **ปลายทางที่มีข้อมูลส่วนตัวอยู่ใน URL ถูกปฏิเสธ** (400) · เบอร์หรือ LINE userId ใน path หรือ query จะไปถึงระบบที่ตอบและลง log โดยไม่ถูกปิด · ใส่ที่อยู่ของระบบ ไม่ใช่ของคน
+
 > **secret เป็นตัวกำหนดว่าใครระบุปลายทางได้** · ใครได้ secret ไปก็สั่งให้ webhook ส่งข้อความที่เซ็นแล้วไปที่ไหนก็ได้ที่เป็น public · เก็บ secret ให้ดีเท่ากับรหัสผ่าน และถ้ารู้ว่าข้อความควรไปที่ไหน ให้ล็อกไว้:
 >
 > ```ts
 > allowedDestinations: ['https://ai.example.com/', 'https://chat.example.com/reply']
 > ```
 >
-> ปลายทางต้องมี origin เดียวกับรายการใดรายการหนึ่ง และ path ขึ้นต้นด้วย path ของรายการนั้น · ถ้าไม่มีรายการนี้ ชื่อโดเมนที่ชี้ไปที่อยู่ภายในจะกันไม่ได้ เพราะ webhook ไม่ได้ค้น DNS
+> ปลายทางต้องมี origin เดียวกับรายการใดรายการหนึ่ง และ path ต้องเป็น path นั้นหรืออยู่ใต้มัน — `/reply` ให้ `/reply/line` ผ่าน แต่ไม่ให้ `/reply-admin` · ถ้าไม่มีรายการนี้ ชื่อโดเมนที่ชี้ไปที่อยู่ภายในจะกันไม่ได้ เพราะ webhook ไม่ได้ค้น DNS
 
 `onForward` ได้รับทุกครั้งที่ส่งต่อ ไม่ว่าสำเร็จหรือไม่: `{ at, boundary, policy, sessionId, ref, destination, destinationFrom, delivered, status }` · `destination` มีแค่ origin กับ path ไม่เก็บ query เพราะอาจมี token อยู่
 
@@ -172,7 +175,7 @@ async function sendOtp({ phone }: { phone: string }, sessionId: string) {
 
 ## audit
 
-`onAudit` บังคับส่ง · ส่ง `() => {}` ถ้าตั้งใจทิ้ง · event มีตำแหน่ง ประเภท และ id ไม่มีค่าจริง · ถ้าคืน Promise webhook รอให้เสร็จก่อนตอบ เพราะ serverless อาจหยุด function ทันทีที่ส่งคำตอบ
+`onAudit` บังคับส่ง · ส่ง `() => {}` ถ้าตั้งใจทิ้ง · event มีตำแหน่ง ประเภท และ id ไม่มีค่าจริง · ถ้าคืน Promise webhook รอให้เสร็จก่อนตอบ เพราะ serverless อาจหยุด function ทันทีที่ส่งคำตอบ · รอนานสุด `auditWaitMs` (5 วินาที) เกินแล้วงานเขียนยังทำต่อ แต่ไม่รออีก งานเขียนที่ค้างตัวเดียวจึงไม่ทำให้ทุก request บนเครื่องเดียวกันค้างตาม
 
 Vercel เก็บ log ของ function 1 ชั่วโมง (Hobby) หรือ 1 วัน (Pro) · **ก่อนใช้กับลูกค้าจริงต้องส่ง audit ไปที่ที่เก็บถาวร** เช่น log drain หรือฐานข้อมูล โดยเฉพาะ event `token.resolve`
 
@@ -192,8 +195,9 @@ Vercel เก็บ log ของ function 1 ชั่วโมง (Hobby) ห�
 | `toleranceSec` | อายุลายเซ็นที่ยอมรับ ทั้งเก่าและใหม่ · ค่าตั้งต้น 300 |
 | `maxBodyBytes` | ค่าตั้งต้น 65 536 |
 | `forwardTimeoutMs` | ค่าตั้งต้น 10 000 |
+| `auditWaitMs` | รอ Promise ของ `onAudit` / `onForward` นานสุดก่อนตอบ · ค่าเริ่มต้น 5 000 |
 
-ตั้งค่าผิดตอนเริ่ม throw `PdpaHttpError` ที่มี `code: 'ERR_PDPA_HTTP_CONFIG'`
+ตั้งค่าผิดตอนเริ่ม throw `PdpaHttpError` ที่มี `code: 'ERR_PDPA_HTTP_CONFIG'` · runtime ที่ไม่มี Web Crypto ได้ `'ERR_PDPA_HTTP_NO_WEBCRYPTO'`
 
 ## ข้อจำกัด
 

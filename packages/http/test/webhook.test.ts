@@ -468,4 +468,81 @@ describe('audit', () => {
     await webhook.inbound(await signed({ sessionId: 'conv_8f2a', text: `เบอร์ ${PHONE}` }))
     expect(written).toBeGreaterThan(0)
   })
+
+  // D22: the set of writes in progress is shared by every request on the instance.
+  it('one write that never ends holds up its own answer for auditWaitMs, and no answer after it', async () => {
+    let calls = 0
+    const { webhook } = setup({
+      auditWaitMs: 100,
+      // The first message's audit never finishes; later ones finish at once.
+      onAudit: () => (calls++ === 0 ? new Promise<void>(() => {}) : Promise.resolve()),
+    })
+    const timed = async () => {
+      const started = performance.now()
+      const res = await webhook.inbound(await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' }))
+      expect(res.status).toBe(200)
+      return performance.now() - started
+    }
+    expect(await timed()).toBeGreaterThanOrEqual(90)
+    expect(await timed()).toBeLessThan(60)
+  })
+})
+
+describe('a body without an honest content-length (D22)', () => {
+  /** A body far over the limit, counting how many chunks were taken from it. */
+  function endless() {
+    const chunk = new Uint8Array(16 * 1024).fill(0x61)
+    const counter = { pulled: 0 }
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        counter.pulled++
+        if (counter.pulled > 640)
+          controller.close() // 10 MB
+        else controller.enqueue(chunk)
+      },
+    })
+    return { stream, counter }
+  }
+
+  for (const [label, headers] of [
+    ['no content-length', {}],
+    ['a content-length that is not a number', { 'content-length': 'abc' }],
+  ] as const) {
+    it(`with ${label}, is read only until it passes maxBodyBytes`, async () => {
+      const { stream, counter } = endless()
+      const { webhook } = setup()
+      const res = await webhook.inbound(
+        new Request('https://hook.example/', {
+          method: 'POST',
+          headers,
+          body: stream,
+          duplex: 'half',
+        } as RequestInit),
+      )
+      expect(res.status).toBe(413)
+      expect(counter.pulled).toBeLessThan(10)
+    })
+  }
+})
+
+describe('Web Crypto (D22)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
+  it('missing is a startup error, not a failure on every request', () => {
+    vi.stubGlobal('crypto', {})
+    expect(() => setup()).toThrow(PdpaHttpError)
+  })
+
+  it('a key import that fails once is a 500 for that request, and tried again on the next', async () => {
+    const { webhook } = setup()
+    // Signed first: signing imports a key too.
+    const one = await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' })
+    const two = await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' })
+    vi.spyOn(globalThis.crypto.subtle, 'importKey').mockRejectedValueOnce(new Error('busy'))
+    expect((await webhook.inbound(one)).status).toBe(500)
+    expect((await webhook.inbound(two)).status).toBe(200)
+  })
 })
