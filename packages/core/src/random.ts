@@ -58,6 +58,18 @@ export function resolveRandomSource(provided?: RandomSource): RandomSource {
 const ID_BYTES = 8
 
 /**
+ * What encodeLetters writes for `bytes` bytes, as a regular expression source.
+ * Every pattern that reads an id back out of text is built here, so the
+ * alphabet and the length can only change in one place.
+ */
+export function lettersPattern(bytes: number): string {
+  return `[${ALPHABET}]{${bytes * 2}}`
+}
+
+/** A token id, as text holds it. */
+export const TOKEN_ID_PATTERN: string = lettersPattern(ID_BYTES)
+
+/**
  * 64 bits of unguessable id, 16 characters, no digits.
  *
  * Checks the source on EVERY call, not just the probe in resolveRandomSource.

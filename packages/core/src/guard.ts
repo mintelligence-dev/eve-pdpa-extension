@@ -1,5 +1,5 @@
 import { canonicalValue } from './actions/canonical.js'
-import { hashValue, resolveHmac } from './actions/hash.js'
+import { HASH_ID_PATTERN, hashValue, resolveHmac } from './actions/hash.js'
 import { maskValue } from './actions/mask.js'
 import {
   createTokeniser,
@@ -7,7 +7,6 @@ import {
   judge,
   parseTokenId,
   type StoreStep,
-  TOKEN_ID_PATTERN,
 } from './actions/tokenise.js'
 import { allowlistDigestForm, compileAllowlist } from './allowlist.js'
 import type { Hmac } from './crypto/hmac.js'
@@ -17,7 +16,7 @@ import { createEngine, type EngineResult } from './engine.js'
 import { PdpaError } from './errors.js'
 import { normalise, toOriginalSpan } from './normalise.js'
 import { actionFor, definePolicy, isCompiledPolicy } from './policy.js'
-import { resolveRandomSource, tokenId } from './random.js'
+import { resolveRandomSource, TOKEN_ID_PATTERN, tokenId } from './random.js'
 import { type Claim, settleOverlaps } from './settle.js'
 import { createMemoryTokenStore } from './tokens/memory-store.js'
 import type {
@@ -75,7 +74,7 @@ const PLACEHOLDER_UNKNOWN_EN = '[redacted]'
 const TOKEN_IN_REPLY = new RegExp(`\\[?(?<![A-Za-z])tok:(${TOKEN_ID_PATTERN})(?![A-Za-z])\\]?`, 'g')
 
 /** A hash placeholder, which is only ever written bracketed and with a known entity. */
-const HASH_IN_REPLY = new RegExp(`\\[(${ENTITY_TYPES.join('|')}):[bcdfghjkmnpqrstv]{16}\\]`, 'g')
+const HASH_IN_REPLY = new RegExp(`\\[(${ENTITY_TYPES.join('|')}):${HASH_ID_PATTERN}\\]`, 'g')
 
 /** Both of the above, in one pass: group 1 is a token id, group 2 a hashed entity. */
 const OUTBOUND_REWRITE = new RegExp(`${TOKEN_IN_REPLY.source}|${HASH_IN_REPLY.source}`, 'g')
