@@ -22,7 +22,12 @@ function optional<K extends string>(key: K, name: string): { [P in K]?: string }
   return value === undefined || value === '' ? {} : ({ [key]: value } as { [P in K]?: string })
 }
 
-const allowed = process.env.ALLOWED_DESTINATIONS
+// Comma-separated. A trailing comma or a blank value is not an entry: an empty
+// one would fail createWebhook and take every route down with it (D22).
+const allowed = (process.env.ALLOWED_DESTINATIONS ?? '')
+  .split(',')
+  .map((u) => u.trim())
+  .filter((u) => u !== '')
 
 export const webhook: Webhook = createWebhook({
   // A bot that only answers questions uses default. A bot that sends OTPs
@@ -35,7 +40,7 @@ export const webhook: Webhook = createWebhook({
   ...optional('forwardTo', 'FORWARD_URL'),
   ...optional('replyTo', 'REPLY_URL'),
   // Set ALLOWED_DESTINATIONS (comma-separated https URLs) to accept only those.
-  ...(allowed ? { allowedDestinations: allowed.split(',').map((u) => u.trim()) } : {}),
+  ...(allowed.length > 0 ? { allowedDestinations: allowed } : {}),
 
   // For otp, the only policy that tokenises. Without it, delete these two and
   // nothing needs Upstash.
