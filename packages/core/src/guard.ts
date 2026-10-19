@@ -7,6 +7,7 @@ import {
   judge,
   parseTokenId,
   type StoreStep,
+  TOKEN_ID_PATTERN,
 } from './actions/tokenise.js'
 import { allowlistDigestForm, compileAllowlist } from './allowlist.js'
 import type { Hmac } from './crypto/hmac.js'
@@ -71,7 +72,7 @@ const PLACEHOLDER_UNKNOWN_EN = '[redacted]'
  * A token as a model may echo it in a reply: bracketed as issued, or with the
  * brackets dropped. The letter guards keep it from matching inside a longer word.
  */
-const TOKEN_IN_REPLY = /\[?(?<![A-Za-z])tok:([bcdfghjkmnpqrstv]{16})(?![A-Za-z])\]?/g
+const TOKEN_IN_REPLY = new RegExp(`\\[?(?<![A-Za-z])tok:(${TOKEN_ID_PATTERN})(?![A-Za-z])\\]?`, 'g')
 
 /** A hash placeholder, which is only ever written bracketed and with a known entity. */
 const HASH_IN_REPLY = new RegExp(`\\[(${ENTITY_TYPES.join('|')}):[bcdfghjkmnpqrstv]{16}\\]`, 'g')

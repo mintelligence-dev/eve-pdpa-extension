@@ -7,8 +7,20 @@ export const DEFAULT_TTL_SEC = 300
 /** D6: the most a policy may set. */
 export const MAX_TTL_SEC = 3600
 
-/** Bracketed as it appears in text, or the bare id a tool might pass on. */
-const TOKEN = /^(?:\[tok:([bcdfghjkmnpqrstv]{16})\]|([bcdfghjkmnpqrstv]{16}))$/
+/** A token id: sixteen letters with no vowels, so an id never spells a word. */
+export const TOKEN_ID_PATTERN = '[bcdfghjkmnpqrstv]{16}'
+
+/**
+ * One token, spelt any way an outbound reply is read in (`TOKEN_IN_REPLY` in
+ * guard.ts): it reaches resolve through an AI's tool call, and a model copying
+ * `[tok:…]` drops a bracket or lets a space in as readily in a tool argument
+ * as in a reply. Or the bare id. Never a token inside a sentence — with two
+ * in one, there is no telling which was meant (D21).
+ */
+const TOKEN = new RegExp(`^(?:\\[?\\s*tok:(${TOKEN_ID_PATTERN})\\s*\\]?|(${TOKEN_ID_PATTERN}))$`)
+
+/** Spaces and quotes round the whole value — a model often quotes what it copies. */
+const WRAPPING = /^[\s"'`“”‘’]+|[\s"'`“”‘’]+$/g
 
 const encoder = new TextEncoder()
 
@@ -24,7 +36,7 @@ const REUSE_INDEX_LIMIT = 20_000
  * is not written down anywhere.
  */
 export function parseTokenId(token: string): string | null {
-  const m = TOKEN.exec(token)
+  const m = TOKEN.exec(token.replace(WRAPPING, ''))
   return m === null ? null : (m[1] ?? m[2] ?? null)
 }
 

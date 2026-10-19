@@ -22,7 +22,7 @@ First release.
 
 ### Tokens
 
-- `guard.resolve()` / `resolveSync()` exchange a token for its value only for a purpose the policy allows, within the token's session and lifetime (`ttlSec`, at most an hour).
+- `guard.resolve()` / `resolveSync()` exchange a token for its value only for a purpose the policy allows, within the token's session and lifetime (`ttlSec`, at most an hour). The token is read however a model copied it into a tool call — brackets dropped or half dropped, spaces inside, wrapped in quotes — the same spellings an outbound reply is read in; it must still be one token on its own.
 - Replies passing through with `boundary: 'outbound'` have this session's tokens shown masked (`xxx-xxx-7777`); tokens from another session, or ones the guard does not hold, become a placeholder.
 - A policy that tokenises requires `sessionId` on every call (`ERR_PDPA_NO_SESSION`), so one chat can never resolve another's token.
 - `TokenStore` interface for a shared store (Redis, KV) across processes; an in-memory store is the default.
