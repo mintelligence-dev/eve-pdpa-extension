@@ -427,6 +427,27 @@ describe('the memory store', () => {
   })
 })
 
+describe('the reuse index past its limit (D22)', () => {
+  it('is trimmed from its own records, without asking the store about each entry', () => {
+    const inner = createMemoryTokenStore({ maxTokens: 30_000 })
+    let gets = 0
+    const store: TokenStore = {
+      ...inner,
+      get(id) {
+        gets++
+        return inner.get(id)
+      },
+    }
+    const { guard } = guardWith({ tokenStore: store })
+    // 20,001 different numbers: one past the index limit. Each is new, so no
+    // issue asks the store anything; only a prune that reads the store would.
+    for (let i = 0; i <= 20_000; i++) {
+      guard.processSync(`เบอร์ 08${String(i).padStart(8, '0')}`)
+    }
+    expect(gets).toBe(0)
+  })
+})
+
 describe('a store the host plugs in — D6', () => {
   it('is used instead of the memory store', () => {
     const map = new Map<string, TokenRecord>()
