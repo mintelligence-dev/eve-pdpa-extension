@@ -30,9 +30,7 @@ The answering system sends its reply through `/outbound` instead of straight to 
 
 ## Install
 
-```bash
-npm install @eve-pdpa-extension/http @eve-pdpa-extension/core
-```
+**Not on npm in 0.1.** The webhook is deployed from this repository — see [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook), which takes `core` and `http` from the workspace. The code below is what that app runs.
 
 ## Quick start
 
@@ -64,7 +62,7 @@ export function POST(request: Request) {
 // webhook.outbound · webhook.resolve · webhook.endSession — the same way
 ```
 
-A deployable example is in [`examples/vercel`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/examples/vercel).
+The deployed webhook is [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook).
 
 ## Sending a message in
 

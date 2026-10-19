@@ -1,6 +1,7 @@
 {
   "name": "@eve-pdpa-extension/http",
   "version": "0.0.0",
+  "private": true,
   "description": "A signed webhook that protects Thai personal data in chat messages on their way to an AI model, and in its replies.",
   "keywords": [
     "pdpa",

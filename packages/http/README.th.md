@@ -30,9 +30,7 @@ webhook ที่ตั้งคั่นระหว่างแอปแชท
 
 ## ติดตั้ง
 
-```bash
-npm install @eve-pdpa-extension/http @eve-pdpa-extension/core
-```
+**0.1 ยังไม่ขึ้น npm** · webhook deploy จาก repo นี้ — ดู [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook) ซึ่งใช้ `core` กับ `http` จาก workspace · โค้ดด้านล่างคือสิ่งที่แอปนั้นรัน
 
 ## เริ่มใช้
 
@@ -64,7 +62,7 @@ export function POST(request: Request) {
 // webhook.outbound · webhook.resolve · webhook.endSession — แบบเดียวกัน
 ```
 
-ตัวอย่างที่ deploy ได้อยู่ใน [`examples/vercel`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/examples/vercel)
+webhook ที่ deploy จริงคือ [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook)
 
 ## ส่งข้อความเข้า
 
