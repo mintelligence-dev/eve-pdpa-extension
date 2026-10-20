@@ -36,7 +36,7 @@ deploy ขึ้น preview ได้แล้ว (20 ต.ค. · บัญช�
    - install: `pnpm install --frozen-lockfile --filter @eve-pdpa-extension/gateway...` (แอปนี้กับสิ่งที่มันใช้ ไม่ลง bun / deno / playwright ของทั้ง repo)
    - build: `pnpm --filter @eve-pdpa-extension/gateway^... build` (core + http) · `public/robots.txt` อยู่ใน repo เพราะ preset "Other" ต้องมีโฟลเดอร์ static ที่ไม่ว่าง แม้แอปนี้มีแค่ function
 3. **region:** `vercel.json` ตั้ง `sin1` (สิงคโปร์) ไว้ แต่ **บัญชี Hobby ไม่สนค่านี้** — function รันที่สหรัฐ (`iad1`) ข้อความลูกค้าจะถูกประมวลผลที่นั่นก่อนถูกปิด · ต้องตั้ง region ของโปรเจกต์เอง: Settings → Functions → Function Region → Singapore หรือ `vercel api /v9/projects/<project> -X PATCH` ส่ง `{"serverlessFunctionRegion":"sin1"}` แล้ว deploy ใหม่ · ตรวจหลัง deploy ว่าทุก function ขึ้น `[sin1]` (`vercel inspect <url>`) · สร้าง Upstash ที่ Singapore ให้อยู่ที่เดียวกัน · แจ้ง DPO ว่าข้อมูลประมวลผลและเก็บ token ที่สิงคโปร์
-4. Node.js 22.x · repo ใช้ pnpm 12 (`packageManager` ใน `package.json` ที่ root) · ถ้า Vercel ใช้ pnpm คนละรุ่น ตั้งตัวแปร `ENABLE_EXPERIMENTAL_COREPACK=1`
+4. Node.js 24.x — ล็อกไว้ที่ `engines` ใน `package.json` ของแอปนี้ (Vercel ใช้ค่านี้ก่อนค่าในหน้าตั้งค่า · `>=` จะขยับรุ่นใหญ่เอง) · ตรงกับรุ่นที่ CI ทดสอบ http · repo ใช้ pnpm 12 (`packageManager` ใน `package.json` ที่ root) · ถ้า Vercel ใช้ pnpm คนละรุ่น ตั้งตัวแปร `ENABLE_EXPERIMENTAL_COREPACK=1`
 5. ตั้งตัวแปรตามตารางด้านล่าง แล้ว deploy
 
 ลองในเครื่องก่อน: รันสองคำสั่งใน `vercel.json` จากโฟลเดอร์นี้ แล้ว `pnpm typecheck`
