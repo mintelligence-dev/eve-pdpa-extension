@@ -42,6 +42,33 @@ const allowed = (process.env.ALLOWED_DESTINATIONS ?? '')
   .map((u) => u.trim())
   .filter((u) => u !== '')
 
+// DEMO ONLY (D26). DEBUG_LOG_TEXT=1 logs what each forward carries — the
+// protected text, never the message as it came in — so a demo can show what
+// the answering system and the chat app received. The text is still the
+// customer's conversation: unset it, or delete this block, before real
+// customers.
+const debugText = process.env.DEBUG_LOG_TEXT === '1'
+if (debugText) {
+  console.warn('DEBUG_LOG_TEXT is on: the protected text of every forward is logged. Demo only.')
+}
+const debugFetch: typeof fetch = async (input, init) => {
+  let sent: unknown = init?.body
+  try {
+    sent = JSON.parse(String(init?.body))
+  } catch {}
+  let status: number | null = null
+  try {
+    const res = await fetch(input, init)
+    status = res.status
+    return res
+  } finally {
+    // Origin and path, as webhook.forward records it: a query can carry ids.
+    const url = new URL(String(input))
+    const to = `${url.origin}${url.pathname}`
+    console.log(JSON.stringify({ type: 'webhook.debug', to, status, sent }))
+  }
+}
+
 export const webhook: Webhook = createWebhook({
   // A bot that only answers questions uses default. A bot that sends OTPs
   // names otp, and only that one can have a phone number resolved.
@@ -69,4 +96,5 @@ export const webhook: Webhook = createWebhook({
   onAudit: (event) => console.log(JSON.stringify(event)),
   // Where each message went: one line per forward, beside the audit events.
   onForward: (record) => console.log(JSON.stringify({ type: 'webhook.forward', ...record })),
+  ...(debugText ? { fetch: debugFetch } : {}),
 })

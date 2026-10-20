@@ -64,6 +64,7 @@ node apps/webhook/scripts/smoke.mjs https://<deployment>.vercel.app
 | `PDPA_SECRET` | `openssl rand -hex 32` · ให้แอปแชทและระบบที่ตอบใช้เซ็น request |
 | `FORWARD_URL` · `REPLY_URL` | **ไม่บังคับ** · ค่าตั้งต้นเมื่อ request ไม่ได้ระบุ `forwardTo` / `replyTo` |
 | `ALLOWED_DESTINATIONS` | **ไม่บังคับ** · URL แบบ https คั่นด้วย `,` · ตั้งแล้ว request ระบุได้เฉพาะปลายทางในรายการ |
+| `DEBUG_LOG_TEXT` | **demo เท่านั้น** · `1` = log ข้อความที่ปิดแล้วที่ส่งต่อทุกครั้ง (`type: webhook.debug`) ไม่ใช่ข้อความต้นฉบับ · ยังเป็นบทสนทนาของลูกค้า — **ลบตัวแปรนี้ก่อนมีลูกค้าจริง** (D26) |
 | `PDPA_RESOLVE_SECRET` | `openssl rand -hex 32` อีกค่า · ให้เฉพาะระบบที่ต้องใช้ค่าจริง |
 | `KV_REST_API_URL` · `KV_REST_API_TOKEN` | Vercel → Storage → Upstash → Upstash for Redis (Singapore · Free) · Vercel ใส่ให้เมื่อเชื่อมกับโปรเจกต์ · ต่อ Upstash เองไม่ผ่าน Vercel ใช้ `UPSTASH_REDIS_REST_URL` · `UPSTASH_REDIS_REST_TOKEN` ได้ · **ไม่ใช่** integration "Redis" (Redis Cloud) ซึ่งไม่มี REST |
 
