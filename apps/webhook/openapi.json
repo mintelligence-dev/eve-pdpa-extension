@@ -1,0 +1,546 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "eve-pdpa webhook",
+    "version": "0.1.0",
+    "summary": "A relay that protects Thai personal data in chat messages before they reach an answering system, and in its replies.",
+    "description": "Not a LINE webhook target: your chat backend calls it with one JSON format. It checks the message, protects personal data by the named policy, and forwards the protected text, signed, to `forwardTo`. The answering system sends its reply back through `/api/outbound`, which checks it again before it reaches the chat app.\n\nEvery request carries an HMAC-SHA256 signature over `${timestamp}.${scope}.${body}`. The scope is the route: `inbound`, `outbound`, `end-session` (signed with `PDPA_SECRET`) and `resolve` (signed with `PDPA_RESOLVE_SECRET`). What the webhook sends on is signed `forward` (to `forwardTo`) or `reply` (to `replyTo`). See API.md for the recipe in any language.\n\nA missing, wrong or stale signature is 401. A timestamp more than 300 s from the webhook's clock is stale. Bodies over 65,536 bytes are 413. Every answer carries `Cache-Control: no-store`."
+  },
+  "servers": [
+    {
+      "url": "https://{deployment}",
+      "description": "The Vercel deployment",
+      "variables": { "deployment": { "default": "eve-pdpa-webhook.vercel.app" } }
+    }
+  ],
+  "security": [{ "timestamp": [], "signature": [] }],
+  "paths": {
+    "/api/inbound": {
+      "post": {
+        "operationId": "inbound",
+        "summary": "Protect a customer's message and forward it",
+        "description": "Signed for scope `inbound` with `PDPA_SECRET`. The protected text goes to `forwardTo`, signed for scope `forward`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InboundRequest" },
+              "example": {
+                "policy": "otp",
+                "sessionId": "conv_8f2a",
+                "ref": "msg_10293",
+                "text": "เบอร์ 091-888-7777 ค่ะ",
+                "context": "ขอเบอร์ติดต่อค่ะ",
+                "forwardTo": "https://ai.example.com/inbound",
+                "replyTo": "https://chat.example.com/reply"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Protected" },
+          "400": { "$ref": "#/components/responses/InvalidRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "405": { "$ref": "#/components/responses/MethodNotAllowed" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "500": { "$ref": "#/components/responses/NotChecked" },
+          "502": { "$ref": "#/components/responses/ForwardFailed" }
+        }
+      }
+    },
+    "/api/outbound": {
+      "post": {
+        "operationId": "outbound",
+        "summary": "Check the answering system's reply and send it to the chat app",
+        "description": "Signed for scope `outbound` with `PDPA_SECRET`. Send the `policy`, `sessionId` and `replyTo` that came with the forwarded message. Tokens of this session become their masked display; the result goes to `replyTo`, signed for scope `reply`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/OutboundRequest" },
+              "example": {
+                "policy": "otp",
+                "sessionId": "conv_8f2a",
+                "ref": "msg_10294",
+                "text": "ส่ง OTP ไปที่ [tok:rfdbkfrtnsmbvpsh] แล้วค่ะ",
+                "replyTo": "https://chat.example.com/reply"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Protected" },
+          "400": { "$ref": "#/components/responses/InvalidRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "405": { "$ref": "#/components/responses/MethodNotAllowed" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "500": { "$ref": "#/components/responses/NotChecked" },
+          "502": { "$ref": "#/components/responses/ForwardFailed" }
+        }
+      }
+    },
+    "/api/resolve": {
+      "post": {
+        "operationId": "resolve",
+        "summary": "Exchange a token for its real value, for an allowed purpose",
+        "description": "Signed for scope `resolve` with `PDPA_RESOLVE_SECRET` — never `PDPA_SECRET`. Called by the code of a tool that needs the real value, never by the AI. Every attempt, allowed or not, is a `token.resolve` audit event. 404 when no policy on this webhook tokenises.",
+        "security": [{ "timestamp": [], "resolveSignature": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ResolveRequest" },
+              "example": {
+                "policy": "otp",
+                "token": "[tok:rfdbkfrtnsmbvpsh]",
+                "sessionId": "conv_8f2a",
+                "purpose": "otp_send",
+                "caller": "otp-service",
+                "ref": "call_77"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Answered. `ok: false` with a reason when the token cannot be exchanged.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ResolveAnswer" },
+                "examples": {
+                  "allowed": { "value": { "ok": true, "value": "0918887777" } },
+                  "refused": { "value": { "ok": false, "reason": "purpose_not_allowed" } }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/InvalidRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NoTokens" },
+          "405": { "$ref": "#/components/responses/MethodNotAllowed" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "500": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api/end-session": {
+      "post": {
+        "operationId": "endSession",
+        "summary": "Delete every token of a chat",
+        "description": "Signed for scope `end-session` with `PDPA_SECRET`. Call it when the chat ends. 404 when no policy on this webhook tokenises.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EndSessionRequest" },
+              "example": { "sessionId": "conv_8f2a" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Every token of the session is gone.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Ok" },
+                "example": { "ok": true }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/InvalidRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NoTokens" },
+          "405": { "$ref": "#/components/responses/MethodNotAllowed" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "500": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "webhooks": {
+    "forward": {
+      "post": {
+        "summary": "The protected message, sent to forwardTo",
+        "description": "Sent by the webhook, signed for scope `forward` with `PDPA_SECRET`. Read the body as text, check the signature, then parse it. Answer 2xx; anything else, a redirect included, makes /api/inbound answer 502. Redirects are not followed.",
+        "security": [{ "timestamp": [], "signature": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Forwarded" },
+              "example": {
+                "policy": "otp",
+                "sessionId": "conv_8f2a",
+                "ref": "msg_10293",
+                "text": "เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ",
+                "replyTo": "https://chat.example.com/reply"
+              }
+            }
+          }
+        },
+        "responses": { "2XX": { "description": "Taken" } }
+      }
+    },
+    "reply": {
+      "post": {
+        "summary": "The checked reply, sent to replyTo",
+        "description": "Sent by the webhook, signed for scope `reply` with `PDPA_SECRET`. Check it the same way, with scope `reply`. Answer 2xx; anything else makes /api/outbound answer 502.",
+        "security": [{ "timestamp": [], "signature": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Replied" },
+              "example": {
+                "policy": "otp",
+                "sessionId": "conv_8f2a",
+                "ref": "msg_10294",
+                "text": "ส่ง OTP ไปที่ xxx-xxx-7777 แล้วค่ะ"
+              }
+            }
+          }
+        },
+        "responses": { "2XX": { "description": "Taken" } }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "timestamp": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-pdpa-timestamp",
+        "description": "Unix time in seconds, as signed. More than 300 s from the receiver's clock either way is refused."
+      },
+      "signature": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-pdpa-signature",
+        "description": "`v1=` followed by lowercase hex of HMAC-SHA256(PDPA_SECRET, `${timestamp}.${scope}.${body}`), the body exactly as sent. Scope: the route (inbound, outbound, end-session), or forward / reply for what the webhook sends."
+      },
+      "resolveSignature": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-pdpa-signature",
+        "description": "As `signature`, keyed with PDPA_RESOLVE_SECRET and scope `resolve`."
+      }
+    },
+    "schemas": {
+      "Policy": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "description": "A policy this webhook was deployed with. Left out: `default`. One that does not exist: 400."
+      },
+      "SessionId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "description": "Your own chat id. Written into every audit event, so one that is itself personal data (a LINE userId, a phone number) is refused with 400."
+      },
+      "Ref": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "description": "Your own message or call id, written into audit to trace an event back. Checked for personal data like sessionId."
+      },
+      "Destination": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048,
+        "format": "uri",
+        "description": "https only, no user name or password, not a local or private address, and nothing in its path or query that is personal data. Redirects are not followed."
+      },
+      "InboundRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sessionId", "text"],
+        "properties": {
+          "policy": { "$ref": "#/components/schemas/Policy" },
+          "sessionId": { "$ref": "#/components/schemas/SessionId" },
+          "ref": { "$ref": "#/components/schemas/Ref" },
+          "text": { "type": "string", "description": "The customer's message." },
+          "context": {
+            "type": "string",
+            "description": "The other side's last message, read for cue words only (\"your account number?\"). Never forwarded."
+          },
+          "forwardTo": {
+            "$ref": "#/components/schemas/Destination",
+            "description": "Where the protected message goes. Falls back to the deployment's FORWARD_URL; one of the two is required."
+          },
+          "replyTo": {
+            "$ref": "#/components/schemas/Destination",
+            "description": "Where the answer should end up. Passed on to forwardTo, which sends it back with its reply to /api/outbound."
+          }
+        }
+      },
+      "OutboundRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sessionId", "text"],
+        "properties": {
+          "policy": { "$ref": "#/components/schemas/Policy" },
+          "sessionId": { "$ref": "#/components/schemas/SessionId" },
+          "ref": { "$ref": "#/components/schemas/Ref" },
+          "text": { "type": "string", "description": "The answering system's reply." },
+          "context": { "type": "string", "description": "As on /api/inbound." },
+          "replyTo": {
+            "$ref": "#/components/schemas/Destination",
+            "description": "Where the checked reply goes. Falls back to the deployment's REPLY_URL; one of the two is required."
+          }
+        }
+      },
+      "ResolveRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["token", "sessionId", "purpose"],
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/Policy",
+            "description": "A policy that tokenises. One that does not: 400."
+          },
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "As the model copied it: `[tok:…]`, without its brackets, quoted, or the bare id. One token, never a sentence holding one."
+          },
+          "sessionId": {
+            "$ref": "#/components/schemas/SessionId",
+            "description": "The chat the token was issued in. Another chat: `session_mismatch`."
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Why the value is needed, one of the policy's allowedPurposes, such as `otp_send`."
+          },
+          "caller": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Who is asking, for audit, such as `otp-service`."
+          },
+          "ref": { "$ref": "#/components/schemas/Ref" }
+        }
+      },
+      "EndSessionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sessionId"],
+        "properties": { "sessionId": { "$ref": "#/components/schemas/SessionId" } }
+      },
+      "Forwarded": {
+        "type": "object",
+        "required": ["policy", "sessionId", "text"],
+        "properties": {
+          "policy": {
+            "type": "string",
+            "description": "The policy the message was protected by. Send it back with your reply."
+          },
+          "sessionId": { "type": "string" },
+          "ref": { "type": "string" },
+          "text": {
+            "type": "string",
+            "description": "The protected text: `[tok:…]` tokens, masks or placeholders in place of personal data."
+          },
+          "replyTo": {
+            "type": "string",
+            "description": "Send it back to /api/outbound with your reply."
+          }
+        }
+      },
+      "Replied": {
+        "type": "object",
+        "required": ["policy", "sessionId", "text"],
+        "properties": {
+          "policy": { "type": "string" },
+          "sessionId": { "type": "string" },
+          "ref": { "type": "string" },
+          "text": { "type": "string", "description": "The checked reply, ready for the customer." }
+        }
+      },
+      "Outcome": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["outcome"],
+            "properties": { "outcome": { "const": "processed" } },
+            "description": "Protected and delivered."
+          },
+          {
+            "type": "object",
+            "required": ["outcome", "blockedBy"],
+            "properties": {
+              "outcome": { "const": "blocked" },
+              "blockedBy": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "The entity types that blocked it, such as CREDIT_CARD. Nothing was sent on."
+              }
+            },
+            "description": "The policy blocks this message. Nothing was sent on; tell the customer, for example, not to send card numbers in chat."
+          }
+        ]
+      },
+      "ResolveAnswer": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["ok", "value"],
+            "properties": {
+              "ok": { "const": true },
+              "value": {
+                "type": "string",
+                "description": "The real value, canonical: 0918887777, not ๐๙๑-๘๘๘-๗๗๗๗. Never log it."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["ok", "reason"],
+            "properties": {
+              "ok": { "const": false },
+              "reason": {
+                "enum": [
+                  "not_found",
+                  "session_mismatch",
+                  "expired",
+                  "purpose_not_allowed",
+                  "store_unavailable"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "Ok": { "type": "object", "required": ["ok"], "properties": { "ok": { "const": true } } },
+      "Problem": {
+        "type": "object",
+        "required": ["error", "message"],
+        "properties": {
+          "error": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "responses": {
+      "Protected": {
+        "description": "Checked. Delivered, or blocked by the policy.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Outcome" },
+            "examples": {
+              "processed": { "value": { "outcome": "processed" } },
+              "blocked": { "value": { "outcome": "blocked", "blockedBy": ["CREDIT_CARD"] } }
+            }
+          }
+        }
+      },
+      "InvalidRequest": {
+        "description": "The request is wrong. Names the field and the rule, never the value.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["error", "field", "message"],
+              "properties": {
+                "error": { "const": "invalid_request" },
+                "field": { "type": "string" },
+                "message": { "type": "string" }
+              }
+            },
+            "example": {
+              "error": "invalid_request",
+              "field": "sessionId",
+              "message": "sessionId is required"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing, wrong or stale signature, or one signed for another scope. One answer for all.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Problem" },
+            "example": {
+              "error": "unauthorized",
+              "message": "missing, invalid or expired signature"
+            }
+          }
+        }
+      },
+      "MethodNotAllowed": {
+        "description": "Not POST.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Problem" },
+            "example": { "error": "method_not_allowed", "message": "use POST" }
+          }
+        }
+      },
+      "TooLarge": {
+        "description": "The body is over 65,536 bytes.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Problem" },
+            "example": { "error": "too_large", "message": "the body is over 65536 bytes" }
+          }
+        }
+      },
+      "NotChecked": {
+        "description": "The guard could not run. Nothing was sent on. Send it again.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["outcome", "message"],
+              "properties": { "outcome": { "const": "error" }, "message": { "type": "string" } }
+            },
+            "example": {
+              "outcome": "error",
+              "message": "the message could not be checked; it was not sent on"
+            }
+          }
+        }
+      },
+      "ForwardFailed": {
+        "description": "Protected, but the destination did not answer 2xx in time. Send it again.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["outcome", "message"],
+              "properties": {
+                "outcome": { "const": "forward_failed" },
+                "message": { "type": "string" }
+              }
+            },
+            "example": {
+              "outcome": "forward_failed",
+              "message": "the protected message could not be delivered; send it again"
+            }
+          }
+        }
+      },
+      "NoTokens": {
+        "description": "No policy on this webhook tokenises.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Problem" },
+            "example": { "error": "not_found", "message": "no policy on this webhook tokenises" }
+          }
+        }
+      },
+      "Error": {
+        "description": "The store or the signature check failed underneath. Try again.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Problem" },
+            "example": { "error": "error", "message": "the token could not be resolved" }
+          }
+        }
+      }
+    }
+  }
+}
