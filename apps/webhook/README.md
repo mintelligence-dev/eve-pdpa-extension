@@ -31,7 +31,7 @@ webhook ที่ deploy จริง · คั่นระหว่างแอ
 1. Vercel → Add New → Project → เลือก repo · **Root Directory = `apps/webhook`** · ต้องเปิด *Include files outside the Root Directory* (แอปใช้ `packages/core` และ `packages/http`)
 2. ไม่ต้องตั้ง Install / Build Command เอง — `vercel.json` สั่งแล้ว:
    - install: `pnpm install --frozen-lockfile --filter @eve-pdpa-extension/webhook...` (แอปนี้กับสิ่งที่มันใช้ ไม่ลง bun / deno / playwright ของทั้ง repo)
-   - build: `pnpm --filter @eve-pdpa-extension/webhook^... build && mkdir -p public` (core + http · `public/` เปล่า เพราะ preset "Other" ต้องมีโฟลเดอร์ static แม้แอปนี้มีแค่ function)
+   - build: `pnpm --filter @eve-pdpa-extension/webhook^... build` (core + http) · `public/robots.txt` อยู่ใน repo เพราะ preset "Other" ต้องมีโฟลเดอร์ static ที่ไม่ว่าง แม้แอปนี้มีแค่ function
 3. **region:** `vercel.json` ตั้ง `sin1` (สิงคโปร์) ไว้แล้ว — ไม่ตั้ง Vercel จะรันที่สหรัฐ (`iad1`) ข้อความลูกค้าจะถูกประมวลผลที่นั่นก่อนถูกปิด · สร้าง Upstash ที่ `ap-southeast-1` ให้อยู่ที่เดียวกัน · แจ้ง DPO ว่าข้อมูลประมวลผลและเก็บ token ที่สิงคโปร์
 4. Node.js 22.x · repo ใช้ pnpm 12 (`packageManager` ใน `package.json` ที่ root) · ถ้า Vercel ใช้ pnpm คนละรุ่น ตั้งตัวแปร `ENABLE_EXPERIMENTAL_COREPACK=1`
 5. ตั้งตัวแปรตามตารางด้านล่าง แล้ว deploy
