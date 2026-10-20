@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 // Checks a deployment of the webhook end to end, with synthetic data only.
 //
-//   PDPA_SECRET=… PDPA_RESOLVE_SECRET=… [VERCEL_BYPASS=…] node apps/webhook/scripts/smoke.mjs <url>
+//   PDPA_SECRET=… PDPA_RESOLVE_SECRET=… [VERCEL_BYPASS=…] node apps/webhook/scripts/smoke.mjs <url> [--keep]
+//
+// The last check ends the chat, which deletes its token from Upstash. --keep
+// skips it, so the token can be looked at in Upstash's Data Browser until it
+// expires (5 minutes, the otp policy's ttlSec).
 //
 // Run it in your own terminal: the secrets stay in your shell and nothing here
 // prints them. VERCEL_BYPASS is the deployment's "Protection Bypass for
@@ -15,16 +19,19 @@
 // its token), resolve says store_unavailable and end-session answers 500.
 import { createHmac, randomBytes } from 'node:crypto'
 
-const base = process.argv[2]?.replace(/\/+$/, '')
+const args = process.argv.slice(2)
+const keep = args.includes('--keep')
+const base = args.find((a) => !a.startsWith('--'))?.replace(/\/+$/, '')
 const secret = process.env.PDPA_SECRET
 const resolveSecret = process.env.PDPA_RESOLVE_SECRET
 if (!base || !secret || !resolveSecret) {
-  console.error('usage: PDPA_SECRET=… PDPA_RESOLVE_SECRET=… [VERCEL_BYPASS=…] node smoke.mjs <url>')
+  console.error(
+    'usage: PDPA_SECRET=… PDPA_RESOLVE_SECRET=… [VERCEL_BYPASS=…] node smoke.mjs <url> [--keep]',
+  )
   process.exit(2)
 }
 const nowhere = `${base}/robots.txt`
-// Not a timestamp: 13 digits can pass for a national ID, and the webhook
-// refuses an id that looks like personal data.
+// A chat of its own each run, so --keep leaves one key to find.
 const session = `smoke_${randomBytes(4).toString('hex')}`
 
 async function post(route, scope, key, payload) {
@@ -117,6 +124,8 @@ const checks = [
   ],
 ]
 
+if (keep) checks.pop()
+
 let failed = 0
 for (const [name, run, ok] of checks) {
   let r
@@ -136,6 +145,11 @@ for (const [name, run, ok] of checks) {
   console.log(`${pass ? 'ok  ' : 'FAIL'} ${name} · ${r.status} ${JSON.stringify(shown)}`)
 }
 console.log(failed === 0 ? '\nall checks passed' : `\n${failed} check(s) failed`)
+if (keep) {
+  console.log(
+    `--keep: end-session skipped. In Upstash look for pdpa:session:${session} and the pdpa:tok:… key it lists; the token expires in 5 minutes.`,
+  )
+}
 if (failed > 0 && !process.env.VERCEL_BYPASS) {
   console.log(
     'Deployment Protection on? Set VERCEL_BYPASS to the Protection Bypass for Automation value.',

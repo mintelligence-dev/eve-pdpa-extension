@@ -52,6 +52,7 @@ read -s VERCEL_BYPASS && export VERCEL_BYPASS   # Settings → Deployment Protec
 node apps/webhook/scripts/smoke.mjs https://<deployment>.vercel.app
 ```
 
+- ข้อสุดท้าย (end-session) ลบ token ที่ข้อ otp เขียนไว้ · ใส่ `--keep` ท้ายคำสั่งเพื่อข้ามข้อนั้น แล้วเปิดดูใน Upstash → Data Browser ได้ภายใน 5 นาที (`pdpa:session:smoke_…` · `pdpa:tok:…`)
 - ทุกข้อความส่งต่อไปที่ `/robots.txt` ของ deployment เอง ซึ่งรับ POST ไม่ได้ จึงตอบ 502 `forward_failed` ตามที่ตั้งใจ — ไม่มีข้อความออกไปนอก deployment
 - Upstash ต่อไม่ได้: ข้อความ otp โดนบล็อกด้วย `PHONE` · resolve ตอบ `store_unavailable` · end-session ตอบ 500
 - ตั้ง `ALLOWED_DESTINATIONS` ไว้: ข้อความโดนปฏิเสธ 400 เพราะ `/robots.txt` ไม่อยู่ในรายการ — ใช้ตอนยังไม่ได้ตั้ง หรือใส่ URL นั้นชั่วคราว
