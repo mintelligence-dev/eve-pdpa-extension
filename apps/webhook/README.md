@@ -4,7 +4,7 @@ webhook ที่ deploy จริง · คั่นระหว่างแอ
 
 ใช้ `@eve-pdpa-extension/core` และ `@eve-pdpa-extension/http` **จาก repo นี้** (`workspace:*`) · 0.1 ไม่ปล่อย `http` ขึ้น npm
 
-**ระบบที่จะเรียกใช้ webhook อ่าน [`API.md`](./API.md)** — endpoint · ช่อง · สูตรลายเซ็น พร้อมตัวอย่าง curl / Python / Node · spec เต็มอยู่ที่ [`openapi.json`](./openapi.json) · Postman collection ที่เซ็นให้เองอยู่ที่ [`postman/`](./postman) · README นี้เป็นเรื่องการ deploy
+**ระบบที่จะเรียกใช้ webhook อ่าน [`API.md`](./API.md)** — endpoint · ช่อง · สูตรลายเซ็น พร้อมตัวอย่าง curl / Python / Node · ลองยิงในเบราว์เซอร์ที่ `/apidocs` · spec เต็มอยู่ที่ [`public/openapi.json`](./public/openapi.json) · Postman collection ที่เซ็นให้เองอยู่ที่ [`postman/`](./postman) · README นี้เป็นเรื่องการ deploy
 
 ```
 แอปแชท ──POST /api/inbound──▶  webhook  ──▶ FORWARD_URL (ระบบที่ตอบ)
@@ -23,7 +23,8 @@ webhook ที่ deploy จริง · คั่นระหว่างแอ
 | `api/*.ts` | 4 route · แต่ละไฟล์เรียก handler หนึ่งตัว |
 | `vercel.json` | function รันที่สิงคโปร์ (`sin1`) — Hobby ไม่สนค่านี้ ดูข้อ region ด้านล่าง · install เฉพาะแอปนี้กับแพ็กเกจที่มันใช้ · build core + http ก่อน · ส่ง `policies/` ไปกับทุก function |
 | `package.json` · `tsconfig.json` | core + http แบบ `workspace:*` · `pnpm typecheck` ตรวจแอปนี้ด้วย |
-| `API.md` · `openapi.json` · `postman/` | สำหรับทีมที่ต่อเข้ามา · test ใน `packages/http` คุมให้ตรงกับ webhook |
+| `API.md` · `public/openapi.json` · `postman/` | สำหรับทีมที่ต่อเข้ามา · test ใน `packages/http` คุมให้ตรงกับ webhook |
+| `public/apidocs/` | หน้า `/apidocs`: Swagger UI จาก CDN (pin version + SRI) · `sign.js` เซ็นด้วย Web Crypto ก่อนยิง · test คุมเหมือน Postman (D27) |
 | `scripts/smoke.mjs` | ตรวจ deployment ที่ขึ้นแล้ว · ดู [ตรวจ deployment](#ตรวจ-deployment) |
 | `public/robots.txt` | ไฟล์ static ที่ preset "Other" ต้องมี · ห้าม bot เก็บทุกหน้า |
 

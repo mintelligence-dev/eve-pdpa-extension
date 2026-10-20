@@ -62,7 +62,7 @@ export function POST(request: Request) {
 // webhook.outbound · webhook.resolve · webhook.endSession — the same way
 ```
 
-The deployed webhook is [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook). Systems that call it read its [`API.md`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/API.md) and [`openapi.json`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/openapi.json): fields, responses, and the signature recipe for any language.
+The deployed webhook is [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook). Systems that call it read its [`API.md`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/API.md) and [`openapi.json`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/public/openapi.json): fields, responses, and the signature recipe for any language.
 
 ## Sending a message in
 

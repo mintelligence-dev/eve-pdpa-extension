@@ -1,4 +1,4 @@
-// apps/webhook/openapi.json and API.md are what other teams build against
+// apps/webhook/public/openapi.json and API.md are what other teams build against
 // (D23). These tests hold them to the webhook: every field the spec lists is
 // accepted and every rule it states is enforced, and a signature computed from
 // the recipe in API.md — with node:crypto, not signRequest — gets through.
@@ -35,7 +35,7 @@ type Spec = {
 }
 
 const spec = JSON.parse(
-  readFileSync(new URL('../../../apps/webhook/openapi.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../../../apps/webhook/public/openapi.json', import.meta.url), 'utf8'),
 ) as Spec
 
 /** A schema with its $ref followed, once: the spec never nests refs deeper than that. */
@@ -250,5 +250,65 @@ describe('the Postman collection', () => {
 
   it('stops with a clear message when the secrets are not set', () => {
     expect(() => run(collection.item[0] as Item, {})).toThrow(/pdpaSecret/)
+  })
+})
+
+// D27: /apidocs signs "Try it out" requests in the browser with Web Crypto.
+// Its signer runs here on Node's Web Crypto, and what it signs must get
+// through the webhook — the same check the Postman script gets.
+describe('the /apidocs page', () => {
+  type Signed = {
+    request: { url: string; method: string; headers: Record<string, string>; body: unknown }
+    note: string
+  }
+  const load = async () =>
+    (await import(
+      new URL('../../../apps/webhook/public/apidocs/sign.js', import.meta.url).href
+    )) as {
+      sign: (
+        request: Signed['request'],
+        secrets: { secret?: string; resolveSecret?: string },
+      ) => Promise<Signed>
+    }
+
+  for (const route of routes) {
+    it(`signs ${route} so the webhook takes it`, async () => {
+      const { sign } = await load()
+      const signed = await sign(
+        {
+          url: `https://eve-pdpa-webhook.vercel.app${route}`,
+          method: 'post',
+          headers: { 'content-type': 'application/json' },
+          // Swagger UI hands over the body as typed into its editor.
+          body: JSON.stringify(request(route).example, null, 2),
+        },
+        { secret: SECRET, resolveSecret: RESOLVE_SECRET },
+      )
+      expect(signed.note).toContain(ROUTES[route].scope)
+      const res = await ROUTES[route].call(setup().webhook)(
+        new Request(`https://hook.example${route}`, {
+          method: 'POST',
+          headers: signed.request.headers,
+          body: signed.request.body as string,
+        }),
+      )
+      expect(res.status).toBe(200)
+    })
+  }
+
+  it('sends a request unsigned, and says so, when its secret is missing', async () => {
+    const { sign } = await load()
+    const signed = await sign(
+      { url: 'https://x/api/resolve', method: 'POST', headers: {}, body: '{}' },
+      { secret: SECRET },
+    )
+    expect(signed.request.headers).toEqual({})
+    expect(signed.note).toContain('PDPA_RESOLVE_SECRET')
+  })
+
+  it('leaves alone a request to anything but a route', async () => {
+    const { sign } = await load()
+    const request = { url: 'https://x/openapi.json', method: 'GET', headers: {}, body: undefined }
+    expect((await sign(request, { secret: SECRET })).request).toBe(request)
   })
 })

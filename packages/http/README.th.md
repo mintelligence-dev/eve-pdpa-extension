@@ -62,7 +62,7 @@ export function POST(request: Request) {
 // webhook.outbound · webhook.resolve · webhook.endSession — แบบเดียวกัน
 ```
 
-webhook ที่ deploy จริงคือ [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook) · ระบบที่เรียกใช้อ่าน [`API.md`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/API.md) และ [`openapi.json`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/openapi.json) — ช่อง · คำตอบ · สูตรลายเซ็นสำหรับทุกภาษา
+webhook ที่ deploy จริงคือ [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook) · ระบบที่เรียกใช้อ่าน [`API.md`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/API.md) และ [`openapi.json`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/public/openapi.json) — ช่อง · คำตอบ · สูตรลายเซ็นสำหรับทุกภาษา
 
 ## ส่งข้อความเข้า
 
