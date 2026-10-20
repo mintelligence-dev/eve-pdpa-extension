@@ -178,3 +178,77 @@ describe('openapi.json webhooks', () => {
     })
   }
 })
+
+// D23: the Postman collection teams import. Its pre-request script runs here
+// against stand-ins for Postman's pm and CryptoJS, and what it signs must get
+// through the webhook.
+describe('the Postman collection', () => {
+  type Item = { name: string; request: { url: { path: string[] }; body: { raw: string } } }
+  const collection = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../../apps/webhook/postman/eve-pdpa-webhook.postman_collection.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  ) as { event: { listen: string; script: { exec: string[] } }[]; item: Item[] }
+  const script = (collection.event.find((e) => e.listen === 'prerequest')?.script.exec ?? []).join(
+    '\n',
+  )
+  const pathOf = (item: Item) => `/${item.request.url.path.join('/')}` as Route
+
+  /** What Postman's sandbox gives the script, enough of it to sign. */
+  function run(item: Item, vars: Record<string, string>) {
+    const headers: Record<string, string> = {}
+    const pm = {
+      request: {
+        url: { getPath: () => pathOf(item) },
+        body: item.request.body,
+        headers: {
+          upsert: ({ key, value }: { key: string; value: string }) => (headers[key] = value),
+        },
+      },
+      variables: { get: (k: string) => vars[k], replaceIn: (s: string) => s },
+    }
+    const CryptoJS = {
+      enc: { Hex: 'hex' },
+      HmacSHA256: (message: string, key: string) => ({
+        toString: () => createHmac('sha256', key).update(message, 'utf8').digest('hex'),
+      }),
+    }
+    new Function('pm', 'CryptoJS', script)(pm, CryptoJS)
+    return headers
+  }
+
+  it('has one request per route, its body the spec example', () => {
+    expect(collection.item.map(pathOf).sort()).toEqual([...routes].sort())
+    for (const item of collection.item) {
+      expect(JSON.parse(item.request.body.raw)).toEqual(request(pathOf(item)).example)
+    }
+  })
+
+  for (const item of collection.item) {
+    it(`signs "${item.name}" so the webhook takes it`, async () => {
+      const headers = run(item, {
+        pdpaSecret: SECRET,
+        pdpaResolveSecret: RESOLVE_SECRET,
+        vercelBypass: 'bypass-value',
+      })
+      expect(headers['x-vercel-protection-bypass']).toBe('bypass-value')
+      const route = pathOf(item)
+      const res = await ROUTES[route].call(setup().webhook)(
+        new Request(`https://hook.example${route}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', ...headers },
+          body: item.request.body.raw,
+        }),
+      )
+      expect(res.status).toBe(200)
+    })
+  }
+
+  it('stops with a clear message when the secrets are not set', () => {
+    expect(() => run(collection.item[0] as Item, {})).toThrow(/pdpaSecret/)
+  })
+})
