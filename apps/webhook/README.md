@@ -90,7 +90,7 @@ await fetch('https://<project>.vercel.app/api/inbound', {
 })
 ```
 
-- `sessionId` ใช้ id ห้องแชทที่ระบบของคุณออกเอง ห้ามใช้ LINE userId หรือเบอร์ (ตอบ 400)
+- `sessionId` ใช้ id ห้องแชทที่ระบบของคุณออกเอง · webhook รับทุกค่าและเขียนลง log ตามที่ส่งมา (D25) — ใช้ LINE userId หรือเบอร์ ข้อมูลส่วนบุคคลจะอยู่ใน log
 - ระบบที่ตอบได้รับ `replyTo` ไปด้วย · ส่งคำตอบมาที่ `/api/outbound` พร้อม `policy` `sessionId` และ `replyTo` เดิม เซ็นเป็น `'outbound'`
 - `forwardTo` / `replyTo` ต้องเป็น https และห้ามเป็นที่อยู่ภายในเครือข่าย · ใครถือ `PDPA_SECRET` ก็ระบุปลายทางได้ จึงควรตั้ง `ALLOWED_DESTINATIONS` ถ้ารู้ปลายทางแล้ว
 

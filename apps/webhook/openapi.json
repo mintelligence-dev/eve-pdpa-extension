@@ -236,13 +236,13 @@
         "type": "string",
         "minLength": 1,
         "maxLength": 256,
-        "description": "Your own chat id. Written into every audit event, so one that is itself personal data (a LINE userId, a phone number) is refused with 400."
+        "description": "Your own chat id, issued by your system. Written as sent into every audit event and the token store: a LINE userId or a phone number here puts personal data in the logs, and you answer for it."
       },
       "Ref": {
         "type": "string",
         "minLength": 1,
         "maxLength": 256,
-        "description": "Your own message or call id, written into audit to trace an event back. Checked for personal data like sessionId."
+        "description": "Your own message or call id, written into audit as sent to trace an event back."
       },
       "Destination": {
         "type": "string",

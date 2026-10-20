@@ -185,6 +185,26 @@ describe('/inbound', () => {
     expect(res.status).toBe(400)
     expect(await answer(res)).toMatchObject({ field: 'policy' })
   })
+
+  // D25: the caller's ids are the caller's to answer for. Checking them
+  // refused about 1 in 100 random UUIDs, a whole chat each time.
+  it('takes sessionId and ref as sent, even a LINE userId or a phone number', async () => {
+    const { webhook, sent } = setup()
+    const res = await webhook.inbound(
+      await signed({ sessionId: LINE_ID, ref: PHONE_DIGITS, text: 'สวัสดีค่ะ' }),
+    )
+    expect(res.status).toBe(200)
+    expect(bodyOf(sent[0] as Sent)).toMatchObject({ sessionId: LINE_ID, ref: PHONE_DIGITS })
+  })
+
+  it('takes random UUIDs as sessionId, every one', async () => {
+    const { webhook } = setup()
+    for (let i = 0; i < 2000; i++) {
+      const sessionId = crypto.randomUUID()
+      const res = await webhook.inbound(await signed({ sessionId, text: 'x' }))
+      expect(res.status, sessionId).toBe(200)
+    }
+  })
 })
 
 describe('/outbound', () => {
@@ -248,8 +268,6 @@ describe('refusals send nothing on and echo nothing back', () => {
     ],
     ['no sessionId', () => signed({ text: PHONE }), 400],
     ['a number for text', () => signed({ sessionId: 's1', text: 918887777 }), 400],
-    ['a LINE userId as sessionId', () => signed({ sessionId: LINE_ID, text: 'x' }), 400],
-    ['a phone number as ref', () => signed({ sessionId: 's1', ref: PHONE_DIGITS, text: 'x' }), 400],
     ['a body over the limit', () => signed({ sessionId: 's1', text: 'ก'.repeat(70_000) }), 413],
   ]
 

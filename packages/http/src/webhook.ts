@@ -136,7 +136,7 @@ const DEFAULT_POLICY = 'default'
 const DEFAULT_MAX_BODY = 64 * 1024
 const DEFAULT_FORWARD_TIMEOUT_MS = 10_000
 const DEFAULT_AUDIT_WAIT_MS = 5_000
-/** sessionId and ref are written into every audit event. Personal data there is refused. */
+/** A destination or a purpose that reads as personal data at this confidence is refused. */
 const ID_CONFIDENCE = 0.95
 
 function configError(message: string): PdpaHttpError {
@@ -444,17 +444,18 @@ export function createWebhook(options: WebhookOptions): Webhook {
   }
 
   /**
-   * sessionId, ref, caller and purpose go into audit as written. 400 if one is
-   * itself personal data. D10.5, and purpose since D22.
+   * purpose goes into audit as written and only ever names a purpose a policy
+   * allows, so one that is personal data is refused (D22). sessionId, ref and
+   * caller are taken as sent: they are the caller's own ids, the caller answers
+   * for what is in them, and checking them refused about 1 in 100 random UUIDs
+   * (D25).
    */
-  function checkIds(fields: Fields): Response | null {
-    for (const field of ['sessionId', 'ref', 'caller', 'purpose'] as const) {
-      const value = fields[field]
-      if (value !== undefined && looksPersonal(value)) {
-        const instead =
-          field === 'purpose' ? 'a purpose your policy names' : 'an id your system issues'
-        return invalid(field, `${field} looks like personal data — use ${instead}`)
-      }
+  function checkPurpose(fields: Fields): Response | null {
+    if (fields.purpose !== undefined && looksPersonal(fields.purpose)) {
+      return invalid(
+        'purpose',
+        'purpose looks like personal data — use a purpose your policy names',
+      )
     }
     return null
   }
@@ -592,8 +593,6 @@ export function createWebhook(options: WebhookOptions): Webhook {
     if (received instanceof Response) return received
     const fields = parseFields(received.text, boundary === 'inbound' ? INBOUND : OUTBOUND)
     if (fields instanceof Response) return fields
-    const refused = checkIds(fields)
-    if (refused !== null) return refused
     const chosen = pick(fields.policy)
     if (chosen instanceof Response) return chosen
     const sessionId = fields.sessionId as string
@@ -682,7 +681,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
       if (received instanceof Response) return received
       const fields = parseFields(received.text, RESOLVE)
       if (fields instanceof Response) return fields
-      const refused = checkIds(fields)
+      const refused = checkPurpose(fields)
       if (refused !== null) return refused
       const chosen = pick(fields.policy)
       if (chosen instanceof Response) return chosen
@@ -710,8 +709,6 @@ export function createWebhook(options: WebhookOptions): Webhook {
       if (received instanceof Response) return received
       const fields = parseFields(received.text, END_SESSION)
       if (fields instanceof Response) return fields
-      const refused = checkIds(fields)
-      if (refused !== null) return refused
       try {
         // Every tokenising guard: each also remembers, per session, which
         // token it gave which value, and that has to go too.

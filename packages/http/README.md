@@ -87,8 +87,8 @@ await fetch(WEBHOOK_URL + '/inbound', {
 | Field | Required | |
 |---|---|---|
 | `policy` | | A name from `policies` · leave it out for `default` |
-| `sessionId` | ✅ | Your own chat id · 1–256 characters · **refused if it is personal data** (a LINE userId, a phone number), because it is written to every audit event |
-| `ref` | | Your own message id · 1–256 characters · checked the same way |
+| `sessionId` | ✅ | Your own chat id · 1–256 characters · **written as sent** into every audit event, the forward record and the token store · a LINE userId or a phone number there is personal data in your logs: use an id your system issues |
+| `ref` | | Your own message id · 1–256 characters · written as sent, like `sessionId` |
 | `text` | ✅ | The message |
 | `context` | | The other side's last message, read for cue words only (*"your account number?"*) · never forwarded |
 | `forwardTo` | | Where to send the protected message · falls back to the `forwardTo` option · one or the other is required |
