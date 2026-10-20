@@ -113,6 +113,14 @@ await fetch('https://<deployment>/api/inbound', {
 
 ใน repo นี้ใช้ `signRequest(secret, 'inbound', body)` จาก `@eve-pdpa-extension/http` แทนได้
 
+### Postman
+
+[`postman/`](./postman) มี collection ที่**เซ็นลายเซ็นให้เอง**ทุก request (pre-request script ตามสูตรข้างบน · มีเทสคุมไว้)
+
+1. Postman → Import → `eve-pdpa-webhook.postman_collection.json` และ `eve-pdpa-webhook.postman_environment.json`
+2. เลือก environment แล้วกรอกใน Postman (**อย่าแก้ไฟล์แล้ว commit**): `baseUrl` · `pdpaSecret` · `pdpaResolveSecret` · `vercelBypass` (เฉพาะ preview ที่ถูกล็อก — Vercel → Settings → Deployment Protection → Protection Bypass for Automation)
+3. แก้ body ได้ตามต้องการ ลายเซ็นคำนวณใหม่ทุกครั้งที่กด Send · ใช้ข้อมูลสังเคราะห์เท่านั้น
+
 ## ฝั่งที่รับ (`forwardTo` · `replyTo`)
 
 1. อ่าน body เป็น **text ดิบ** ก่อน · อย่า parse JSON ก่อนตรวจ

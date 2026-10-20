@@ -4,7 +4,7 @@ webhook ที่ deploy จริง · คั่นระหว่างแอ
 
 ใช้ `@eve-pdpa-extension/core` และ `@eve-pdpa-extension/http` **จาก repo นี้** (`workspace:*`) · 0.1 ไม่ปล่อย `http` ขึ้น npm
 
-**ระบบที่จะเรียกใช้ webhook อ่าน [`API.md`](./API.md)** — endpoint · ช่อง · สูตรลายเซ็น พร้อมตัวอย่าง curl / Python / Node · spec เต็มอยู่ที่ [`openapi.json`](./openapi.json) · README นี้เป็นเรื่องการ deploy
+**ระบบที่จะเรียกใช้ webhook อ่าน [`API.md`](./API.md)** — endpoint · ช่อง · สูตรลายเซ็น พร้อมตัวอย่าง curl / Python / Node · spec เต็มอยู่ที่ [`openapi.json`](./openapi.json) · Postman collection ที่เซ็นให้เองอยู่ที่ [`postman/`](./postman) · README นี้เป็นเรื่องการ deploy
 
 ```
 แอปแชท ──POST /api/inbound──▶  webhook  ──▶ FORWARD_URL (ระบบที่ตอบ)
