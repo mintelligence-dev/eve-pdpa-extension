@@ -1,7 +1,7 @@
 // Built once per cold start and reused by every request on that machine.
 import { readFileSync } from 'node:fs'
 import { type AuditRecord, parsePolicy } from '@eve-pdpa-extension/core'
-import { createUpstashTokenStore, createWebhook, type Webhook } from '@eve-pdpa-extension/http'
+import { createGateway, createUpstashTokenStore, type Gateway } from '@eve-pdpa-extension/http'
 
 // vercel.json ships policies/ with every function, since a path built at run
 // time is one Vercel's file tracing cannot follow.
@@ -36,7 +36,7 @@ function optional<K extends string>(key: K, name: string): { [P in K]?: string }
 }
 
 // Comma-separated. A trailing comma or a blank value is not an entry: an empty
-// one would fail createWebhook and take every route down with it (D22).
+// one would fail createGateway and take every route down with it (D22).
 const allowed = (process.env.ALLOWED_DESTINATIONS ?? '')
   .split(',')
   .map((u) => u.trim())
@@ -85,14 +85,14 @@ const debugFetch: typeof fetch = async (input, init) => {
     status = res.status
     return res
   } finally {
-    // Origin and path, as webhook.forward records it: a query can carry ids.
+    // Origin and path, as gateway.forward records it: a query can carry ids.
     const url = new URL(String(input))
     const to = `${url.origin}${url.pathname}`
-    logLine('DEBUG ข้อความที่ส่งออกไป', { type: 'webhook.debug', to, status, sent })
+    logLine('DEBUG ข้อความที่ส่งออกไป', { type: 'gateway.debug', to, status, sent })
   }
 }
 
-export const webhook: Webhook = createWebhook({
+export const gateway: Gateway = createGateway({
   // A bot that only answers questions uses default. A bot that sends OTPs
   // names otp, and only that one can have a phone number resolved.
   policies: { default: policy('default'), otp: policy('otp') },
@@ -120,7 +120,7 @@ export const webhook: Webhook = createWebhook({
   // Where each message went: one line per forward, beside the audit events.
   onForward: (record) => {
     const to = record.boundary === 'inbound' ? 'ส่งต่อให้ AI' : 'ส่งคำตอบกลับแอปแชท'
-    logLine(record.delivered ? to : `${to} · ส่งไม่ถึง`, { type: 'webhook.forward', ...record })
+    logLine(record.delivered ? to : `${to} · ส่งไม่ถึง`, { type: 'gateway.forward', ...record })
   },
   ...(debugText ? { fetch: debugFetch } : {}),
 })

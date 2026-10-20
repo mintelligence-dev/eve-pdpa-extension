@@ -1,9 +1,9 @@
 # @eve-pdpa-extension/http
 
-webhook ที่ตั้งคั่นระหว่างแอปแชทกับระบบที่ตอบ (AI model หรือ helpdesk) และปิดข้อมูลส่วนบุคคลไทย**ทั้งสองขา**: ในข้อความของลูกค้าก่อนระบบที่ตอบจะได้อ่าน และในคำตอบก่อนถึงลูกค้า
+gateway ที่ตั้งคั่นระหว่างแอปแชทกับระบบที่ตอบ (AI model หรือ helpdesk) และปิดข้อมูลส่วนบุคคลไทย**ทั้งสองขา**: ในข้อความของลูกค้าก่อนระบบที่ตอบจะได้อ่าน และในคำตอบก่อนถึงลูกค้า
 
 - แอปไหนก็ได้ที่ส่ง HTTP POST ได้ · ฝั่งที่ส่งไม่ต้องติดตั้ง SDK
-- ทุก request ลงลายเซ็น (HMAC-SHA256 พร้อม timestamp) · webhook เซ็นสิ่งที่ส่งต่อด้วย ฝั่งที่รับจึงตรวจได้เหมือนกัน
+- ทุก request ลงลายเซ็น (HMAC-SHA256 พร้อม timestamp) · gateway เซ็นสิ่งที่ส่งต่อด้วย ฝั่งที่รับจึงตรวจได้เหมือนกัน
 - ผู้ส่งบอกเองว่าข้อความไปที่ไหน (`forwardTo` · `replyTo`) · ทุกครั้งที่ส่งต่อแจ้งไปที่ `onForward` จึงมีบันทึกว่าข้อมูลไปที่ไหน
 - บอทแต่ละตัวได้ **ชุดกฎที่มีชื่อ** · request เลือกได้แค่จากชุดกฎที่คุณรีวิวแล้ว เขียนกฎเองไม่ได้
 - `tokenise` เป็นตัวเลือก: ค่าที่ระบบที่ตอบต้องใช้ เช่นเบอร์สำหรับส่ง OTP แลกกลับได้ที่ `/resolve` เฉพาะ purpose ที่อนุญาต และทุกครั้งถูกบันทึก audit
@@ -19,26 +19,26 @@ webhook ที่ตั้งคั่นระหว่างแอปแชท
 ## อยู่ตรงไหนของระบบ
 
 ```
-แอปแชท ──POST /inbound──▶  webhook (guard)  ──POST──▶  forwardTo (ระบบที่ตอบ)
-แอปแชท ◀──POST──────────── webhook (guard)  ◀──POST /outbound──  ระบบที่ตอบ
+แอปแชท ──POST /inbound──▶  gateway (guard)  ──POST──▶  forwardTo (ระบบที่ตอบ)
+แอปแชท ◀──POST──────────── gateway (guard)  ◀──POST /outbound──  ระบบที่ตอบ
               (replyTo)                                  ส่ง replyTo กลับมาพร้อมคำตอบ
-ระบบส่ง OTP ──POST /resolve──▶ webhook ──▶ ค่าจริง เฉพาะ purpose ที่อนุญาต
-แอปแชท ──POST /end-session──▶ webhook ──▶ ลบ token ทุกตัวของห้องนั้น
+ระบบส่ง OTP ──POST /resolve──▶ gateway ──▶ ค่าจริง เฉพาะ purpose ที่อนุญาต
+แอปแชท ──POST /end-session──▶ gateway ──▶ ลบ token ทุกตัวของห้องนั้น
 ```
 
 ระบบที่ตอบต้องส่งคำตอบผ่าน `/outbound` แทนการส่งตรงกลับแอป ไม่อย่างนั้นค่าที่ model พิมพ์ออกมาเอง หรือ token ที่มันพูดซ้ำ จะถึงลูกค้าโดยไม่มีใครตรวจ
 
 ## ติดตั้ง
 
-**0.1 ยังไม่ขึ้น npm** · webhook deploy จาก repo นี้ — ดู [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook) ซึ่งใช้ `core` กับ `http` จาก workspace · โค้ดด้านล่างคือสิ่งที่แอปนั้นรัน
+**0.1 ยังไม่ขึ้น npm** · gateway deploy จาก repo นี้ — ดู [`apps/gateway`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/gateway) ซึ่งใช้ `core` กับ `http` จาก workspace · โค้ดด้านล่างคือสิ่งที่แอปนั้นรัน
 
 ## เริ่มใช้
 
 ```ts
 import { parsePolicy } from '@eve-pdpa-extension/core'
-import { createUpstashTokenStore, createWebhook } from '@eve-pdpa-extension/http'
+import { createUpstashTokenStore, createGateway } from '@eve-pdpa-extension/http'
 
-const webhook = createWebhook({
+const gateway = createGateway({
   policies: {
     default: parsePolicy(defaultPolicyJson),   // บอทตอบคำถาม: ไม่มี tokenise
     otp: parsePolicy(otpPolicyJson),           // บอทส่ง OTP: tokenise เบอร์ สำหรับ otp_send
@@ -57,12 +57,12 @@ const webhook = createWebhook({
 
 // ผูก handler แต่ละตัวกับ route · บน Vercel เช่น api/inbound.ts:
 export function POST(request: Request) {
-  return webhook.inbound(request)
+  return gateway.inbound(request)
 }
-// webhook.outbound · webhook.resolve · webhook.endSession — แบบเดียวกัน
+// gateway.outbound · gateway.resolve · gateway.endSession — แบบเดียวกัน
 ```
 
-webhook ที่ deploy จริงคือ [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook) · ระบบที่เรียกใช้อ่าน [`API.md`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/API.md) และ [`openapi.json`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/public/openapi.json) — ช่อง · คำตอบ · สูตรลายเซ็นสำหรับทุกภาษา
+gateway ที่ deploy จริงคือ [`apps/gateway`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/gateway) · ระบบที่เรียกใช้อ่าน [`API.md`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/gateway/API.md) และ [`openapi.json`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/gateway/public/openapi.json) — ช่อง · คำตอบ · สูตรลายเซ็นสำหรับทุกภาษา
 
 ## ส่งข้อความเข้า
 
@@ -77,7 +77,7 @@ const body = JSON.stringify({
   forwardTo: 'https://ai.example.com/inbound',     // ระบบที่ตอบ
   replyTo: 'https://chat.example.com/reply',       // ที่ที่คำตอบต้องไปถึงลูกค้า
 })
-await fetch(WEBHOOK_URL + '/inbound', {
+await fetch(GATEWAY_URL + '/inbound', {
   method: 'POST',
   headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_SECRET, 'inbound', body)) },
   body,
@@ -94,7 +94,7 @@ await fetch(WEBHOOK_URL + '/inbound', {
 | `forwardTo` | | ส่งข้อความที่ปิดแล้วไปที่ไหน · ไม่ส่ง = ใช้ตัวเลือก `forwardTo` · ต้องมีอย่างใดอย่างหนึ่ง |
 | `replyTo` | | คำตอบต้องไปที่ไหน · ส่งต่อให้ `forwardTo` แล้วระบบที่ตอบส่งคืนมาพร้อมคำตอบที่ `/outbound` |
 
-ช่องอื่นถูกปฏิเสธ ค่าที่อยู่ในช่องที่ webhook ไม่ได้อ่านจะได้ไม่ถูกเข้าใจว่าตรวจแล้ว
+ช่องอื่นถูกปฏิเสธ ค่าที่อยู่ในช่องที่ gateway ไม่ได้อ่านจะได้ไม่ถูกเข้าใจว่าตรวจแล้ว
 
 ฝั่งที่รับได้แบบนี้ เซ็นด้วย secret เดียวกัน: `{ "policy": "otp", "sessionId": "conv_8f2a", "ref": "msg_10293", "text": "เบอร์ [tok:…] ค่ะ", "replyTo": "https://chat.example.com/reply" }` · ส่งคำตอบไปที่ `/outbound` ด้วย `policy` `sessionId` และ `replyTo` เดิม เซ็นเป็น `outbound` · ตรวจของที่ได้รับด้วย `verifyRequest`:
 
@@ -109,27 +109,27 @@ if (!(await verifyRequest(PDPA_SECRET, 'forward', request.headers, body))) retur
 
 | scope | ใครเซ็น | ใครตรวจ |
 |---|---|---|
-| `inbound` · `outbound` · `end-session` | แอปแชท · ระบบที่ตอบ · แอปแชท ด้วย `secret` | webhook |
-| `resolve` | ระบบที่ต้องใช้ค่าจริง ด้วย `resolveSecret` | webhook |
-| `forward` | webhook ตอนส่งไป `forwardTo` | ระบบที่ตอบ |
-| `reply` | webhook ตอนส่งไป `replyTo` | แอปแชท |
+| `inbound` · `outbound` · `end-session` | แอปแชท · ระบบที่ตอบ · แอปแชท ด้วย `secret` | gateway |
+| `resolve` | ระบบที่ต้องใช้ค่าจริง ด้วย `resolveSecret` | gateway |
+| `forward` | gateway ตอนส่งไป `forwardTo` | ระบบที่ตอบ |
+| `reply` | gateway ตอนส่งไป `replyTo` | แอปแชท |
 
-secret ตัวเดียวเซ็นทั้งขาไปและขากลับ ถ้าไม่มี scope ข้อความที่ webhook ส่งต่อจะเป็น request `/outbound` ที่ถูกต้องด้วย ใครได้รับไปก็ส่งกลับมาได้ภายในเวลาที่ยอม แล้วมันจะถูกส่งไปหาลูกค้า · request ที่ถูกดักไว้ยังส่งซ้ำไปที่ route เดิมได้ภายในเวลาที่ยอม — ใช้ `ref` ตัดตัวซ้ำ
+secret ตัวเดียวเซ็นทั้งขาไปและขากลับ ถ้าไม่มี scope ข้อความที่ gateway ส่งต่อจะเป็น request `/outbound` ที่ถูกต้องด้วย ใครได้รับไปก็ส่งกลับมาได้ภายในเวลาที่ยอม แล้วมันจะถูกส่งไปหาลูกค้า · request ที่ถูกดักไว้ยังส่งซ้ำไปที่ route เดิมได้ภายในเวลาที่ยอม — ใช้ `ref` ตัดตัวซ้ำ
 
 ## ปลายทางที่ส่งได้
 
-`forwardTo` หรือ `replyTo` ใน request ต้องเป็น **https** · ห้ามมีชื่อผู้ใช้หรือรหัสผ่านใน URL · ห้ามเป็นที่อยู่ภายในเครือข่าย (`localhost` · `127.0.0.1` · `10.x` · `192.168.x` · `169.254.169.254` · `::1` …) เพราะ webhook เซ็นสิ่งที่ส่งออก และไม่ควรยิง POST ที่เซ็นแล้วเข้าระบบภายใน · ตัวเลือก `forwardTo` และ `replyTo` เป็นสิ่งที่คุณตั้งเอง ไม่ถูกจำกัด
+`forwardTo` หรือ `replyTo` ใน request ต้องเป็น **https** · ห้ามมีชื่อผู้ใช้หรือรหัสผ่านใน URL · ห้ามเป็นที่อยู่ภายในเครือข่าย (`localhost` · `127.0.0.1` · `10.x` · `192.168.x` · `169.254.169.254` · `::1` …) เพราะ gateway เซ็นสิ่งที่ส่งออก และไม่ควรยิง POST ที่เซ็นแล้วเข้าระบบภายใน · ตัวเลือก `forwardTo` และ `replyTo` เป็นสิ่งที่คุณตั้งเอง ไม่ถูกจำกัด
 
 - **ไม่ตาม redirect** · ปลายทางที่ตอบ 3xx นับว่าส่งไม่สำเร็จ (502) · ถ้าตามไป POST ที่เซ็นแล้วจะข้ามการตรวจทั้งหมดข้างบน
 - **ปลายทางที่มีข้อมูลส่วนตัวอยู่ใน URL ถูกปฏิเสธ** (400) · เบอร์หรือ LINE userId ใน path หรือ query จะไปถึงระบบที่ตอบและลง log โดยไม่ถูกปิด · ใส่ที่อยู่ของระบบ ไม่ใช่ของคน
 
-> **secret เป็นตัวกำหนดว่าใครระบุปลายทางได้** · ใครได้ secret ไปก็สั่งให้ webhook ส่งข้อความที่เซ็นแล้วไปที่ไหนก็ได้ที่เป็น public · เก็บ secret ให้ดีเท่ากับรหัสผ่าน และถ้ารู้ว่าข้อความควรไปที่ไหน ให้ล็อกไว้:
+> **secret เป็นตัวกำหนดว่าใครระบุปลายทางได้** · ใครได้ secret ไปก็สั่งให้ gateway ส่งข้อความที่เซ็นแล้วไปที่ไหนก็ได้ที่เป็น public · เก็บ secret ให้ดีเท่ากับรหัสผ่าน และถ้ารู้ว่าข้อความควรไปที่ไหน ให้ล็อกไว้:
 >
 > ```ts
 > allowedDestinations: ['https://ai.example.com/', 'https://chat.example.com/reply']
 > ```
 >
-> ปลายทางต้องมี origin เดียวกับรายการใดรายการหนึ่ง และ path ต้องเป็น path นั้นหรืออยู่ใต้มัน — `/reply` ให้ `/reply/line` ผ่าน แต่ไม่ให้ `/reply-admin` · ถ้าไม่มีรายการนี้ ชื่อโดเมนที่ชี้ไปที่อยู่ภายในจะกันไม่ได้ เพราะ webhook ไม่ได้ค้น DNS
+> ปลายทางต้องมี origin เดียวกับรายการใดรายการหนึ่ง และ path ต้องเป็น path นั้นหรืออยู่ใต้มัน — `/reply` ให้ `/reply/line` ผ่าน แต่ไม่ให้ `/reply-admin` · ถ้าไม่มีรายการนี้ ชื่อโดเมนที่ชี้ไปที่อยู่ภายในจะกันไม่ได้ เพราะ gateway ไม่ได้ค้น DNS
 
 `onForward` ได้รับทุกครั้งที่ส่งต่อ ไม่ว่าสำเร็จหรือไม่: `{ at, boundary, policy, sessionId, ref, destination, destinationFrom, delivered, status }` · `destination` มีแค่ origin กับ path ไม่เก็บ query เพราะอาจมี token อยู่
 
@@ -160,7 +160,7 @@ secret ตัวเดียวเซ็นทั้งขาไปและข�
 ```ts
 async function sendOtp({ phone }: { phone: string }, sessionId: string) {
   const body = JSON.stringify({ policy: 'otp', token: phone, sessionId, purpose: 'otp_send', caller: 'otp-service' })
-  const res = await fetch(`${WEBHOOK_URL}/resolve`, {
+  const res = await fetch(`${GATEWAY_URL}/resolve`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_RESOLVE_SECRET, 'resolve', body)) },
     body,
@@ -179,14 +179,14 @@ async function sendOtp({ phone }: { phone: string }, sessionId: string) {
 
 ## token บน serverless: `createUpstashTokenStore`
 
-บน serverless แต่ละ request อาจรันคนละเครื่อง และเครื่องที่ว่างถูกปิด · token ที่เก็บในหน่วยความจำหายก่อน `/resolve` จะมาถาม · **ชุดกฎที่ tokenise จึงต้องมี `tokenStore` ที่ทุกเครื่องใช้ร่วมกัน** ไม่อย่างนั้น `createWebhook` throw · `createUpstashTokenStore` คุยกับ [Upstash Redis](https://upstash.com) ผ่าน REST ด้วย `fetch` ไม่ต้องเปิด connection ค้าง ไม่เพิ่ม dependency
+บน serverless แต่ละ request อาจรันคนละเครื่อง และเครื่องที่ว่างถูกปิด · token ที่เก็บในหน่วยความจำหายก่อน `/resolve` จะมาถาม · **ชุดกฎที่ tokenise จึงต้องมี `tokenStore` ที่ทุกเครื่องใช้ร่วมกัน** ไม่อย่างนั้น `createGateway` throw · `createUpstashTokenStore` คุยกับ [Upstash Redis](https://upstash.com) ผ่าน REST ด้วย `fetch` ไม่ต้องเปิด connection ค้าง ไม่เพิ่ม dependency
 
 - **Redis มีค่าจริงอยู่จนกว่า token หมดอายุ** · ตั้ง `ttlSec` สั้นที่สุดเท่าที่งานรับได้ · เลือก region ใกล้ที่สุด และให้ DPO รับรู้ถ้าข้อมูลไปเก็บนอกประเทศ · เก็บ REST token ดีเท่ากับ `resolveSecret`
 - Upstash ล่มหรือช้า (timeout 2 วินาที) core ไม่ปล่อยค่าจริงออกไป: ข้อความถูก block · `/resolve` ตอบ `store_unavailable` · token ในคำตอบกลายเป็นข้อความที่ปิดไว้
 
 ## audit
 
-`onAudit` บังคับส่ง · ส่ง `() => {}` ถ้าตั้งใจทิ้ง · event มีตำแหน่ง ประเภท และ id ไม่มีค่าจริง · ถ้าคืน Promise webhook รอให้เสร็จก่อนตอบ เพราะ serverless อาจหยุด function ทันทีที่ส่งคำตอบ · รอนานสุด `auditWaitMs` (5 วินาที) เกินแล้วงานเขียนยังทำต่อ แต่ไม่รออีก งานเขียนที่ค้างตัวเดียวจึงไม่ทำให้ทุก request บนเครื่องเดียวกันค้างตาม
+`onAudit` บังคับส่ง · ส่ง `() => {}` ถ้าตั้งใจทิ้ง · event มีตำแหน่ง ประเภท และ id ไม่มีค่าจริง · ถ้าคืน Promise gateway รอให้เสร็จก่อนตอบ เพราะ serverless อาจหยุด function ทันทีที่ส่งคำตอบ · รอนานสุด `auditWaitMs` (5 วินาที) เกินแล้วงานเขียนยังทำต่อ แต่ไม่รออีก งานเขียนที่ค้างตัวเดียวจึงไม่ทำให้ทุก request บนเครื่องเดียวกันค้างตาม
 
 Vercel เก็บ log ของ function 1 ชั่วโมง (Hobby) หรือ 1 วัน (Pro) · **ก่อนใช้กับลูกค้าจริงต้องส่ง audit ไปที่ที่เก็บถาวร** เช่น log drain หรือฐานข้อมูล โดยเฉพาะ event `token.resolve`
 
@@ -199,7 +199,7 @@ Vercel เก็บ log ของ function 1 ชั่วโมง (Hobby) ห�
 | `forwardTo` · `replyTo` | ค่าตั้งต้นเมื่อ request ไม่ได้ระบุ · URL แบบ http(s) · ไม่บังคับ |
 | `allowedDestinations` | จำกัดปลายทางที่ request ระบุได้ · URL แบบ https · ปิดเป็นค่าตั้งต้น |
 | `onAudit` | บังคับ |
-| `onForward` | ได้รับทุกครั้งที่ส่งต่อ · webhook รอให้เสร็จก่อนตอบ เหมือน `onAudit` |
+| `onForward` | ได้รับทุกครั้งที่ส่งต่อ · gateway รอให้เสร็จก่อนตอบ เหมือน `onAudit` |
 | `resolveSecret` · `tokenStore` | บังคับเมื่อมีชุดกฎที่ tokenise · `resolveSecret` ห้ามซ้ำ `secret` |
 | `hmacKey` | สำหรับชุดกฎที่ใช้ `hash` |
 | `onError` | เหมือนของ core: ความผิดพลาดที่ core จัดการแทนการ throw |

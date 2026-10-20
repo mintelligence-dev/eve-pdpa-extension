@@ -1,8 +1,8 @@
 /**
- * Where a request may ask the webhook to send things.
+ * Where a request may ask the gateway to send things.
  *
- * The caller names the destination itself — the webhook does not know in
- * advance which systems will use it (D11, 16 Oct). The webhook signs whatever
+ * The caller names the destination itself — the gateway does not know in
+ * advance which systems will use it (D11, 16 Oct). The gateway signs whatever
  * it forwards, so a destination is checked before anything is sent: https
  * only, no credentials in the URL, and never an address inside a network,
  * where a signed POST could reach a service nobody meant to expose.
@@ -133,7 +133,7 @@ export function checkDestination(
   if (url.username !== '' || url.password !== '') return 'must not carry a user name or password'
   if (internalHost(url.hostname)) return 'must not be a local or private network address'
   if (allowed !== null && !allowed.some((p) => url.origin === p.origin && underPath(url, p.path))) {
-    return "is not one of this webhook's allowed destinations"
+    return "is not one of this gateway's allowed destinations"
   }
   return url
 }

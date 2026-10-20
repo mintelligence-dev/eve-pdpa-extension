@@ -1,7 +1,7 @@
 import { type Scope, signRequest } from '../src/signature.js'
 
-// At least 32 bytes each, and different: the webhook refuses anything else.
-export const SECRET = 'test-webhook-secret-0123456789abcdef'
+// At least 32 bytes each, and different: the gateway refuses anything else.
+export const SECRET = 'test-gateway-secret-0123456789abcdef'
 export const RESOLVE_SECRET = 'test-resolve-secret-fedcba9876543210'
 
 export const FORWARD_TO = 'https://answers.example/inbound'
@@ -27,7 +27,7 @@ export function recorder(status: number | 'throw' = 200): {
   return { sent, fetch: fake as typeof fetch }
 }
 
-/** A POST to the webhook, signed with `secret` at `now` for `scope` — /inbound unless named. */
+/** A POST to the gateway, signed with `secret` at `now` for `scope` — /inbound unless named. */
 export async function signed(
   body: unknown,
   {

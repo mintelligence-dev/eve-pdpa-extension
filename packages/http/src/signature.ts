@@ -1,10 +1,10 @@
 /**
- * Signing the requests that cross the webhook, both ways.
+ * Signing the requests that cross the gateway, both ways.
  *
  * The signature covers the timestamp, the scope and the body together, so none
  * can be changed alone, and a request kept and sent again later is refused once
  * the timestamp falls outside the tolerance. The scope says what the request is
- * for: one secret signs messages in, replies, and what the webhook forwards,
+ * for: one secret signs messages in, replies, and what the gateway forwards,
  * and without it a body signed for one of those was a valid request for any
  * other — the message forwarded to the AI could be replayed to /outbound and
  * pushed back to the customer (D22). HMAC-SHA256 through crypto.subtle,
@@ -25,8 +25,8 @@ export const DEFAULT_TOLERANCE_SEC = 300
 const SCHEME = 'v1='
 
 /**
- * What a signature is for. A request to the webhook is signed for its route;
- * what the webhook sends on is signed `forward` (to forwardTo) or `reply` (to
+ * What a signature is for. A request to the gateway is signed for its route;
+ * what the gateway sends on is signed `forward` (to forwardTo) or `reply` (to
  * replyTo), and its receiver checks that scope.
  */
 export type Scope = 'inbound' | 'outbound' | 'resolve' | 'end-session' | 'forward' | 'reply'
@@ -122,7 +122,7 @@ export interface Signer {
 export function createSigner(secret: Secret, name: string = 'secret'): Signer {
   const raw = secretBytes(secret, name)
   // At startup, not on the first request: a runtime without Web Crypto is a
-  // webhook that cannot work, and createWebhook should say so (D22).
+  // gateway that cannot work, and createGateway should say so (D22).
   subtle()
   let key: Promise<CryptoKey> | undefined
   const keyFor = (): Promise<CryptoKey> => {
@@ -161,7 +161,7 @@ export function createSigner(secret: Secret, name: string = 'secret'): Signer {
 }
 
 /**
- * The headers to send with a request to the webhook, signed for the route it
+ * The headers to send with a request to the gateway, signed for the route it
  * goes to — `inbound` from the app that sends messages in, `outbound` from the
  * system that answers, `resolve` and `end-session` for those two.
  */
@@ -175,7 +175,7 @@ export async function signRequest(
 }
 
 /**
- * Checks a request the webhook sent: `forward` at forwardTo, `reply` at
+ * Checks a request the gateway sent: `forward` at forwardTo, `reply` at
  * replyTo. Read the body as text first, and pass the text you read.
  */
 export async function verifyRequest(

@@ -1,16 +1,16 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "eve-pdpa webhook",
+    "title": "eve-pdpa gateway",
     "version": "0.1.0",
     "summary": "A relay that protects Thai personal data in chat messages before they reach an answering system, and in its replies.",
-    "description": "Not a LINE webhook target: your chat backend calls it with one JSON format. It checks the message, protects personal data by the named policy, and forwards the protected text, signed, to `forwardTo`. The answering system sends its reply back through `/api/outbound`, which checks it again before it reaches the chat app.\n\nEvery request carries an HMAC-SHA256 signature over `${timestamp}.${scope}.${body}`. The scope is the route: `inbound`, `outbound`, `end-session` (signed with `PDPA_SECRET`) and `resolve` (signed with `PDPA_RESOLVE_SECRET`). What the webhook sends on is signed `forward` (to `forwardTo`) or `reply` (to `replyTo`). See API.md for the recipe in any language.\n\nA missing, wrong or stale signature is 401. A timestamp more than 300 s from the webhook's clock is stale. Bodies over 65,536 bytes are 413. Every answer carries `Cache-Control: no-store`."
+    "description": "Not a LINE webhook target: your chat backend calls it with one JSON format. It checks the message, protects personal data by the named policy, and forwards the protected text, signed, to `forwardTo`. The answering system sends its reply back through `/api/outbound`, which checks it again before it reaches the chat app.\n\nEvery request carries an HMAC-SHA256 signature over `${timestamp}.${scope}.${body}`. The scope is the route: `inbound`, `outbound`, `end-session` (signed with `PDPA_SECRET`) and `resolve` (signed with `PDPA_RESOLVE_SECRET`). What the gateway sends on is signed `forward` (to `forwardTo`) or `reply` (to `replyTo`). See API.md for the recipe in any language.\n\nA missing, wrong or stale signature is 401. A timestamp more than 300 s from the gateway's clock is stale. Bodies over 65,536 bytes are 413. Every answer carries `Cache-Control: no-store`."
   },
   "servers": [
     {
       "url": "https://{deployment}",
       "description": "The Vercel deployment",
-      "variables": { "deployment": { "default": "eve-pdpa-webhook.vercel.app" } }
+      "variables": { "deployment": { "default": "eve-pdpa-gateway.vercel.app" } }
     }
   ],
   "security": [{ "timestamp": [], "signature": [] }],
@@ -83,7 +83,7 @@
       "post": {
         "operationId": "resolve",
         "summary": "Exchange a token for its real value, for an allowed purpose",
-        "description": "Signed for scope `resolve` with `PDPA_RESOLVE_SECRET` — never `PDPA_SECRET`. Called by the code of a tool that needs the real value, never by the AI. Every attempt, allowed or not, is a `token.resolve` audit event. 404 when no policy on this webhook tokenises.",
+        "description": "Signed for scope `resolve` with `PDPA_RESOLVE_SECRET` — never `PDPA_SECRET`. Called by the code of a tool that needs the real value, never by the AI. Every attempt, allowed or not, is a `token.resolve` audit event. 404 when no policy on this gateway tokenises.",
         "security": [{ "timestamp": [], "resolveSignature": [] }],
         "requestBody": {
           "required": true,
@@ -127,7 +127,7 @@
       "post": {
         "operationId": "endSession",
         "summary": "Delete every token of a chat",
-        "description": "Signed for scope `end-session` with `PDPA_SECRET`. Call it when the chat ends. 404 when no policy on this webhook tokenises.",
+        "description": "Signed for scope `end-session` with `PDPA_SECRET`. Call it when the chat ends. 404 when no policy on this gateway tokenises.",
         "requestBody": {
           "required": true,
           "content": {
@@ -161,7 +161,7 @@
     "forward": {
       "post": {
         "summary": "The protected message, sent to forwardTo",
-        "description": "Sent by the webhook, signed for scope `forward` with `PDPA_SECRET`. Read the body as text, check the signature, then parse it. Answer 2xx; anything else, a redirect included, makes /api/inbound answer 502. Redirects are not followed.",
+        "description": "Sent by the gateway, signed for scope `forward` with `PDPA_SECRET`. Read the body as text, check the signature, then parse it. Answer 2xx; anything else, a redirect included, makes /api/inbound answer 502. Redirects are not followed.",
         "security": [{ "timestamp": [], "signature": [] }],
         "requestBody": {
           "required": true,
@@ -184,7 +184,7 @@
     "reply": {
       "post": {
         "summary": "The checked reply, sent to replyTo",
-        "description": "Sent by the webhook, signed for scope `reply` with `PDPA_SECRET`. Check it the same way, with scope `reply`. Answer 2xx; anything else makes /api/outbound answer 502.",
+        "description": "Sent by the gateway, signed for scope `reply` with `PDPA_SECRET`. Check it the same way, with scope `reply`. Answer 2xx; anything else makes /api/outbound answer 502.",
         "security": [{ "timestamp": [], "signature": [] }],
         "requestBody": {
           "required": true,
@@ -216,7 +216,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "x-pdpa-signature",
-        "description": "`v1=` followed by lowercase hex of HMAC-SHA256(PDPA_SECRET, `${timestamp}.${scope}.${body}`), the body exactly as sent. Scope: the route (inbound, outbound, end-session), or forward / reply for what the webhook sends."
+        "description": "`v1=` followed by lowercase hex of HMAC-SHA256(PDPA_SECRET, `${timestamp}.${scope}.${body}`), the body exactly as sent. Scope: the route (inbound, outbound, end-session), or forward / reply for what the gateway sends."
       },
       "resolveSignature": {
         "type": "apiKey",
@@ -230,7 +230,7 @@
         "type": "string",
         "minLength": 1,
         "maxLength": 64,
-        "description": "A policy this webhook was deployed with. Left out: `default`. One that does not exist: 400."
+        "description": "A policy this gateway was deployed with. Left out: `default`. One that does not exist: 400."
       },
       "SessionId": {
         "type": "string",
@@ -524,11 +524,11 @@
         }
       },
       "NoTokens": {
-        "description": "No policy on this webhook tokenises.",
+        "description": "No policy on this gateway tokenises.",
         "content": {
           "application/json": {
             "schema": { "$ref": "#/components/schemas/Problem" },
-            "example": { "error": "not_found", "message": "no policy on this webhook tokenises" }
+            "example": { "error": "not_found", "message": "no policy on this gateway tokenises" }
           }
         }
       },

@@ -6,8 +6,8 @@ import {
 } from '@eve-pdpa-extension/core'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PdpaHttpError } from '../src/errors.js'
+import { createGateway, type GatewayOptions } from '../src/gateway.js'
 import { verifyRequest } from '../src/signature.js'
-import { createWebhook, type WebhookOptions } from '../src/webhook.js'
 import {
   FORWARD_TO,
   REPLY_TO,
@@ -42,12 +42,12 @@ const OTP = definePolicy({
 
 const TOKEN = /\[tok:[bcdfghjkmnpqrstv]{16}\]/
 
-function setup(extra: Partial<WebhookOptions> & { status?: number | 'throw' } = {}) {
+function setup(extra: Partial<GatewayOptions> & { status?: number | 'throw' } = {}) {
   const { status, ...rest } = extra
   const net = recorder(status)
   const events: AuditRecord[] = []
   const tokenStore: TokenStore = createMemoryTokenStore()
-  const webhook = createWebhook({
+  const gateway = createGateway({
     policies: { default: DEFAULT, otp: OTP },
     secret: SECRET,
     resolveSecret: RESOLVE_SECRET,
@@ -60,7 +60,7 @@ function setup(extra: Partial<WebhookOptions> & { status?: number | 'throw' } = 
     fetch: net.fetch,
     ...rest,
   })
-  return { webhook, sent: net.sent, events }
+  return { gateway, sent: net.sent, events }
 }
 
 const bodyOf = (s: Sent): Record<string, unknown> => JSON.parse(s.body)
@@ -79,8 +79,8 @@ afterEach(() => {
 
 describe('/inbound', () => {
   it('forwards only the protected text, signed so the receiver can check it', async () => {
-    const { webhook, sent } = setup()
-    const res = await webhook.inbound(
+    const { gateway, sent } = setup()
+    const res = await gateway.inbound(
       await signed({ sessionId: 'conv_8f2a', ref: 'msg_10293', text: `เบอร์ ${PHONE} ค่ะ` }),
     )
     expect(res.status).toBe(200)
@@ -101,8 +101,8 @@ describe('/inbound', () => {
 
   // D22: one secret signs every direction, so a signature says which one it is for.
   it('what it forwards cannot be replayed to /outbound and pushed back to the customer', async () => {
-    const { webhook, sent } = setup()
-    await webhook.inbound(
+    const { gateway, sent } = setup()
+    await gateway.inbound(
       await signed({ sessionId: 'conv_8f2a', text: `เบอร์ ${PHONE} ค่ะ`, replyTo: REPLY_TO }),
     )
     const out = sent[0] as Sent
@@ -111,23 +111,23 @@ describe('/inbound', () => {
       headers: out.headers,
       body: out.body,
     })
-    expect((await webhook.outbound(replay)).status).toBe(401)
+    expect((await gateway.outbound(replay)).status).toBe(401)
     expect(sent).toHaveLength(1)
   })
 
   it('a request signed for one route is refused by another', async () => {
-    const { webhook } = setup()
+    const { gateway } = setup()
     const forInbound = { sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' }
-    expect((await webhook.outbound(await signed(forInbound))).status).toBe(401)
-    expect((await webhook.inbound(await signed(forInbound, { scope: 'outbound' }))).status).toBe(
+    expect((await gateway.outbound(await signed(forInbound))).status).toBe(401)
+    expect((await gateway.inbound(await signed(forInbound, { scope: 'outbound' }))).status).toBe(
       401,
     )
-    expect((await webhook.endSession(await signed({ sessionId: 'conv_8f2a' }))).status).toBe(401)
+    expect((await gateway.endSession(await signed({ sessionId: 'conv_8f2a' }))).status).toBe(401)
   })
 
   it('reads context for cue words and does not send it on', async () => {
-    const { webhook, sent } = setup()
-    await webhook.inbound(
+    const { gateway, sent } = setup()
+    await gateway.inbound(
       await signed({
         sessionId: 'conv_8f2a',
         text: '123-4-56789-0',
@@ -140,8 +140,8 @@ describe('/inbound', () => {
   })
 
   it('a blocked message is not sent on, and the answer says which type stopped it', async () => {
-    const { webhook, sent } = setup()
-    const res = await webhook.inbound(
+    const { gateway, sent } = setup()
+    const res = await gateway.inbound(
       await signed({ sessionId: 'conv_8f2a', text: `บัตร ${CARD} ค่ะ` }),
     )
     expect(res.status).toBe(200)
@@ -151,16 +151,16 @@ describe('/inbound', () => {
 
   it('a forward that fails or answers non-2xx is a 502, so the sender sends again', async () => {
     for (const status of [500, 'throw'] as const) {
-      const { webhook } = setup({ status })
-      const res = await webhook.inbound(await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' }))
+      const { gateway } = setup({ status })
+      const res = await gateway.inbound(await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' }))
       expect(res.status).toBe(502)
       expect(await answer(res)).toMatchObject({ outcome: 'forward_failed' })
     }
   })
 
   it('uses the policy the request names, and says so to the receiver', async () => {
-    const { webhook, sent } = setup()
-    await webhook.inbound(
+    const { gateway, sent } = setup()
+    await gateway.inbound(
       await signed({ policy: 'otp', sessionId: 'conv_8f2a', text: `เบอร์ ${PHONE}` }),
     )
     const out = bodyOf(sent[0] as Sent)
@@ -169,8 +169,8 @@ describe('/inbound', () => {
   })
 
   it('a policy name it does not have is a 400 that lists the names it has', async () => {
-    const { webhook, sent } = setup()
-    const res = await webhook.inbound(await signed({ policy: 'nope', sessionId: 's1', text: 'x' }))
+    const { gateway, sent } = setup()
+    const res = await gateway.inbound(await signed({ policy: 'nope', sessionId: 's1', text: 'x' }))
     expect(res.status).toBe(400)
     expect(await answer(res)).toMatchObject({
       field: 'policy',
@@ -180,8 +180,8 @@ describe('/inbound', () => {
   })
 
   it('without a default policy, a request must name one', async () => {
-    const { webhook } = setup({ policies: { otp: OTP } })
-    const res = await webhook.inbound(await signed({ sessionId: 's1', text: 'x' }))
+    const { gateway } = setup({ policies: { otp: OTP } })
+    const res = await gateway.inbound(await signed({ sessionId: 's1', text: 'x' }))
     expect(res.status).toBe(400)
     expect(await answer(res)).toMatchObject({ field: 'policy' })
   })
@@ -189,8 +189,8 @@ describe('/inbound', () => {
   // D25: the caller's ids are the caller's to answer for. Checking them
   // refused about 1 in 100 random UUIDs, a whole chat each time.
   it('takes sessionId and ref as sent, even a LINE userId or a phone number', async () => {
-    const { webhook, sent } = setup()
-    const res = await webhook.inbound(
+    const { gateway, sent } = setup()
+    const res = await gateway.inbound(
       await signed({ sessionId: LINE_ID, ref: PHONE_DIGITS, text: 'สวัสดีค่ะ' }),
     )
     expect(res.status).toBe(200)
@@ -198,10 +198,10 @@ describe('/inbound', () => {
   })
 
   it('takes random UUIDs as sessionId, every one', async () => {
-    const { webhook } = setup()
+    const { gateway } = setup()
     for (let i = 0; i < 2000; i++) {
       const sessionId = crypto.randomUUID()
-      const res = await webhook.inbound(await signed({ sessionId, text: 'x' }))
+      const res = await gateway.inbound(await signed({ sessionId, text: 'x' }))
       expect(res.status, sessionId).toBe(200)
     }
   })
@@ -209,12 +209,12 @@ describe('/inbound', () => {
 
 describe('/outbound', () => {
   it('sends the checked answer to replyTo, a token of this chat shown masked', async () => {
-    const { webhook, sent } = setup()
-    await webhook.inbound(
+    const { gateway, sent } = setup()
+    await gateway.inbound(
       await signed({ policy: 'otp', sessionId: 'conv_8f2a', text: `เบอร์ ${PHONE}` }),
     )
     const token = (bodyOf(sent[0] as Sent).text as string).match(TOKEN)?.[0] as string
-    const res = await webhook.outbound(
+    const res = await gateway.outbound(
       await signed(
         { policy: 'otp', sessionId: 'conv_8f2a', text: `ส่ง OTP ไปที่ ${token} แล้วค่ะ` },
         { scope: 'outbound' },
@@ -227,8 +227,8 @@ describe('/outbound', () => {
   })
 
   it('catches a value the model wrote itself', async () => {
-    const { webhook, sent } = setup()
-    await webhook.outbound(
+    const { gateway, sent } = setup()
+    await gateway.outbound(
       await signed(
         { sessionId: 'conv_8f2a', text: `โทรหาคุณที่ ${PHONE} นะคะ` },
         { scope: 'outbound' },
@@ -273,8 +273,8 @@ describe('refusals send nothing on and echo nothing back', () => {
 
   for (const [name, make, status] of cases) {
     it(name, async () => {
-      const { webhook, sent } = setup()
-      const res = await webhook.inbound(await make())
+      const { gateway, sent } = setup()
+      const res = await gateway.inbound(await make())
       expect(res.status).toBe(status)
       expectNoValues(await res.text())
       expect(sent).toHaveLength(0)
@@ -282,14 +282,14 @@ describe('refusals send nothing on and echo nothing back', () => {
   }
 
   it('GET is a 405 that says to POST', async () => {
-    const { webhook } = setup()
-    const res = await webhook.inbound(new Request('https://hook.example/'))
+    const { gateway } = setup()
+    const res = await gateway.inbound(new Request('https://hook.example/'))
     expect(res.status).toBe(405)
     expect(res.headers.get('allow')).toBe('POST')
   })
 
   it('a body that cannot be read is a 400, not a throw', async () => {
-    const { webhook, sent } = setup()
+    const { gateway, sent } = setup()
     // The sender's connection drops halfway through the body.
     const dropped = new ReadableStream<Uint8Array>({
       start(controller) {
@@ -307,7 +307,7 @@ describe('refusals send nothing on and echo nothing back', () => {
     await used.text()
 
     for (const request of [cut, used]) {
-      const res = await webhook.inbound(request)
+      const res = await gateway.inbound(request)
       expect(res.status).toBe(400)
       expect(await answer(res)).toMatchObject({ error: 'invalid_request', field: 'body' })
     }
@@ -322,8 +322,8 @@ describe('refusals send nothing on and echo nothing back', () => {
       delete: () => Promise.resolve(),
       clearSession: () => Promise.resolve(),
     }
-    const { webhook, sent } = setup({ tokenStore: failing })
-    const res = await webhook.inbound(
+    const { gateway, sent } = setup({ tokenStore: failing })
+    const res = await gateway.inbound(
       await signed({ policy: 'otp', sessionId: 's1', text: `เบอร์ ${PHONE}` }),
     )
     expect(res.status).toBe(200)
@@ -333,13 +333,13 @@ describe('refusals send nothing on and echo nothing back', () => {
 })
 
 describe('/resolve', () => {
-  async function issue(webhookSetup = setup()) {
-    const { webhook, sent } = webhookSetup
-    await webhook.inbound(
+  async function issue(gatewaySetup = setup()) {
+    const { gateway, sent } = gatewaySetup
+    await gateway.inbound(
       await signed({ policy: 'otp', sessionId: 'conv_8f2a', text: `เบอร์ ${PHONE}` }),
     )
     const token = (bodyOf(sent[0] as Sent).text as string).match(TOKEN)?.[0] as string
-    return { ...webhookSetup, token }
+    return { ...gatewaySetup, token }
   }
 
   const resolveBody = (token: string, extra: Record<string, string> = {}) => ({
@@ -352,8 +352,8 @@ describe('/resolve', () => {
   })
 
   it('gives the real value for an allowed purpose, marked not to be cached', async () => {
-    const { webhook, token } = await issue()
-    const res = await webhook.resolve(
+    const { gateway, token } = await issue()
+    const res = await gateway.resolve(
       await signed(resolveBody(token), { scope: 'resolve', secret: RESOLVE_SECRET }),
     )
     expect(res.status).toBe(200)
@@ -362,10 +362,10 @@ describe('/resolve', () => {
   })
 
   it('takes the token however the model copied it into the tool call (D21)', async () => {
-    const { webhook, token } = await issue()
+    const { gateway, token } = await issue()
     const id = token.slice(5, -1)
     for (const spelt of [`tok:${id}`, `"[tok:${id}]"`, `[ tok:${id} ]`]) {
-      const res = await webhook.resolve(
+      const res = await gateway.resolve(
         await signed(resolveBody(spelt), { scope: 'resolve', secret: RESOLVE_SECRET }),
       )
       expect(await answer(res), spelt).toEqual({ ok: true, value: PHONE_DIGITS })
@@ -373,8 +373,8 @@ describe('/resolve', () => {
   })
 
   it('refuses a purpose that is itself personal data, before it reaches audit (D22)', async () => {
-    const { webhook, token, events } = await issue()
-    const res = await webhook.resolve(
+    const { gateway, token, events } = await issue()
+    const res = await gateway.resolve(
       await signed(resolveBody(token, { purpose: '0918887777' }), {
         scope: 'resolve',
         secret: RESOLVE_SECRET,
@@ -388,10 +388,10 @@ describe('/resolve', () => {
   })
 
   it('refuses another purpose, another chat, and an expired token', async () => {
-    const { webhook, token } = await issue()
+    const { gateway, token } = await issue()
     const ask = async (extra: Record<string, string>) =>
       answer(
-        await webhook.resolve(
+        await gateway.resolve(
           await signed(resolveBody(token, extra), { scope: 'resolve', secret: RESOLVE_SECRET }),
         ),
       )
@@ -409,14 +409,14 @@ describe('/resolve', () => {
   })
 
   it('the inbound secret cannot resolve', async () => {
-    const { webhook, token } = await issue()
-    const res = await webhook.resolve(await signed(resolveBody(token), { scope: 'resolve' }))
+    const { gateway, token } = await issue()
+    const res = await gateway.resolve(await signed(resolveBody(token), { scope: 'resolve' }))
     expect(res.status).toBe(401)
   })
 
   it('a policy that does not tokenise is a 400', async () => {
-    const { webhook, token } = await issue()
-    const res = await webhook.resolve(
+    const { gateway, token } = await issue()
+    const res = await gateway.resolve(
       await signed(resolveBody(token, { policy: 'default' }), {
         scope: 'resolve',
         secret: RESOLVE_SECRET,
@@ -427,11 +427,11 @@ describe('/resolve', () => {
   })
 
   it('every attempt is audited, and the real value is in no audit event', async () => {
-    const { webhook, token, events } = await issue()
-    await webhook.resolve(
+    const { gateway, token, events } = await issue()
+    await gateway.resolve(
       await signed(resolveBody(token), { scope: 'resolve', secret: RESOLVE_SECRET }),
     )
-    await webhook.resolve(
+    await gateway.resolve(
       await signed(resolveBody(token, { purpose: 'marketing' }), {
         scope: 'resolve',
         secret: RESOLVE_SECRET,
@@ -451,33 +451,33 @@ describe('/resolve', () => {
   })
 
   it('after /end-session the token is gone', async () => {
-    const { webhook, token } = await issue()
-    const ended = await webhook.endSession(
+    const { gateway, token } = await issue()
+    const ended = await gateway.endSession(
       await signed({ sessionId: 'conv_8f2a' }, { scope: 'end-session' }),
     )
     expect(ended.status).toBe(200)
     expect(await answer(ended)).toEqual({ ok: true })
-    const res = await webhook.resolve(
+    const res = await gateway.resolve(
       await signed(resolveBody(token), { scope: 'resolve', secret: RESOLVE_SECRET }),
     )
     expect(await answer(res)).toEqual({ ok: false, reason: 'not_found' })
   })
 
   it('with no policy that tokenises, /resolve and /end-session are 404', async () => {
-    const { webhook } = setup({ policies: { default: DEFAULT } })
+    const { gateway } = setup({ policies: { default: DEFAULT } })
     expect(
-      (await webhook.resolve(await signed({}, { scope: 'resolve', secret: RESOLVE_SECRET })))
+      (await gateway.resolve(await signed({}, { scope: 'resolve', secret: RESOLVE_SECRET })))
         .status,
     ).toBe(404)
     expect(
-      (await webhook.endSession(await signed({ sessionId: 's1' }, { scope: 'end-session' })))
+      (await gateway.endSession(await signed({ sessionId: 's1' }, { scope: 'end-session' })))
         .status,
     ).toBe(404)
   })
 })
 
-describe('createWebhook refuses options it cannot run with', () => {
-  const base: WebhookOptions = {
+describe('createGateway refuses options it cannot run with', () => {
+  const base: GatewayOptions = {
     policies: { default: DEFAULT, otp: OTP },
     secret: SECRET,
     resolveSecret: RESOLVE_SECRET,
@@ -486,10 +486,10 @@ describe('createWebhook refuses options it cannot run with', () => {
     replyTo: REPLY_TO,
     onAudit: () => {},
   }
-  const refuses = (change: Partial<WebhookOptions>, message: RegExp) => {
+  const refuses = (change: Partial<GatewayOptions>, message: RegExp) => {
     let thrown: unknown
     try {
-      createWebhook({ ...base, ...change } as WebhookOptions)
+      createGateway({ ...base, ...change } as GatewayOptions)
     } catch (error) {
       thrown = error
     }
@@ -501,8 +501,8 @@ describe('createWebhook refuses options it cannot run with', () => {
   it('a policy that tokenises without a shared store or a resolve secret', () => {
     const { tokenStore: _store, ...noStore } = base
     const { resolveSecret: _secret, ...noSecret } = base
-    expect(() => createWebhook(noStore)).toThrow(/'otp' tokenises: pass a tokenStore/)
-    expect(() => createWebhook(noSecret)).toThrow(/'otp' tokenises: pass a resolveSecret/)
+    expect(() => createGateway(noStore)).toThrow(/'otp' tokenises: pass a tokenStore/)
+    expect(() => createGateway(noSecret)).toThrow(/'otp' tokenises: pass a resolveSecret/)
   })
 
   it('a resolve secret that is the inbound secret', () => {
@@ -522,7 +522,7 @@ describe('createWebhook refuses options it cannot run with', () => {
 
   it('without tokenise, no store and no resolve secret are needed', () => {
     expect(() =>
-      createWebhook({
+      createGateway({
         ...base,
         policies: { default: DEFAULT },
         tokenStore: undefined as never,
@@ -535,7 +535,7 @@ describe('createWebhook refuses options it cannot run with', () => {
 describe('audit', () => {
   it('an onAudit that returns a Promise is waited for before the answer goes out', async () => {
     let written = 0
-    const { webhook } = setup({
+    const { gateway } = setup({
       onAudit: () =>
         new Promise<void>((done) => {
           setTimeout(() => {
@@ -544,21 +544,21 @@ describe('audit', () => {
           }, 20)
         }),
     })
-    await webhook.inbound(await signed({ sessionId: 'conv_8f2a', text: `เบอร์ ${PHONE}` }))
+    await gateway.inbound(await signed({ sessionId: 'conv_8f2a', text: `เบอร์ ${PHONE}` }))
     expect(written).toBeGreaterThan(0)
   })
 
   // D22: the set of writes in progress is shared by every request on the instance.
   it('one write that never ends holds up its own answer for auditWaitMs, and no answer after it', async () => {
     let calls = 0
-    const { webhook } = setup({
+    const { gateway } = setup({
       auditWaitMs: 100,
       // The first message's audit never finishes; later ones finish at once.
       onAudit: () => (calls++ === 0 ? new Promise<void>(() => {}) : Promise.resolve()),
     })
     const timed = async () => {
       const started = performance.now()
-      const res = await webhook.inbound(await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' }))
+      const res = await gateway.inbound(await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' }))
       expect(res.status).toBe(200)
       return performance.now() - started
     }
@@ -589,8 +589,8 @@ describe('a body without an honest content-length (D22)', () => {
   ] as const) {
     it(`with ${label}, is read only until it passes maxBodyBytes`, async () => {
       const { stream, counter } = endless()
-      const { webhook } = setup()
-      const res = await webhook.inbound(
+      const { gateway } = setup()
+      const res = await gateway.inbound(
         new Request('https://hook.example/', {
           method: 'POST',
           headers,
@@ -616,12 +616,12 @@ describe('Web Crypto (D22)', () => {
   })
 
   it('a key import that fails once is a 500 for that request, and tried again on the next', async () => {
-    const { webhook } = setup()
+    const { gateway } = setup()
     // Signed first: signing imports a key too.
     const one = await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' })
     const two = await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ' })
     vi.spyOn(globalThis.crypto.subtle, 'importKey').mockRejectedValueOnce(new Error('busy'))
-    expect((await webhook.inbound(one)).status).toBe(500)
-    expect((await webhook.inbound(two)).status).toBe(200)
+    expect((await gateway.inbound(one)).status).toBe(500)
+    expect((await gateway.inbound(two)).status).toBe(200)
   })
 })

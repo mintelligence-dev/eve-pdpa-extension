@@ -1,17 +1,17 @@
-# API ของ webhook — สำหรับระบบที่เรียกใช้
+# API ของ gateway — สำหรับระบบที่เรียกใช้
 
-webhook นี้เป็น **relay ที่ปิดข้อมูลส่วนบุคคลก่อนส่งต่อ** คั่นอยู่ระหว่างแอปแชทกับระบบที่ตอบ (เช่น AI)
+gateway นี้เป็น **relay ที่ปิดข้อมูลส่วนบุคคลก่อนส่งต่อ** คั่นอยู่ระหว่างแอปแชทกับระบบที่ตอบ (เช่น AI)
 **ไม่ใช่ปลายทาง webhook ของ LINE** — backend ของแอปแชทเป็นคนเรียก ด้วย JSON รูปแบบเดียวด้านล่าง
 
-- **ลองยิงในเบราว์เซอร์: https://eve-pdpa-webhook.vercel.app/apidocs** · ใส่ secret แล้วกด Try it out หน้านั้นเซ็นให้ · secret อยู่แค่ในแท็บ ไม่ถูกเก็บ
+- **ลองยิงในเบราว์เซอร์: https://eve-pdpa-gateway.vercel.app/apidocs** · ใส่ secret แล้วกด Try it out หน้านั้นเซ็นให้ · secret อยู่แค่ในแท็บ ไม่ถูกเก็บ
 - spec เต็ม: [`public/openapi.json`](./public/openapi.json) (OpenAPI 3.1) · ที่ deployment: `/openapi.json` · import เข้า Postman ได้ (Import → File)
 - spec กับเอกสารนี้มีเทสคุมไว้ (`packages/http/test/api-docs.test.ts`) — ถ้าโค้ดเปลี่ยนแต่เอกสารไม่เปลี่ยน เทสพัง
 
 ```
-แอปแชท ──POST /api/inbound──▶  webhook  ──POST forwardTo (scope: forward)──▶ ระบบที่ตอบ (AI)
-แอปแชท ◀──POST replyTo (scope: reply)── webhook ◀──POST /api/outbound──────── ระบบที่ตอบ
-tool ของ AI (เช่นระบบ OTP) ──POST /api/resolve──▶ webhook ──▶ ค่าจริง (เฉพาะ purpose ที่อนุญาต)
-แอปแชท ──POST /api/end-session──▶ webhook ──▶ ลบ token ทุกตัวของห้องแชท
+แอปแชท ──POST /api/inbound──▶  gateway  ──POST forwardTo (scope: forward)──▶ ระบบที่ตอบ (AI)
+แอปแชท ◀──POST replyTo (scope: reply)── gateway ◀──POST /api/outbound──────── ระบบที่ตอบ
+tool ของ AI (เช่นระบบ OTP) ──POST /api/resolve──▶ gateway ──▶ ค่าจริง (เฉพาะ purpose ที่อนุญาต)
+แอปแชท ──POST /api/end-session──▶ gateway ──▶ ลบ token ทุกตัวของห้องแชท
 ```
 
 ## Endpoint
@@ -23,7 +23,7 @@ tool ของ AI (เช่นระบบ OTP) ──POST /api/resolve──�
 | `POST /api/resolve` | **โค้ดของ tool** ที่ต้องใช้ค่าจริง (ไม่ใช่ AI) | `PDPA_RESOLVE_SECRET` | `resolve` |
 | `POST /api/end-session` | backend ของแอปแชท | `PDPA_SECRET` | `end-session` |
 
-webhook ส่งออก:
+gateway ส่งออก:
 
 | ไปที่ | เซ็นด้วย | scope | ผู้รับต้องตรวจด้วย scope |
 |---|---|---|---|
@@ -52,11 +52,11 @@ signature = "v1=" + hex( HMAC-SHA256(secret, message) )     ← hex ตัวเ
 **จุดที่พลาดบ่อย — ทุกข้อได้ 401**
 1. **เซ็น body ตัวเดียวกับที่ส่งจริงทุกไบต์** · แปลง JSON เป็น string ครั้งเดียว แล้วเซ็นและส่ง string นั้น · ถ้าไลบรารี HTTP แปลง JSON ใหม่ตอนส่ง (เว้นวรรค ลำดับ key) ลายเซ็นจะไม่ตรง
 2. **UTF-8** · ภาษาไทยต้องเป็น UTF-8 ทั้งตอนเซ็นและตอนส่ง
-3. **นาฬิกา** · timestamp ห่างจากเวลาของ webhook เกิน 300 วินาที = หมดอายุ
+3. **นาฬิกา** · timestamp ห่างจากเวลาของ gateway เกิน 300 วินาที = หมดอายุ
 4. **scope ตรงกับ endpoint** · เซ็น `inbound` แล้วยิง `/api/outbound` ไม่ผ่าน
 5. **secret ถูกตัว** · `/api/resolve` ใช้ `PDPA_RESOLVE_SECRET` ไม่ใช่ `PDPA_SECRET`
 
-webhook ตอบ 401 ข้อความเดียวกันทุกกรณี (ไม่บอกว่าผิดข้อไหน) — ไล่เช็คตามลิสต์นี้
+gateway ตอบ 401 ข้อความเดียวกันทุกกรณี (ไม่บอกว่าผิดข้อไหน) — ไล่เช็คตามลิสต์นี้
 
 ### curl + openssl
 
@@ -118,7 +118,7 @@ await fetch('https://<deployment>/api/inbound', {
 
 [`postman/`](./postman) มี collection ที่**เซ็นลายเซ็นให้เอง**ทุก request (pre-request script ตามสูตรข้างบน · มีเทสคุมไว้)
 
-1. Postman → Import → `eve-pdpa-webhook.postman_collection.json` และ `eve-pdpa-webhook.postman_environment.json`
+1. Postman → Import → `eve-pdpa-gateway.postman_collection.json` และ `eve-pdpa-gateway.postman_environment.json`
 2. เลือก environment แล้วกรอกใน Postman (**อย่าแก้ไฟล์แล้ว commit**): `baseUrl` · `pdpaSecret` · `pdpaResolveSecret` · `vercelBypass` (เฉพาะ preview ที่ถูกล็อก — Vercel → Settings → Deployment Protection → Protection Bypass for Automation)
 3. แก้ body ได้ตามต้องการ ลายเซ็นคำนวณใหม่ทุกครั้งที่กด Send · ใช้ข้อมูลสังเคราะห์เท่านั้น
 
@@ -127,7 +127,7 @@ await fetch('https://<deployment>/api/inbound', {
 1. อ่าน body เป็น **text ดิบ** ก่อน · อย่า parse JSON ก่อนตรวจ
 2. คำนวณด้วยสูตรเดียวกัน scope = `forward` (ระบบที่ตอบ) หรือ `reply` (แอปแชท)
 3. เทียบลายเซ็นแบบเวลาคงที่ และเช็คว่า timestamp ไม่เกิน 300 วินาที
-4. ตอบ 2xx เร็ว ๆ · ตอบอย่างอื่น (รวม redirect) = webhook ตอบผู้ส่งเป็น 502 · webhook รอได้ 10 วินาที
+4. ตอบ 2xx เร็ว ๆ · ตอบอย่างอื่น (รวม redirect) = gateway ตอบผู้ส่งเป็น 502 · gateway รอได้ 10 วินาที
 
 ```python
 def verify(raw: bytes, headers, scope: str, secret: str) -> bool:
@@ -153,7 +153,7 @@ def verify(raw: bytes, headers, scope: str, secret: str) -> bool:
 | ช่อง | บังคับ | กติกา |
 |---|---|---|
 | `policy` | | ชื่อชุดกฎ (≤ 64) · ไม่ส่ง = `default` · deployment นี้มี `default` (ไม่ tokenise) และ `otp` (เบอร์เป็น token แลกได้เฉพาะ `otp_send`) |
-| `sessionId` | ✅ | id ห้องแชทของระบบคุณ (≤ 256) · webhook **รับตามที่ส่งมาและเขียนลง audit กับ Upstash ตามนั้น** · อย่าใช้ LINE userId หรือเบอร์ — ถ้าใช้ ข้อมูลส่วนบุคคลจะไปอยู่ใน log · ผู้ส่งรับผิดชอบค่านี้ |
+| `sessionId` | ✅ | id ห้องแชทของระบบคุณ (≤ 256) · gateway **รับตามที่ส่งมาและเขียนลง audit กับ Upstash ตามนั้น** · อย่าใช้ LINE userId หรือเบอร์ — ถ้าใช้ ข้อมูลส่วนบุคคลจะไปอยู่ใน log · ผู้ส่งรับผิดชอบค่านี้ |
 | `ref` | | id ข้อความของระบบคุณ (≤ 256) · รับตามที่ส่งมาเหมือน `sessionId` |
 | `text` | ✅ | ข้อความ |
 | `context` | | ข้อความล่าสุดของอีกฝ่าย ใช้ดูคำบอกใบ้ (*"ขอเบอร์ค่ะ"*) · ไม่ถูกส่งต่อ |

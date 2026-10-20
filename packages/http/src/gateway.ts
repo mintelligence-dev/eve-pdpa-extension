@@ -1,10 +1,10 @@
 /**
- * A webhook that sits between a chat app and the system that answers it.
+ * A gateway that sits between a chat app and the system that answers it.
  *
  *   /inbound      the customer's message → guard → forwardTo
  *   /outbound     the answer             → guard → replyTo
  *
- * The caller names forwardTo and replyTo in each request, or the webhook falls
+ * The caller names forwardTo and replyTo in each request, or the gateway falls
  * back to the ones it was built with. Every forward is reported to onForward,
  * so where a message went is on record (D11, 16 Oct).
  *   /resolve      a token → its real value, for an allowed purpose
@@ -36,7 +36,7 @@ import {
   type Signer,
 } from './signature.js'
 
-export interface WebhookOptions {
+export interface GatewayOptions {
   /**
    * The rule sets a request may name, by name. A request without `policy`
    * gets `default`. Each is a file someone reviewed: a request chooses among
@@ -70,7 +70,7 @@ export interface WebhookOptions {
   readonly onForward?: (record: ForwardRecord) => void | Promise<void>
   /**
    * Receives every audit event. Required: pass `() => {}` to discard audit on
-   * purpose. When it returns a Promise, the webhook waits for it before it
+   * purpose. When it returns a Promise, the gateway waits for it before it
    * answers — a serverless platform may stop the function the moment the
    * response is sent, and a log line still on its way would be lost.
    */
@@ -82,7 +82,7 @@ export interface WebhookOptions {
    */
   readonly resolveSecret?: Secret
   /**
-   * Required when a policy tokenises. Shared by every machine the webhook runs
+   * Required when a policy tokenises. Shared by every machine the gateway runs
    * on — createUpstashTokenStore, or your own. Core's in-memory store keeps
    * each token on the machine that issued it, and on a serverless platform the
    * next request rarely lands there.
@@ -117,14 +117,14 @@ export interface ForwardRecord {
   readonly ref?: string
   /** Origin and path. The query and fragment are left out: they can carry tokens. */
   readonly destination: string
-  /** Where the destination came from: the request, or the webhook's own default. */
+  /** Where the destination came from: the request, or the gateway's own default. */
   readonly destinationFrom: 'request' | 'default'
   readonly delivered: boolean
   /** The destination's HTTP status, or null when no answer came. */
   readonly status: number | null
 }
 
-export interface Webhook {
+export interface Gateway {
   inbound(request: Request): Promise<Response>
   outbound(request: Request): Promise<Response>
   resolve(request: Request): Promise<Response>
@@ -289,7 +289,7 @@ function parseFields(text: string, rules: Partial<Record<Field, FieldRule>>): Fi
   return out
 }
 
-// ---- createWebhook ------------------------------------------------------------
+// ---- createGateway ------------------------------------------------------------
 
 /**
  * The body, read until it passes `limit` and no further. A content-length that
@@ -320,7 +320,7 @@ async function readBody(request: Request, limit: number): Promise<Uint8Array | '
   return out
 }
 
-export function createWebhook(options: WebhookOptions): Webhook {
+export function createGateway(options: GatewayOptions): Gateway {
   const names = Object.keys(options.policies ?? {})
   if (names.length === 0) throw configError('policies must name at least one policy')
   for (const name of names) {
@@ -480,7 +480,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
       return invalid(
         'policy',
         name === undefined
-          ? 'this webhook has no default policy — name one in policy'
+          ? 'this gateway has no default policy — name one in policy'
           : `policy must be one of: ${names.join(', ')}`,
       )
     }
@@ -564,7 +564,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
   }
 
   /**
-   * The URL the request names in `field`, checked, or the webhook's default.
+   * The URL the request names in `field`, checked, or the gateway's default.
    * The 400 to answer with when it names one that is refused, or names none and
    * there is no default.
    */
@@ -585,7 +585,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
       return { url: checked, from: 'request' }
     }
     if (fallback !== null) return { url: new URL(fallback), from: 'default' }
-    return invalid(field, `${field} is required: this webhook has no default ${field}`)
+    return invalid(field, `${field} is required: this gateway has no default ${field}`)
   }
 
   async function protect(request: Request, boundary: 'inbound' | 'outbound'): Promise<Response> {
@@ -669,7 +669,7 @@ export function createWebhook(options: WebhookOptions): Webhook {
   }
 
   const noTokens = (): Response =>
-    json(404, { error: 'not_found', message: 'no policy on this webhook tokenises' })
+    json(404, { error: 'not_found', message: 'no policy on this gateway tokenises' })
 
   return {
     inbound: (request) => protect(request, 'inbound'),

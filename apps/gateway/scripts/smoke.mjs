@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Checks a deployment of the webhook end to end, with synthetic data only.
+// Checks a deployment of the gateway end to end, with synthetic data only.
 //
-//   PDPA_SECRET=… PDPA_RESOLVE_SECRET=… [VERCEL_BYPASS=…] node apps/webhook/scripts/smoke.mjs <url> [--keep]
+//   PDPA_SECRET=… PDPA_RESOLVE_SECRET=… [VERCEL_BYPASS=…] node apps/gateway/scripts/smoke.mjs <url> [--keep]
 //
 // The last check ends the chat, which deletes its token from Upstash. --keep
 // skips it, so the token can be looked at in Upstash's Data Browser until it
@@ -55,7 +55,7 @@ async function post(route, scope, key, payload) {
   return { status: res.status, json }
 }
 
-// The webhook's own 401, not Vercel's login page in front of it.
+// The gateway's own 401, not Vercel's login page in front of it.
 const refused = (r) => r.status === 401 && r.json.error === 'unauthorized'
 
 const checks = [

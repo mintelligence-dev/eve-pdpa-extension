@@ -1,16 +1,16 @@
-# webhook บน Vercel
+# gateway บน Vercel
 
-webhook ที่ deploy จริง · คั่นระหว่างแอปแชทกับระบบที่ตอบ (เช่น AI) · ปิดข้อมูลส่วนบุคคลทั้งขาเข้าและขาออก
+gateway ที่ deploy จริง · คั่นระหว่างแอปแชทกับระบบที่ตอบ (เช่น AI) · ปิดข้อมูลส่วนบุคคลทั้งขาเข้าและขาออก
 
 ใช้ `@eve-pdpa-extension/core` และ `@eve-pdpa-extension/http` **จาก repo นี้** (`workspace:*`) · 0.1 ไม่ปล่อย `http` ขึ้น npm
 
-**ระบบที่จะเรียกใช้ webhook อ่าน [`API.md`](./API.md)** — endpoint · ช่อง · สูตรลายเซ็น พร้อมตัวอย่าง curl / Python / Node · ลองยิงในเบราว์เซอร์ที่ `/apidocs` · spec เต็มอยู่ที่ [`public/openapi.json`](./public/openapi.json) · Postman collection ที่เซ็นให้เองอยู่ที่ [`postman/`](./postman) · README นี้เป็นเรื่องการ deploy
+**ระบบที่จะเรียกใช้ gateway อ่าน [`API.md`](./API.md)** — endpoint · ช่อง · สูตรลายเซ็น พร้อมตัวอย่าง curl / Python / Node · ลองยิงในเบราว์เซอร์ที่ `/apidocs` · spec เต็มอยู่ที่ [`public/openapi.json`](./public/openapi.json) · Postman collection ที่เซ็นให้เองอยู่ที่ [`postman/`](./postman) · README นี้เป็นเรื่องการ deploy
 
 ```
-แอปแชท ──POST /api/inbound──▶  webhook  ──▶ FORWARD_URL (ระบบที่ตอบ)
-แอปแชท ◀──────── REPLY_URL ◀── webhook ◀──POST /api/outbound── ระบบที่ตอบ
-ระบบส่ง OTP ──POST /api/resolve──▶ webhook ──▶ เบอร์จริง (เฉพาะ purpose otp_send)
-แอปแชท ──POST /api/end-session──▶ webhook ──▶ ลบ token ของห้องนั้น
+แอปแชท ──POST /api/inbound──▶  gateway  ──▶ FORWARD_URL (ระบบที่ตอบ)
+แอปแชท ◀──────── REPLY_URL ◀── gateway ◀──POST /api/outbound── ระบบที่ตอบ
+ระบบส่ง OTP ──POST /api/resolve──▶ gateway ──▶ เบอร์จริง (เฉพาะ purpose otp_send)
+แอปแชท ──POST /api/end-session──▶ gateway ──▶ ลบ token ของห้องนั้น
 ```
 
 ## ไฟล์
@@ -19,11 +19,11 @@ webhook ที่ deploy จริง · คั่นระหว่างแอ
 |---|---|
 | `policies/default.json` | บอทที่ตอบคำถามทั่วไป · ปิดทุกอย่าง ไม่มี tokenise |
 | `policies/otp.json` | บอทที่ส่ง OTP · tokenise แค่เบอร์ แลกได้เฉพาะ `otp_send` |
-| `lib/webhook.ts` | สร้าง webhook ครั้งเดียวต่อ cold start · audit ลง `console.log` |
+| `lib/gateway.ts` | สร้าง gateway ครั้งเดียวต่อ cold start · audit ลง `console.log` |
 | `api/*.ts` | 4 route · แต่ละไฟล์เรียก handler หนึ่งตัว |
 | `vercel.json` | function รันที่สิงคโปร์ (`sin1`) — Hobby ไม่สนค่านี้ ดูข้อ region ด้านล่าง · install เฉพาะแอปนี้กับแพ็กเกจที่มันใช้ · build core + http ก่อน · ส่ง `policies/` ไปกับทุก function |
 | `package.json` · `tsconfig.json` | core + http แบบ `workspace:*` · `pnpm typecheck` ตรวจแอปนี้ด้วย |
-| `API.md` · `public/openapi.json` · `postman/` | สำหรับทีมที่ต่อเข้ามา · test ใน `packages/http` คุมให้ตรงกับ webhook |
+| `API.md` · `public/openapi.json` · `postman/` | สำหรับทีมที่ต่อเข้ามา · test ใน `packages/http` คุมให้ตรงกับ gateway |
 | `public/apidocs/` | หน้า `/apidocs`: Swagger UI จาก CDN (pin version + SRI) · `sign.js` เซ็นด้วย Web Crypto ก่อนยิง · test คุมเหมือน Postman (D27) |
 | `scripts/smoke.mjs` | ตรวจ deployment ที่ขึ้นแล้ว · ดู [ตรวจ deployment](#ตรวจ-deployment) |
 | `public/robots.txt` | ไฟล์ static ที่ preset "Other" ต้องมี · ห้าม bot เก็บทุกหน้า |
@@ -32,10 +32,10 @@ webhook ที่ deploy จริง · คั่นระหว่างแอ
 
 deploy ขึ้น preview ได้แล้ว (20 ต.ค. · บัญชี Hobby · ลิงก์โปรเจกต์ด้วย `vercel link` จาก root ของ repo ไม่ได้ต่อ Git)
 
-1. Vercel → Add New → Project → เลือก repo (หรือ `vercel link` จาก root ของ repo) · **Root Directory = `apps/webhook`** · ต้องเปิด *Include files outside the Root Directory* (แอปใช้ `packages/core` และ `packages/http`)
+1. Vercel → Add New → Project → เลือก repo (หรือ `vercel link` จาก root ของ repo) · **Root Directory = `apps/gateway`** · ต้องเปิด *Include files outside the Root Directory* (แอปใช้ `packages/core` และ `packages/http`)
 2. ไม่ต้องตั้ง Install / Build Command เอง — `vercel.json` สั่งแล้ว:
-   - install: `pnpm install --frozen-lockfile --filter @eve-pdpa-extension/webhook...` (แอปนี้กับสิ่งที่มันใช้ ไม่ลง bun / deno / playwright ของทั้ง repo)
-   - build: `pnpm --filter @eve-pdpa-extension/webhook^... build` (core + http) · `public/robots.txt` อยู่ใน repo เพราะ preset "Other" ต้องมีโฟลเดอร์ static ที่ไม่ว่าง แม้แอปนี้มีแค่ function
+   - install: `pnpm install --frozen-lockfile --filter @eve-pdpa-extension/gateway...` (แอปนี้กับสิ่งที่มันใช้ ไม่ลง bun / deno / playwright ของทั้ง repo)
+   - build: `pnpm --filter @eve-pdpa-extension/gateway^... build` (core + http) · `public/robots.txt` อยู่ใน repo เพราะ preset "Other" ต้องมีโฟลเดอร์ static ที่ไม่ว่าง แม้แอปนี้มีแค่ function
 3. **region:** `vercel.json` ตั้ง `sin1` (สิงคโปร์) ไว้ แต่ **บัญชี Hobby ไม่สนค่านี้** — function รันที่สหรัฐ (`iad1`) ข้อความลูกค้าจะถูกประมวลผลที่นั่นก่อนถูกปิด · ต้องตั้ง region ของโปรเจกต์เอง: Settings → Functions → Function Region → Singapore หรือ `vercel api /v9/projects/<project> -X PATCH` ส่ง `{"serverlessFunctionRegion":"sin1"}` แล้ว deploy ใหม่ · ตรวจหลัง deploy ว่าทุก function ขึ้น `[sin1]` (`vercel inspect <url>`) · สร้าง Upstash ที่ Singapore ให้อยู่ที่เดียวกัน · แจ้ง DPO ว่าข้อมูลประมวลผลและเก็บ token ที่สิงคโปร์
 4. Node.js 22.x · repo ใช้ pnpm 12 (`packageManager` ใน `package.json` ที่ root) · ถ้า Vercel ใช้ pnpm คนละรุ่น ตั้งตัวแปร `ENABLE_EXPERIMENTAL_COREPACK=1`
 5. ตั้งตัวแปรตามตารางด้านล่าง แล้ว deploy
@@ -50,7 +50,7 @@ deploy ขึ้น preview ได้แล้ว (20 ต.ค. · บัญช�
 read -s PDPA_SECRET && export PDPA_SECRET
 read -s PDPA_RESOLVE_SECRET && export PDPA_RESOLVE_SECRET
 read -s VERCEL_BYPASS && export VERCEL_BYPASS   # Settings → Deployment Protection → Protection Bypass for Automation
-node apps/webhook/scripts/smoke.mjs https://<deployment>.vercel.app
+node apps/gateway/scripts/smoke.mjs https://<deployment>.vercel.app
 ```
 
 - ข้อสุดท้าย (end-session) ลบ token ที่ข้อ otp เขียนไว้ · ใส่ `--keep` ท้ายคำสั่งเพื่อข้ามข้อนั้น แล้วเปิดดูใน Upstash → Data Browser ได้ภายใน 5 นาที (`pdpa:session:smoke_…` · `pdpa:tok:…`)
@@ -65,11 +65,11 @@ node apps/webhook/scripts/smoke.mjs https://<deployment>.vercel.app
 | `PDPA_SECRET` | `openssl rand -hex 32` · ให้แอปแชทและระบบที่ตอบใช้เซ็น request |
 | `FORWARD_URL` · `REPLY_URL` | **ไม่บังคับ** · ค่าตั้งต้นเมื่อ request ไม่ได้ระบุ `forwardTo` / `replyTo` |
 | `ALLOWED_DESTINATIONS` | **ไม่บังคับ** · URL แบบ https คั่นด้วย `,` · ตั้งแล้ว request ระบุได้เฉพาะปลายทางในรายการ |
-| `DEBUG_LOG_TEXT` | **demo เท่านั้น** · `1` = log ข้อความที่ปิดแล้วที่ส่งต่อทุกครั้ง (`type: webhook.debug`) ไม่ใช่ข้อความต้นฉบับ · ยังเป็นบทสนทนาของลูกค้า — **ลบตัวแปรนี้ก่อนมีลูกค้าจริง** (D26) |
+| `DEBUG_LOG_TEXT` | **demo เท่านั้น** · `1` = log ข้อความที่ปิดแล้วที่ส่งต่อทุกครั้ง (`type: gateway.debug`) ไม่ใช่ข้อความต้นฉบับ · ยังเป็นบทสนทนาของลูกค้า — **ลบตัวแปรนี้ก่อนมีลูกค้าจริง** (D26) |
 | `PDPA_RESOLVE_SECRET` | `openssl rand -hex 32` อีกค่า · ให้เฉพาะระบบที่ต้องใช้ค่าจริง |
 | `KV_REST_API_URL` · `KV_REST_API_TOKEN` | Vercel → Storage → Upstash → Upstash for Redis (Singapore · Free) · Vercel ใส่ให้เมื่อเชื่อมกับโปรเจกต์ · ต่อ Upstash เองไม่ผ่าน Vercel ใช้ `UPSTASH_REDIS_REST_URL` · `UPSTASH_REDIS_REST_TOKEN` ได้ · **ไม่ใช่** integration "Redis" (Redis Cloud) ซึ่งไม่มี REST |
 
-ไม่มีบอทไหนต้องใช้ค่าจริง: ลบ `otp` ออกจาก `policies` แล้วลบ `resolveSecret` กับ `tokenStore` ใน `lib/webhook.ts` · ไม่ต้องตั้งสามค่าล่าง ไม่ต้องมี Upstash
+ไม่มีบอทไหนต้องใช้ค่าจริง: ลบ `otp` ออกจาก `policies` แล้วลบ `resolveSecret` กับ `tokenStore` ใน `lib/gateway.ts` · ไม่ต้องตั้งสามค่าล่าง ไม่ต้องมี Upstash
 
 **Upstash เก็บค่าจริงไว้จนกว่า token หมดอายุ** · เลือก region ใกล้ที่สุด · การส่งข้อมูลส่วนบุคคลไปเก็บนอกประเทศ ให้ DPO รับรู้
 
@@ -93,7 +93,7 @@ await fetch('https://<project>.vercel.app/api/inbound', {
 })
 ```
 
-- `sessionId` ใช้ id ห้องแชทที่ระบบของคุณออกเอง · webhook รับทุกค่าและเขียนลง log ตามที่ส่งมา (D25) — ใช้ LINE userId หรือเบอร์ ข้อมูลส่วนบุคคลจะอยู่ใน log
+- `sessionId` ใช้ id ห้องแชทที่ระบบของคุณออกเอง · gateway รับทุกค่าและเขียนลง log ตามที่ส่งมา (D25) — ใช้ LINE userId หรือเบอร์ ข้อมูลส่วนบุคคลจะอยู่ใน log
 - ระบบที่ตอบได้รับ `replyTo` ไปด้วย · ส่งคำตอบมาที่ `/api/outbound` พร้อม `policy` `sessionId` และ `replyTo` เดิม เซ็นเป็น `'outbound'`
 - `forwardTo` / `replyTo` ต้องเป็น https และห้ามเป็นที่อยู่ภายในเครือข่าย · ใครถือ `PDPA_SECRET` ก็ระบุปลายทางได้ จึงควรตั้ง `ALLOWED_DESTINATIONS` ถ้ารู้ปลายทางแล้ว
 
@@ -123,14 +123,14 @@ export async function POST(request: Request) {
 | ตรวจข้อความลูกค้า (ขาเข้า) | `scan` | ทุก `/api/inbound` · `findings` = เจออะไร ทำอะไร · ไม่มีตัวข้อความ |
 | ตรวจคำตอบ AI (ขาออก) | `scan` | ทุก `/api/outbound` |
 | … · บล็อก ไม่ส่งต่อ | `scan` | เจอสิ่งที่ policy สั่ง block (เช่นเลขบัตร) · ไม่มีบรรทัดส่งต่อตามมา |
-| ส่งต่อให้ AI | `webhook.forward` | ส่งไป `forwardTo` แล้ว · `delivered` `status` · ไม่มีข้อความแชท · ไม่เก็บ query ของ URL |
-| ส่งคำตอบกลับแอปแชท | `webhook.forward` | ส่งไป `replyTo` แล้ว |
-| … · ส่งไม่ถึง | `webhook.forward` | ปลายทางไม่ตอบ 2xx · ผู้ส่งได้ 502 |
+| ส่งต่อให้ AI | `gateway.forward` | ส่งไป `forwardTo` แล้ว · `delivered` `status` · ไม่มีข้อความแชท · ไม่เก็บ query ของ URL |
+| ส่งคำตอบกลับแอปแชท | `gateway.forward` | ส่งไป `replyTo` แล้ว |
+| … · ส่งไม่ถึง | `gateway.forward` | ปลายทางไม่ตอบ 2xx · ผู้ส่งได้ 502 |
 | แลก token เป็นค่าจริง | `token.resolve` | ทุก `/api/resolve` · purpose · caller · ผล · ไม่มีค่าจริง |
-| DEBUG ข้อความที่ส่งออกไป | `webhook.debug` | เฉพาะเมื่อตั้ง `DEBUG_LOG_TEXT=1` (D26) · `sent.text` = ข้อความที่ปิดแล้วที่ปลายทางได้รับ |
+| DEBUG ข้อความที่ส่งออกไป | `gateway.debug` | เฉพาะเมื่อตั้ง `DEBUG_LOG_TEXT=1` (D26) · `sent.text` = ข้อความที่ปิดแล้วที่ปลายทางได้รับ |
 
 request เดียวกันผูกกันด้วย `sessionId` และ `ref` · request ที่โดน 400 / 401 ไม่มีบรรทัดเหล่านี้
 
 ## audit
 
-ตอนนี้ webhook พิมพ์ audit ลง log ของ Vercel ซึ่งเก็บ 1 ชั่วโมง (Hobby) หรือ 1 วัน (Pro) · **ก่อนใช้กับลูกค้าจริงต้องส่งไปที่ที่เก็บถาวร** เช่น log drain หรือฐานข้อมูล โดยเฉพาะ event `token.resolve` ที่บอกว่าใครแลกค่าจริงไปเพื่ออะไร · audit ไม่มีค่าจริงอยู่เลย
+ตอนนี้ gateway พิมพ์ audit ลง log ของ Vercel ซึ่งเก็บ 1 ชั่วโมง (Hobby) หรือ 1 วัน (Pro) · **ก่อนใช้กับลูกค้าจริงต้องส่งไปที่ที่เก็บถาวร** เช่น log drain หรือฐานข้อมูล โดยเฉพาะ event `token.resolve` ที่บอกว่าใครแลกค่าจริงไปเพื่ออะไร · audit ไม่มีค่าจริงอยู่เลย

@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "eve-pdpa webhook",
-    "description": "The four routes of the webhook, signed by the collection pre-request script as API.md describes. Set baseUrl, pdpaSecret and pdpaResolveSecret in an environment (eve-pdpa-webhook.postman_environment.json is a template), never in the collection. Synthetic data only.",
+    "name": "eve-pdpa gateway",
+    "description": "The four routes of the gateway, signed by the collection pre-request script as API.md describes. Set baseUrl, pdpaSecret and pdpaResolveSecret in an environment (eve-pdpa-gateway.postman_environment.json is a template), never in the collection. Synthetic data only.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [

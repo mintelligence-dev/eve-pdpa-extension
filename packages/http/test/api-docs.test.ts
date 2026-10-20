@@ -1,12 +1,12 @@
-// apps/webhook/public/openapi.json and API.md are what other teams build against
-// (D23). These tests hold them to the webhook: every field the spec lists is
+// apps/gateway/public/openapi.json and API.md are what other teams build against
+// (D23). These tests hold them to the gateway: every field the spec lists is
 // accepted and every rule it states is enforced, and a signature computed from
 // the recipe in API.md — with node:crypto, not signRequest — gets through.
 import { createHmac } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { createMemoryTokenStore, definePolicy } from '@eve-pdpa-extension/core'
 import { describe, expect, it } from 'vitest'
-import { createWebhook, type Webhook } from '../src/webhook.js'
+import { createGateway, type Gateway } from '../src/gateway.js'
 import { FORWARD_TO, REPLY_TO, RESOLVE_SECRET, recorder, SECRET, type Sent } from './helpers.js'
 
 type Schema = {
@@ -35,7 +35,7 @@ type Spec = {
 }
 
 const spec = JSON.parse(
-  readFileSync(new URL('../../../apps/webhook/public/openapi.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../../../apps/gateway/public/openapi.json', import.meta.url), 'utf8'),
 ) as Spec
 
 /** A schema with its $ref followed, once: the spec never nests refs deeper than that. */
@@ -53,16 +53,16 @@ function sign(secret: string, scope: string, body: string, now = Date.now()) {
 }
 
 const ROUTES = {
-  '/api/inbound': { scope: 'inbound', secret: SECRET, call: (w: Webhook) => w.inbound },
-  '/api/outbound': { scope: 'outbound', secret: SECRET, call: (w: Webhook) => w.outbound },
-  '/api/resolve': { scope: 'resolve', secret: RESOLVE_SECRET, call: (w: Webhook) => w.resolve },
-  '/api/end-session': { scope: 'end-session', secret: SECRET, call: (w: Webhook) => w.endSession },
+  '/api/inbound': { scope: 'inbound', secret: SECRET, call: (w: Gateway) => w.inbound },
+  '/api/outbound': { scope: 'outbound', secret: SECRET, call: (w: Gateway) => w.outbound },
+  '/api/resolve': { scope: 'resolve', secret: RESOLVE_SECRET, call: (w: Gateway) => w.resolve },
+  '/api/end-session': { scope: 'end-session', secret: SECRET, call: (w: Gateway) => w.endSession },
 } as const
 type Route = keyof typeof ROUTES
 
 function setup() {
   const net = recorder()
-  const webhook = createWebhook({
+  const gateway = createGateway({
     policies: {
       default: definePolicy({ entitySet: '0.1', entities: { PHONE: { action: 'mask' } } }),
       otp: definePolicy({
@@ -78,13 +78,13 @@ function setup() {
     onAudit: () => {},
     fetch: net.fetch,
   })
-  return { webhook, sent: net.sent }
+  return { gateway, sent: net.sent }
 }
 
-async function call(webhook: Webhook, route: Route, body: unknown, scope?: string) {
+async function call(gateway: Gateway, route: Route, body: unknown, scope?: string) {
   const r = ROUTES[route]
   const text = JSON.stringify(body)
-  const res = await r.call(webhook)(
+  const res = await r.call(gateway)(
     new Request(`https://hook.example${route}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', ...sign(r.secret, scope ?? r.scope, text) },
@@ -97,7 +97,7 @@ async function call(webhook: Webhook, route: Route, body: unknown, scope?: strin
 const request = (route: Route) => spec.paths[route].post.requestBody.content['application/json']
 const routes = Object.keys(ROUTES) as Route[]
 
-describe('openapi.json lists every route the webhook has', () => {
+describe('openapi.json lists every route the gateway has', () => {
   it('and no other', () => {
     expect(Object.keys(spec.paths).sort()).toEqual([...routes].sort())
   })
@@ -110,19 +110,19 @@ for (const route of routes) {
     const properties = body.properties ?? {}
 
     it('takes its example, signed by the recipe in API.md', async () => {
-      const res = await call(setup().webhook, route, example)
+      const res = await call(setup().gateway, route, example)
       expect(res.status, JSON.stringify(res.body)).toBe(200)
     })
 
     it('refuses the same request signed for another scope', async () => {
       const other = ROUTES[route].scope === 'inbound' ? 'outbound' : 'inbound'
-      expect((await call(setup().webhook, route, example, other)).status).toBe(401)
+      expect((await call(setup().gateway, route, example, other)).status).toBe(401)
     })
 
     for (const field of body.required ?? []) {
       it(`requires ${field}`, async () => {
         const { [field]: _, ...without } = example
-        const res = await call(setup().webhook, route, without)
+        const res = await call(setup().gateway, route, without)
         expect(res.status).toBe(400)
         expect(res.body.field).toBe(field)
       })
@@ -132,7 +132,7 @@ for (const route of routes) {
       const max = resolve(property).maxLength
       if (max === undefined) continue
       it(`refuses ${field} over ${max} characters`, async () => {
-        const res = await call(setup().webhook, route, { ...example, [field]: 'a'.repeat(max + 1) })
+        const res = await call(setup().gateway, route, { ...example, [field]: 'a'.repeat(max + 1) })
         expect(res.status).toBe(400)
         expect(res.body.field).toBe(field)
       })
@@ -142,13 +142,13 @@ for (const route of routes) {
       for (const field of Object.keys(properties)) {
         const value = example[field] ?? (field === 'context' ? 'ขอเบอร์ติดต่อค่ะ' : undefined)
         expect(value, `the example has no ${field}: add one`).toBeDefined()
-        const res = await call(setup().webhook, route, { ...example, [field]: value })
+        const res = await call(setup().gateway, route, { ...example, [field]: value })
         expect(res.body.field, field).not.toBe('body')
       }
     })
 
     it('refuses a field it does not list', async () => {
-      const res = await call(setup().webhook, route, { ...example, phone: 'x' })
+      const res = await call(setup().gateway, route, { ...example, phone: 'x' })
       expect(res.status).toBe(400)
       expect(res.body.field).toBe('body')
     })
@@ -161,8 +161,8 @@ describe('openapi.json webhooks', () => {
     ['reply', '/api/outbound', 'reply'],
   ] as const) {
     it(`${name}: what is sent matches the spec, signed by the recipe for ${scope}`, async () => {
-      const { webhook, sent } = setup()
-      await call(webhook, route, request(route).example)
+      const { gateway, sent } = setup()
+      await call(gateway, route, request(route).example)
       const out = sent[0] as Sent
       const schema = resolve(
         spec.webhooks[name]?.post.requestBody.content['application/json'].schema as Schema,
@@ -181,13 +181,13 @@ describe('openapi.json webhooks', () => {
 
 // D23: the Postman collection teams import. Its pre-request script runs here
 // against stand-ins for Postman's pm and CryptoJS, and what it signs must get
-// through the webhook.
+// through the gateway.
 describe('the Postman collection', () => {
   type Item = { name: string; request: { url: { path: string[] }; body: { raw: string } } }
   const collection = JSON.parse(
     readFileSync(
       new URL(
-        '../../../apps/webhook/postman/eve-pdpa-webhook.postman_collection.json',
+        '../../../apps/gateway/postman/eve-pdpa-gateway.postman_collection.json',
         import.meta.url,
       ),
       'utf8',
@@ -229,7 +229,7 @@ describe('the Postman collection', () => {
   })
 
   for (const item of collection.item) {
-    it(`signs "${item.name}" so the webhook takes it`, async () => {
+    it(`signs "${item.name}" so the gateway takes it`, async () => {
       const headers = run(item, {
         pdpaSecret: SECRET,
         pdpaResolveSecret: RESOLVE_SECRET,
@@ -237,7 +237,7 @@ describe('the Postman collection', () => {
       })
       expect(headers['x-vercel-protection-bypass']).toBe('bypass-value')
       const route = pathOf(item)
-      const res = await ROUTES[route].call(setup().webhook)(
+      const res = await ROUTES[route].call(setup().gateway)(
         new Request(`https://hook.example${route}`, {
           method: 'POST',
           headers: { 'content-type': 'application/json', ...headers },
@@ -255,7 +255,7 @@ describe('the Postman collection', () => {
 
 // D27: /apidocs signs "Try it out" requests in the browser with Web Crypto.
 // Its signer runs here on Node's Web Crypto, and what it signs must get
-// through the webhook — the same check the Postman script gets.
+// through the gateway — the same check the Postman script gets.
 describe('the /apidocs page', () => {
   type Signed = {
     request: { url: string; method: string; headers: Record<string, string>; body: unknown }
@@ -263,7 +263,7 @@ describe('the /apidocs page', () => {
   }
   const load = async () =>
     (await import(
-      new URL('../../../apps/webhook/public/apidocs/sign.js', import.meta.url).href
+      new URL('../../../apps/gateway/public/apidocs/sign.js', import.meta.url).href
     )) as {
       sign: (
         request: Signed['request'],
@@ -272,11 +272,11 @@ describe('the /apidocs page', () => {
     }
 
   for (const route of routes) {
-    it(`signs ${route} so the webhook takes it`, async () => {
+    it(`signs ${route} so the gateway takes it`, async () => {
       const { sign } = await load()
       const signed = await sign(
         {
-          url: `https://eve-pdpa-webhook.vercel.app${route}`,
+          url: `https://eve-pdpa-gateway.vercel.app${route}`,
           method: 'post',
           headers: { 'content-type': 'application/json' },
           // Swagger UI hands over the body as typed into its editor.
@@ -285,7 +285,7 @@ describe('the /apidocs page', () => {
         { secret: SECRET, resolveSecret: RESOLVE_SECRET },
       )
       expect(signed.note).toContain(ROUTES[route].scope)
-      const res = await ROUTES[route].call(setup().webhook)(
+      const res = await ROUTES[route].call(setup().gateway)(
         new Request(`https://hook.example${route}`, {
           method: 'POST',
           headers: signed.request.headers,

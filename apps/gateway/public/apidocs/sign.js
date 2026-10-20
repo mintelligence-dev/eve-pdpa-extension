@@ -26,8 +26,8 @@ async function hmacHex(key, message) {
 
 /**
  * The request signed, and a line saying what was done. A request to no route
- * of the webhook goes out as it is; one whose secret is missing goes out
- * unsigned, so the webhook's 401 shows what happens without it.
+ * of the gateway goes out as it is; one whose secret is missing goes out
+ * unsigned, so the gateway's 401 shows what happens without it.
  */
 export async function sign(request, secrets, now = Date.now()) {
   const scope = SCOPES[new URL(request.url, 'http://localhost').pathname]

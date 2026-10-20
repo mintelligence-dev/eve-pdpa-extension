@@ -1,5 +1,5 @@
 export type PdpaHttpErrorCode =
-  /** createWebhook or createUpstashTokenStore was given options it cannot run with. */
+  /** createGateway or createUpstashTokenStore was given options it cannot run with. */
   | 'ERR_PDPA_HTTP_CONFIG'
   /** The runtime has no crypto.subtle to sign with — Node before 20. */
   | 'ERR_PDPA_HTTP_NO_WEBCRYPTO'

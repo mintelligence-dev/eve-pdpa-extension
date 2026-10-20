@@ -1,18 +1,18 @@
 import { definePolicy } from '@eve-pdpa-extension/core'
 import { describe, expect, it } from 'vitest'
 import { PdpaHttpError } from '../src/errors.js'
-import { createWebhook, type ForwardRecord, type WebhookOptions } from '../src/webhook.js'
+import { createGateway, type ForwardRecord, type GatewayOptions } from '../src/gateway.js'
 import { FORWARD_TO, REPLY_TO, recorder, SECRET, type Sent, signed } from './helpers.js'
 
 const POLICY = definePolicy({ entitySet: '0.1', entities: { PHONE: { action: 'mask' } } })
 const AI = 'https://ai.shop-b.example/inbound'
 const APP = 'https://chat.shop-b.example/reply'
 
-function setup(extra: Partial<WebhookOptions> & { status?: number | 'throw' } = {}) {
+function setup(extra: Partial<GatewayOptions> & { status?: number | 'throw' } = {}) {
   const { status, ...rest } = extra
   const net = recorder(status)
   const forwards: ForwardRecord[] = []
-  const webhook = createWebhook({
+  const gateway = createGateway({
     policies: { default: POLICY },
     secret: SECRET,
     onAudit: () => {},
@@ -22,15 +22,15 @@ function setup(extra: Partial<WebhookOptions> & { status?: number | 'throw' } = 
     fetch: net.fetch,
     ...rest,
   })
-  return { webhook, sent: net.sent, forwards }
+  return { gateway, sent: net.sent, forwards }
 }
 
 const bodyOf = (s: Sent): Record<string, unknown> => JSON.parse(s.body)
 
 describe('destinations named in the request', () => {
   it('/inbound goes where the request says, and passes replyTo on to the answering system', async () => {
-    const { webhook, sent } = setup()
-    const res = await webhook.inbound(
+    const { gateway, sent } = setup()
+    const res = await gateway.inbound(
       await signed({ sessionId: 'conv_8f2a', text: 'สวัสดีค่ะ', forwardTo: AI, replyTo: APP }),
     )
     expect(res.status).toBe(200)
@@ -44,8 +44,8 @@ describe('destinations named in the request', () => {
   })
 
   it('/outbound goes to the replyTo the answering system sends back', async () => {
-    const { webhook, sent } = setup()
-    await webhook.outbound(
+    const { gateway, sent } = setup()
+    await gateway.outbound(
       await signed(
         { sessionId: 'conv_8f2a', text: 'ได้เลยค่ะ', replyTo: APP },
         { scope: 'outbound' },
@@ -55,17 +55,17 @@ describe('destinations named in the request', () => {
     expect(bodyOf(sent[0] as Sent)).not.toHaveProperty('replyTo')
   })
 
-  it('without one in the request, the webhook falls back to its own', async () => {
-    const { webhook, sent } = setup({ forwardTo: FORWARD_TO, replyTo: REPLY_TO })
-    await webhook.inbound(await signed({ sessionId: 's1', text: 'x' }))
-    await webhook.outbound(await signed({ sessionId: 's1', text: 'x' }, { scope: 'outbound' }))
+  it('without one in the request, the gateway falls back to its own', async () => {
+    const { gateway, sent } = setup({ forwardTo: FORWARD_TO, replyTo: REPLY_TO })
+    await gateway.inbound(await signed({ sessionId: 's1', text: 'x' }))
+    await gateway.outbound(await signed({ sessionId: 's1', text: 'x' }, { scope: 'outbound' }))
     expect(sent.map((s) => s.url)).toEqual([FORWARD_TO, REPLY_TO])
   })
 
   it('without either, it is a 400 that says which is missing', async () => {
-    const { webhook, sent } = setup()
-    const inbound = await webhook.inbound(await signed({ sessionId: 's1', text: 'x' }))
-    const outbound = await webhook.outbound(
+    const { gateway, sent } = setup()
+    const inbound = await gateway.inbound(await signed({ sessionId: 's1', text: 'x' }))
+    const outbound = await gateway.outbound(
       await signed({ sessionId: 's1', text: 'x' }, { scope: 'outbound' }),
     )
     expect(inbound.status).toBe(400)
@@ -75,8 +75,8 @@ describe('destinations named in the request', () => {
   })
 
   it('/outbound does not take a forwardTo', async () => {
-    const { webhook } = setup()
-    const res = await webhook.outbound(
+    const { gateway } = setup()
+    const res = await gateway.outbound(
       await signed(
         { sessionId: 's1', text: 'x', replyTo: APP, forwardTo: AI },
         { scope: 'outbound' },
@@ -132,8 +132,8 @@ describe('destinations a request may not name', () => {
 
   for (const url of refused) {
     it(url, async () => {
-      const { webhook, sent } = setup()
-      const res = await webhook.inbound(
+      const { gateway, sent } = setup()
+      const res = await gateway.inbound(
         await signed({ sessionId: 's1', text: 'x', forwardTo: url }),
       )
       expect(res.status).toBe(400)
@@ -145,14 +145,14 @@ describe('destinations a request may not name', () => {
   }
 
   it('public addresses next to the private ranges are allowed', async () => {
-    const { webhook, sent } = setup()
+    const { gateway, sent } = setup()
     for (const url of [
       'https://172.32.0.1/',
       'https://192.169.1.1/',
       'https://100.128.0.1/',
       'https://[2001:db8::1]/',
     ]) {
-      const res = await webhook.inbound(
+      const res = await gateway.inbound(
         await signed({ sessionId: 's1', text: 'x', forwardTo: url }),
       )
       expect(res.status).toBe(200)
@@ -161,8 +161,8 @@ describe('destinations a request may not name', () => {
   })
 
   it('a bad replyTo on /inbound is refused before anything is sent', async () => {
-    const { webhook, sent } = setup()
-    const res = await webhook.inbound(
+    const { gateway, sent } = setup()
+    const res = await gateway.inbound(
       await signed({ sessionId: 's1', text: 'x', forwardTo: AI, replyTo: 'https://10.0.0.1/' }),
     )
     expect(res.status).toBe(400)
@@ -170,9 +170,9 @@ describe('destinations a request may not name', () => {
     expect(sent).toHaveLength(0)
   })
 
-  it('the webhook’s own defaults may be anything its deployer chose', async () => {
-    const { webhook, sent } = setup({ forwardTo: 'http://10.0.0.5:8080/ai' })
-    expect((await webhook.inbound(await signed({ sessionId: 's1', text: 'x' }))).status).toBe(200)
+  it('the gateway’s own defaults may be anything its deployer chose', async () => {
+    const { gateway, sent } = setup({ forwardTo: 'http://10.0.0.5:8080/ai' })
+    expect((await gateway.inbound(await signed({ sessionId: 's1', text: 'x' }))).status).toBe(200)
     expect(sent[0]?.url).toBe('http://10.0.0.5:8080/ai')
   })
 })
@@ -183,8 +183,8 @@ describe('allowedDestinations', () => {
   }
 
   it('lets through a destination under one of them', async () => {
-    const { webhook, sent } = setup(options)
-    const res = await webhook.inbound(
+    const { gateway, sent } = setup(options)
+    const res = await gateway.inbound(
       await signed({ sessionId: 's1', text: 'x', forwardTo: AI, replyTo: `${APP}/line` }),
     )
     expect(res.status).toBe(200)
@@ -192,7 +192,7 @@ describe('allowedDestinations', () => {
   })
 
   it('refuses one outside them, a look-alike host, and another path', async () => {
-    const { webhook, sent } = setup(options)
+    const { gateway, sent } = setup(options)
     for (const url of [
       'https://ai.shop-a.example/inbound',
       'https://ai.shop-b.example.attacker.example/inbound',
@@ -201,7 +201,7 @@ describe('allowedDestinations', () => {
       'https://chat.shop-b.example/reply-admin',
       'https://chat.shop-b.example/replyall',
     ]) {
-      const res = await webhook.inbound(
+      const res = await gateway.inbound(
         await signed({ sessionId: 's1', text: 'x', forwardTo: url }),
       )
       expect(res.status).toBe(400)
@@ -211,8 +211,8 @@ describe('allowedDestinations', () => {
   })
 
   it('lets through the path itself, as well as one below it', async () => {
-    const { webhook, sent } = setup(options)
-    const res = await webhook.inbound(
+    const { gateway, sent } = setup(options)
+    const res = await gateway.inbound(
       await signed({ sessionId: 's1', text: 'x', forwardTo: AI, replyTo: APP }),
     )
     expect(res.status).toBe(200)
@@ -222,7 +222,7 @@ describe('allowedDestinations', () => {
   it('refuses entries that are not https URLs without a query', () => {
     for (const bad of [['http://ai.example/'], ['ai.example'], ['https://ai.example/?k=1']]) {
       expect(() =>
-        createWebhook({
+        createGateway({
           policies: { default: POLICY },
           secret: SECRET,
           onAudit: () => {},
@@ -235,13 +235,13 @@ describe('allowedDestinations', () => {
 
 describe('a destination that carries personal data (D22)', () => {
   it('is refused, by field, without repeating the value', async () => {
-    const { webhook, sent } = setup()
+    const { gateway, sent } = setup()
     for (const [field, url] of [
       ['forwardTo', 'https://ai.shop-b.example/reply/0918887777'],
       ['forwardTo', 'https://ai.shop-b.example/in?user=somchai%40example.com'],
       ['replyTo', 'https://chat.shop-b.example/reply?to=U4af4980629a1b2c3d4e5f60718293a4b'],
     ] as const) {
-      const res = await webhook.inbound(
+      const res = await gateway.inbound(
         await signed({ sessionId: 's1', text: 'x', forwardTo: AI, [field]: url }),
       )
       expect(res.status, url).toBe(400)
@@ -253,8 +253,8 @@ describe('a destination that carries personal data (D22)', () => {
   })
 
   it('lets through the ids a system puts in its own URLs', async () => {
-    const { webhook, sent } = setup()
-    const res = await webhook.inbound(
+    const { gateway, sent } = setup()
+    const res = await gateway.inbound(
       await signed({ sessionId: 's1', text: 'x', forwardTo: `${AI}/conv/8f2a?ref=12345` }),
     )
     expect(res.status).toBe(200)
@@ -270,8 +270,8 @@ describe('a destination that redirects', () => {
       asked.push(init ?? {})
       return new Response(null, { status: 307, headers: { location: 'http://169.254.169.254/' } })
     }) as typeof globalThis.fetch
-    const { webhook, forwards } = setup({ fetch })
-    const res = await webhook.inbound(await signed({ sessionId: 's1', text: 'x', forwardTo: AI }))
+    const { gateway, forwards } = setup({ fetch })
+    const res = await gateway.inbound(await signed({ sessionId: 's1', text: 'x', forwardTo: AI }))
     expect(asked[0]?.redirect).toBe('manual')
     expect(res.status).toBe(502)
     expect(forwards[0]).toMatchObject({ delivered: false, status: 307 })
@@ -280,8 +280,8 @@ describe('a destination that redirects', () => {
 
 describe('onForward', () => {
   it('records where each message went, without the query, and where the address came from', async () => {
-    const { webhook, forwards } = setup({ forwardTo: FORWARD_TO })
-    await webhook.inbound(
+    const { gateway, forwards } = setup({ forwardTo: FORWARD_TO })
+    await gateway.inbound(
       await signed({
         sessionId: 'conv_8f2a',
         ref: 'msg_1',
@@ -289,7 +289,7 @@ describe('onForward', () => {
         forwardTo: `${AI}?key=t0ken#x`,
       }),
     )
-    await webhook.inbound(await signed({ sessionId: 'conv_8f2a', text: 'x' }))
+    await gateway.inbound(await signed({ sessionId: 'conv_8f2a', text: 'x' }))
     expect(forwards).toEqual([
       {
         at: expect.any(String),
@@ -312,21 +312,21 @@ describe('onForward', () => {
       [503, 503],
       ['throw', null],
     ] as const) {
-      const { webhook, forwards } = setup({ status })
-      const res = await webhook.inbound(await signed({ sessionId: 's1', text: 'x', forwardTo: AI }))
+      const { gateway, forwards } = setup({ status })
+      const res = await gateway.inbound(await signed({ sessionId: 's1', text: 'x', forwardTo: AI }))
       expect(res.status).toBe(502)
       expect(forwards[0]).toMatchObject({ delivered: false, status: expected })
     }
   })
 
   it('is not called for a message that was blocked or refused', async () => {
-    const { webhook, forwards } = setup({
+    const { gateway, forwards } = setup({
       policies: {
         default: definePolicy({ entitySet: '0.1', entities: { PHONE: { action: 'block' } } }),
       },
     })
-    await webhook.inbound(await signed({ sessionId: 's1', text: 'เบอร์ 0918887777', forwardTo: AI }))
-    await webhook.inbound(
+    await gateway.inbound(await signed({ sessionId: 's1', text: 'เบอร์ 0918887777', forwardTo: AI }))
+    await gateway.inbound(
       await signed({ sessionId: 's1', text: 'x', forwardTo: 'https://10.0.0.1/' }),
     )
     expect(forwards).toHaveLength(0)
@@ -343,7 +343,7 @@ describe('onForward', () => {
           }, 20),
         ),
     })
-    await slow.webhook.inbound(await signed({ sessionId: 's1', text: 'x', forwardTo: AI }))
+    await slow.gateway.inbound(await signed({ sessionId: 's1', text: 'x', forwardTo: AI }))
     expect(written).toBe(true)
 
     const broken = setup({
@@ -351,7 +351,7 @@ describe('onForward', () => {
         throw new Error('log store down')
       },
     })
-    const res = await broken.webhook.inbound(
+    const res = await broken.gateway.inbound(
       await signed({ sessionId: 's1', text: 'x', forwardTo: AI }),
     )
     expect(res.status).toBe(200)

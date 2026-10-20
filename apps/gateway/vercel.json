@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["sin1"],
+  "installCommand": "pnpm install --frozen-lockfile --filter @eve-pdpa-extension/gateway...",
+  "buildCommand": "pnpm --filter @eve-pdpa-extension/gateway^... build",
+  "functions": {
+    "api/*.ts": { "includeFiles": "policies/**" }
+  }
+}

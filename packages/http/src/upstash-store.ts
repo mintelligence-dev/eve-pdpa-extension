@@ -8,7 +8,7 @@
  * connection to hold open between invocations and no dependency to add.
  *
  * Redis holds the real values until they expire. Keep tokens short-lived, and
- * guard the REST token as closely as the webhook's resolveSecret.
+ * guard the REST token as closely as the gateway's resolveSecret.
  */
 import type { TokenRecord, TokenStore } from '@eve-pdpa-extension/core'
 import { PdpaHttpError } from './errors.js'

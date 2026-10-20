@@ -1,9 +1,9 @@
 # @eve-pdpa-extension/http
 
-A webhook that sits between a chat app and the system that answers it — an AI model, a helpdesk — and protects Thai personal data **both ways**: in the customer's message before the answering system reads it, and in the answer before the customer gets it.
+A gateway that sits between a chat app and the system that answers it — an AI model, a helpdesk — and protects Thai personal data **both ways**: in the customer's message before the answering system reads it, and in the answer before the customer gets it.
 
 - Any app that can send an HTTP POST · no SDK to install on the sending side
-- Every request is signed (HMAC-SHA256 with a timestamp) · the webhook signs what it forwards, so the receiver can check it too
+- Every request is signed (HMAC-SHA256 with a timestamp) · the gateway signs what it forwards, so the receiver can check it too
 - The caller says where each message goes (`forwardTo`, `replyTo`) · every forward is reported to `onForward`, so where data went is on record
 - Each bot gets a **named policy** · a request chooses among policies you reviewed, and can never write its own rules
 - Optional `tokenise`: a value the answering system needs — a phone number for an OTP — can be exchanged back at `/resolve`, for an allowed purpose only, and every attempt is audited
@@ -19,26 +19,26 @@ A webhook that sits between a chat app and the system that answers it — an AI 
 ## How it fits
 
 ```
-chat app ──POST /inbound──▶  webhook (guard)  ──POST──▶  forwardTo (the system that answers)
-chat app ◀──POST──────────── webhook (guard)  ◀──POST /outbound──  the system that answers
+chat app ──POST /inbound──▶  gateway (guard)  ──POST──▶  forwardTo (the system that answers)
+chat app ◀──POST──────────── gateway (guard)  ◀──POST /outbound──  the system that answers
               (replyTo)                                    sends replyTo back with its answer
-OTP service ──POST /resolve──▶ webhook ──▶ the real value, for an allowed purpose
-chat app ──POST /end-session──▶ webhook ──▶ every token of that chat deleted
+OTP service ──POST /resolve──▶ gateway ──▶ the real value, for an allowed purpose
+chat app ──POST /end-session──▶ gateway ──▶ every token of that chat deleted
 ```
 
 The answering system sends its reply through `/outbound` instead of straight to the app — otherwise a value the model writes, or a token it repeats, reaches the customer unchecked.
 
 ## Install
 
-**Not on npm in 0.1.** The webhook is deployed from this repository — see [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook), which takes `core` and `http` from the workspace. The code below is what that app runs.
+**Not on npm in 0.1.** The gateway is deployed from this repository — see [`apps/gateway`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/gateway), which takes `core` and `http` from the workspace. The code below is what that app runs.
 
 ## Quick start
 
 ```ts
 import { parsePolicy } from '@eve-pdpa-extension/core'
-import { createUpstashTokenStore, createWebhook } from '@eve-pdpa-extension/http'
+import { createUpstashTokenStore, createGateway } from '@eve-pdpa-extension/http'
 
-const webhook = createWebhook({
+const gateway = createGateway({
   policies: {
     default: parsePolicy(defaultPolicyJson),   // a bot that answers questions: no tokenise
     otp: parsePolicy(otpPolicyJson),           // a bot that sends OTPs: phone tokenised for otp_send
@@ -57,12 +57,12 @@ const webhook = createWebhook({
 
 // Mount each handler on a route. On Vercel, api/inbound.ts:
 export function POST(request: Request) {
-  return webhook.inbound(request)
+  return gateway.inbound(request)
 }
-// webhook.outbound · webhook.resolve · webhook.endSession — the same way
+// gateway.outbound · gateway.resolve · gateway.endSession — the same way
 ```
 
-The deployed webhook is [`apps/webhook`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/webhook). Systems that call it read its [`API.md`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/API.md) and [`openapi.json`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/webhook/public/openapi.json): fields, responses, and the signature recipe for any language.
+The deployed gateway is [`apps/gateway`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/apps/gateway). Systems that call it read its [`API.md`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/gateway/API.md) and [`openapi.json`](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/apps/gateway/public/openapi.json): fields, responses, and the signature recipe for any language.
 
 ## Sending a message in
 
@@ -77,7 +77,7 @@ const body = JSON.stringify({
   forwardTo: 'https://ai.example.com/inbound',     // the system that answers
   replyTo: 'https://chat.example.com/reply',       // where its answer should reach the customer
 })
-await fetch(WEBHOOK_URL + '/inbound', {
+await fetch(GATEWAY_URL + '/inbound', {
   method: 'POST',
   headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_SECRET, 'inbound', body)) },
   body,
@@ -94,7 +94,7 @@ await fetch(WEBHOOK_URL + '/inbound', {
 | `forwardTo` | | Where to send the protected message · falls back to the `forwardTo` option · one or the other is required |
 | `replyTo` | | Where the answer should go · passed on to `forwardTo`, which sends it back with its answer to `/outbound` |
 
-Any other field is refused, so a value in a field the webhook does not read cannot pass for checked.
+Any other field is refused, so a value in a field the gateway does not read cannot pass for checked.
 
 What the receiver gets, signed with the same secret: `{ "policy": "otp", "sessionId": "conv_8f2a", "ref": "msg_10293", "text": "เบอร์ [tok:…] ค่ะ", "replyTo": "https://chat.example.com/reply" }`. It sends its answer to `/outbound` with the same `policy`, `sessionId` and `replyTo`, signed for `outbound`. Check what arrives with `verifyRequest`:
 
@@ -109,27 +109,27 @@ if (!(await verifyRequest(PDPA_SECRET, 'forward', request.headers, body))) retur
 
 | Scope | Signed by | Checked by |
 |---|---|---|
-| `inbound` · `outbound` · `end-session` | the chat app · the answering system · the chat app, with `secret` | the webhook |
-| `resolve` | the system that needs real values, with `resolveSecret` | the webhook |
-| `forward` | the webhook, sending to `forwardTo` | the answering system |
-| `reply` | the webhook, sending to `replyTo` | the chat app |
+| `inbound` · `outbound` · `end-session` | the chat app · the answering system · the chat app, with `secret` | the gateway |
+| `resolve` | the system that needs real values, with `resolveSecret` | the gateway |
+| `forward` | the gateway, sending to `forwardTo` | the answering system |
+| `reply` | the gateway, sending to `replyTo` | the chat app |
 
-One secret signs both directions, so without this the message the webhook forwards would also be a valid `/outbound` request: whoever received it could send it back within the tolerance and have it pushed to the customer. A captured request can still be sent again to the same route within the tolerance — use `ref` to drop repeats.
+One secret signs both directions, so without this the message the gateway forwards would also be a valid `/outbound` request: whoever received it could send it back within the tolerance and have it pushed to the customer. A captured request can still be sent again to the same route within the tolerance — use `ref` to drop repeats.
 
 ## Where messages may go
 
-A `forwardTo` or `replyTo` in a request must be **https**, carry no user name or password, and not be a local or private network address (`localhost`, `127.0.0.1`, `10.x`, `192.168.x`, `169.254.169.254`, `::1` …) — the webhook signs what it sends, and a signed POST to an internal service is the last thing it should make. The `forwardTo` and `replyTo` options are your own choice and are not limited.
+A `forwardTo` or `replyTo` in a request must be **https**, carry no user name or password, and not be a local or private network address (`localhost`, `127.0.0.1`, `10.x`, `192.168.x`, `169.254.169.254`, `::1` …) — the gateway signs what it sends, and a signed POST to an internal service is the last thing it should make. The `forwardTo` and `replyTo` options are your own choice and are not limited.
 
 - **A redirect is not followed** · a destination that answers 3xx counts as not delivered (502) · following it would send the signed POST past every check above
 - **A destination that carries personal data is refused** (400) · a phone number or LINE userId in the path or query would reach the answering system and the logs unprotected · address the system, not the person
 
-> **The secret decides who may name a destination.** Anyone holding it can have the webhook send a signed message anywhere public. Keep it as closely as any credential, and if you know where messages should go, list them:
+> **The secret decides who may name a destination.** Anyone holding it can have the gateway send a signed message anywhere public. Keep it as closely as any credential, and if you know where messages should go, list them:
 >
 > ```ts
 > allowedDestinations: ['https://ai.example.com/', 'https://chat.example.com/reply']
 > ```
 >
-> A destination must then share one entry's origin and be its path or sit below it — `/reply` allows `/reply/line`, not `/reply-admin`. A host name that points to a private address is not caught without this list: the webhook does not look names up.
+> A destination must then share one entry's origin and be its path or sit below it — `/reply` allows `/reply/line`, not `/reply-admin`. A host name that points to a private address is not caught without this list: the gateway does not look names up.
 
 `onForward` is told about every forward, delivered or not: `{ at, boundary, policy, sessionId, ref, destination, destinationFrom, delivered, status }`. `destination` is origin and path only — a query string can carry a token, so it is left out.
 
@@ -160,7 +160,7 @@ Signed with **`resolveSecret`**, not `secret` — an app that may send messages 
 ```ts
 async function sendOtp({ phone }: { phone: string }, sessionId: string) {
   const body = JSON.stringify({ policy: 'otp', token: phone, sessionId, purpose: 'otp_send', caller: 'otp-service' })
-  const res = await fetch(`${WEBHOOK_URL}/resolve`, {
+  const res = await fetch(`${GATEWAY_URL}/resolve`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...(await signRequest(PDPA_RESOLVE_SECRET, 'resolve', body)) },
     body,
@@ -179,14 +179,14 @@ async function sendOtp({ phone }: { phone: string }, sessionId: string) {
 
 ## Tokens on serverless: `createUpstashTokenStore`
 
-On a serverless platform each request may run on a different machine, and an idle one is shut down — a token kept in memory is gone before `/resolve` asks for it. So **a policy that tokenises needs a `tokenStore` every machine shares**, and `createWebhook` throws without one. `createUpstashTokenStore` talks to [Upstash Redis](https://upstash.com) over its REST API with `fetch`: no connection to keep open, no dependency added.
+On a serverless platform each request may run on a different machine, and an idle one is shut down — a token kept in memory is gone before `/resolve` asks for it. So **a policy that tokenises needs a `tokenStore` every machine shares**, and `createGateway` throws without one. `createUpstashTokenStore` talks to [Upstash Redis](https://upstash.com) over its REST API with `fetch`: no connection to keep open, no dependency added.
 
 - **Redis holds the real values until each token expires** · keep `ttlSec` as short as the flow allows · choose the nearest region, and tell your DPO if data is stored outside Thailand · guard the REST token as closely as `resolveSecret`
 - If Upstash is down or slow (2 s timeout), core never lets the real value through: the message is blocked, `/resolve` answers `store_unavailable`, a token in a reply becomes a placeholder
 
 ## Audit
 
-`onAudit` is required — pass `() => {}` to discard audit on purpose. Events carry positions, types and ids, never a real value. If it returns a Promise, the webhook waits for it before answering — a serverless platform may stop the function once the response is sent — for up to `auditWaitMs` (5 s). Past that the write carries on but is no longer waited for, so one write that hangs cannot hold up every request on the instance.
+`onAudit` is required — pass `() => {}` to discard audit on purpose. Events carry positions, types and ids, never a real value. If it returns a Promise, the gateway waits for it before answering — a serverless platform may stop the function once the response is sent — for up to `auditWaitMs` (5 s). Past that the write carries on but is no longer waited for, so one write that hangs cannot hold up every request on the instance.
 
 Vercel keeps function logs for an hour (Hobby) or a day (Pro). **Before real customers, send audit somewhere it is kept** — a log drain or a database — `token.resolve` events above all.
 

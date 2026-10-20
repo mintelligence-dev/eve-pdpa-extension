@@ -22,8 +22,8 @@ describe('signRequest and verifyRequest', () => {
   })
 
   it('an unknown scope is a mistake in the caller, not a signature that fails', async () => {
-    await expect(signRequest(SECRET, 'webhook' as never, BODY)).rejects.toThrow(PdpaHttpError)
-    await expect(verifyRequest(SECRET, 'webhook' as never, new Headers(), BODY)).rejects.toThrow(
+    await expect(signRequest(SECRET, 'gateway' as never, BODY)).rejects.toThrow(PdpaHttpError)
+    await expect(verifyRequest(SECRET, 'gateway' as never, new Headers(), BODY)).rejects.toThrow(
       PdpaHttpError,
     )
   })

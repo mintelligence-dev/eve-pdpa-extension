@@ -1,7 +1,7 @@
 {
-  "name": "@eve-pdpa-extension/webhook",
+  "name": "@eve-pdpa-extension/gateway",
   "private": true,
-  "description": "The webhook deployed to Vercel: core and http from this repo, never from npm.",
+  "description": "The gateway deployed to Vercel: core and http from this repo, never from npm.",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
