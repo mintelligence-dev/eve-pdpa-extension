@@ -3,6 +3,10 @@
 # anything else outside git, which the CLI would otherwise upload with the rest.
 /*
 !/apps
+# Only the app being deployed: another app's local state (apps/pdpa-agent/.eve
+# holds an agent's runs) must not go up with it.
+/apps/*
+!/apps/webhook
 !/packages
 !/internal
 !/package.json
