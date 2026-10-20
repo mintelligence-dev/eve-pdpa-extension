@@ -112,9 +112,23 @@ export async function POST(request: Request) {
 }
 ```
 
-## บันทึกว่าข้อความไปที่ไหน
+## log มีอะไรบ้าง
 
-ทุกครั้งที่ส่งต่อ `lib/webhook.ts` พิมพ์หนึ่งบรรทัด `{ "type": "webhook.forward", "destination": "https://ai.example.com/inbound", "delivered": true, "status": 200, … }` ลง log ข้าง audit · ไม่มีข้อความแชท · ไม่เก็บ query ของ URL
+ทุกบรรทัดเป็น JSON · ช่องแรก `log` บอกเป็นคำว่าบรรทัดนี้เรื่องอะไร · ค้นใน Vercel → Logs ด้วยคำในช่องนี้ได้
+
+| `log` | `type` | เกิดเมื่อ |
+|---|---|---|
+| โหลด policy | `policy.loaded` | function เริ่มทำงาน (cold start) · หนึ่งบรรทัดต่อ policy |
+| ตรวจข้อความลูกค้า (ขาเข้า) | `scan` | ทุก `/api/inbound` · `findings` = เจออะไร ทำอะไร · ไม่มีตัวข้อความ |
+| ตรวจคำตอบ AI (ขาออก) | `scan` | ทุก `/api/outbound` |
+| … · บล็อก ไม่ส่งต่อ | `scan` | เจอสิ่งที่ policy สั่ง block (เช่นเลขบัตร) · ไม่มีบรรทัดส่งต่อตามมา |
+| ส่งต่อให้ AI | `webhook.forward` | ส่งไป `forwardTo` แล้ว · `delivered` `status` · ไม่มีข้อความแชท · ไม่เก็บ query ของ URL |
+| ส่งคำตอบกลับแอปแชท | `webhook.forward` | ส่งไป `replyTo` แล้ว |
+| … · ส่งไม่ถึง | `webhook.forward` | ปลายทางไม่ตอบ 2xx · ผู้ส่งได้ 502 |
+| แลก token เป็นค่าจริง | `token.resolve` | ทุก `/api/resolve` · purpose · caller · ผล · ไม่มีค่าจริง |
+| DEBUG ข้อความที่ส่งออกไป | `webhook.debug` | เฉพาะเมื่อตั้ง `DEBUG_LOG_TEXT=1` (D26) · `sent.text` = ข้อความที่ปิดแล้วที่ปลายทางได้รับ |
+
+request เดียวกันผูกกันด้วย `sessionId` และ `ref` · request ที่โดน 400 / 401 ไม่มีบรรทัดเหล่านี้
 
 ## audit
 

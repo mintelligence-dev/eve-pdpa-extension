@@ -1,6 +1,6 @@
 // Built once per cold start and reused by every request on that machine.
 import { readFileSync } from 'node:fs'
-import { parsePolicy } from '@eve-pdpa-extension/core'
+import { type AuditRecord, parsePolicy } from '@eve-pdpa-extension/core'
 import { createUpstashTokenStore, createWebhook, type Webhook } from '@eve-pdpa-extension/http'
 
 // vercel.json ships policies/ with every function, since a path built at run
@@ -42,6 +42,29 @@ const allowed = (process.env.ALLOWED_DESTINATIONS ?? '')
   .map((u) => u.trim())
   .filter((u) => u !== '')
 
+/**
+ * One JSON line per event, with `log` first: what the line is about, in
+ * words, for whoever reads the function logs. The rest is the event as is.
+ */
+function logLine(label: string, fields: object): void {
+  console.log(JSON.stringify({ log: label, ...fields }))
+}
+
+function auditLabel(event: AuditRecord): string {
+  switch (event.type) {
+    case 'policy.loaded':
+      return 'โหลด policy'
+    case 'scan': {
+      const what = event.boundary === 'inbound' ? 'ตรวจข้อความลูกค้า (ขาเข้า)' : 'ตรวจคำตอบ AI (ขาออก)'
+      return event.outcome === 'blocked' ? `${what} · บล็อก ไม่ส่งต่อ` : what
+    }
+    case 'token.resolve':
+      return 'แลก token เป็นค่าจริง'
+    default:
+      return 'audit'
+  }
+}
+
 // DEMO ONLY (D26). DEBUG_LOG_TEXT=1 logs what each forward carries — the
 // protected text, never the message as it came in — so a demo can show what
 // the answering system and the chat app received. The text is still the
@@ -65,7 +88,7 @@ const debugFetch: typeof fetch = async (input, init) => {
     // Origin and path, as webhook.forward records it: a query can carry ids.
     const url = new URL(String(input))
     const to = `${url.origin}${url.pathname}`
-    console.log(JSON.stringify({ type: 'webhook.debug', to, status, sent }))
+    logLine('DEBUG ข้อความที่ส่งออกไป', { type: 'webhook.debug', to, status, sent })
   }
 }
 
@@ -93,8 +116,11 @@ export const webhook: Webhook = createWebhook({
   // Into the function logs, which Vercel keeps for an hour (Hobby) or a day
   // (Pro). Before real customers, send audit somewhere it is kept — a log
   // drain or a database — token.resolve events above all.
-  onAudit: (event) => console.log(JSON.stringify(event)),
+  onAudit: (event) => logLine(auditLabel(event), event),
   // Where each message went: one line per forward, beside the audit events.
-  onForward: (record) => console.log(JSON.stringify({ type: 'webhook.forward', ...record })),
+  onForward: (record) => {
+    const to = record.boundary === 'inbound' ? 'ส่งต่อให้ AI' : 'ส่งคำตอบกลับแอปแชท'
+    logLine(record.delivered ? to : `${to} · ส่งไม่ถึง`, { type: 'webhook.forward', ...record })
+  },
   ...(debugText ? { fetch: debugFetch } : {}),
 })
