@@ -11,8 +11,9 @@ coverage/
 # Built demo page (scripts/demo/build.mjs)
 scripts/demo/out/
 
-# Internal design notes and translations of internal pages — kept local
-docs/
+# Internal design notes and translations of internal pages — kept local. Root
+# only: packages/http/docs is what callers build against, and is tracked.
+/docs/
 
 # Generated benchmark data and report (bench/generate.mjs, bench/evaluate.mjs)
 bench/out/

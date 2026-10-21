@@ -1,0 +1,14 @@
+{
+  "$schema": "../node_modules/@eve-pdpa-extension/core/schema/policy.schema.json",
+  "entitySet": "0.1",
+  "onUnmapped": "redact",
+  "placeholderLanguage": "th",
+  "entities": {
+    "PHONE": { "action": "mask", "keep": "last4" },
+    "TH_NATIONAL_ID": { "action": "redact" },
+    "BANK_ACCOUNT": { "action": "mask", "keep": "last4" },
+    "EMAIL": { "action": "redact" },
+    "CREDIT_CARD": { "action": "block", "minConfidence": 0.6 },
+    "LINE_USER_ID": { "action": "redact" }
+  }
+}

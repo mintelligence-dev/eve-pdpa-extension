@@ -3,6 +3,7 @@
   "references": [
     { "path": "./packages/core" },
     { "path": "./packages/cli" },
+    { "path": "./packages/http" },
     { "path": "./internal/consumer-node16" },
     { "path": "./internal/consumer-bundler" },
     { "path": "./internal/consumer-cjs" }
