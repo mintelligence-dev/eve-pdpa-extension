@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // C5: core must run on Deno, Bun, workerd and browsers, so it may not touch
-// node: builtins or Node-only globals.
+// node: builtins or Node-only globals. http claims the same web-standard
+// runtimes (D24): `node scripts/assert-no-node-builtins.mjs http`. It may
+// import core and call fetch — forwarding is its job — and nothing else.
 //
 // This closes the two gaps the build cannot: tsdown's dependency check does not
 // inspect require() in the CJS output, and no bundler check sees a global that
@@ -14,10 +16,22 @@ import { builtinModules } from 'node:module'
 import { join, relative, resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dirname, '..')
-const DIST = resolve(ROOT, 'packages/core/dist')
+const PACKAGES = {
+  core: { imports: [], fetch: false },
+  http: { imports: ['@eve-pdpa-extension/core'], fetch: true },
+}
+const PKG = process.argv[2] ?? 'core'
+const allowed = PACKAGES[PKG]
+if (allowed === undefined) {
+  process.stderr.write(`assert-no-node-builtins: no package "${PKG}" (core or http)\n`)
+  process.exit(1)
+}
+const DIST = resolve(ROOT, `packages/${PKG}/dist`)
 
 if (!existsSync(DIST)) {
-  process.stderr.write('assert-no-node-builtins: packages/core/dist not found — run build first\n')
+  process.stderr.write(
+    `assert-no-node-builtins: packages/${PKG}/dist not found — run build first\n`,
+  )
   process.exit(1)
 }
 
@@ -38,7 +52,7 @@ const BANNED_GLOBALS = [
   ['new Function', /new\s+Function\s*\(/],
   ['require.resolve', /require\.resolve\s*\(/],
   ['import.meta.url', /import\.meta\.url/],
-  ['fetch', /(?<![\w.$])fetch\s*\(/],
+  ...(allowed.fetch ? [] : [['fetch', /(?<![\w.$])fetch\s*\(/]]),
   ['XMLHttpRequest', /(?<![\w.$])XMLHttpRequest(?![\w$])/],
   ['WebSocket', /(?<![\w.$])WebSocket(?![\w$])/],
   ['EventSource', /(?<![\w.$])EventSource(?![\w$])/],
@@ -79,9 +93,16 @@ for (const file of files) {
   m = importRe.exec(src)
   while (m !== null) {
     const spec = m[2] ?? m[4]
-    if (spec && !spec.startsWith('./') && !spec.startsWith('../')) {
+    if (
+      spec &&
+      !spec.startsWith('./') &&
+      !spec.startsWith('../') &&
+      !allowed.imports.includes(spec)
+    ) {
       const line = src.slice(0, m.index).split('\n').length
-      fail.push(`${rel}:${line}  import "${spec}" — core must import nothing external`)
+      const may =
+        allowed.imports.length > 0 ? `only ${allowed.imports.join(', ')}` : 'nothing external'
+      fail.push(`${rel}:${line}  import "${spec}" — ${PKG} may import ${may}`)
     }
     m = importRe.exec(src)
   }
@@ -91,7 +112,7 @@ for (const file of files) {
   m = computed.exec(src)
   while (m !== null) {
     const line = src.slice(0, m.index).split('\n').length
-    fail.push(`${rel}:${line}  import() with a non-literal specifier is not allowed in core`)
+    fail.push(`${rel}:${line}  import() with a non-literal specifier is not allowed in ${PKG}`)
     m = computed.exec(src)
   }
 
@@ -110,4 +131,4 @@ if (fail.length > 0) {
   )
   process.exit(1)
 }
-process.stdout.write(`assert-no-node-builtins ok (${files.length} files)\n`)
+process.stdout.write(`assert-no-node-builtins ${PKG} ok (${files.length} files)\n`)

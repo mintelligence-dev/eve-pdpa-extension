@@ -7,16 +7,46 @@
 //
 // compatibilityFlags is empty on purpose. Without nodejs_compat, any node:
 // import genuinely fails rather than being politely polyfilled.
+//
+// `node scripts/smoke-workerd.mjs http` runs http's smoke instead (D24): the
+// gateway's dist with core's beside it, both as shipped.
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { Miniflare } from 'miniflare'
 
 const ROOT = resolve(import.meta.dirname, '..')
-const lib = readFileSync(resolve(ROOT, 'packages/core/dist/index.js'), 'utf8')
-const smoke = readFileSync(resolve(ROOT, 'packages/core/smoke/dist.mjs'), 'utf8').replace(
-  '../dist/index.js',
-  './core.js',
-)
+const PKG = process.argv[2] ?? 'core'
+const read = (path) => readFileSync(resolve(ROOT, path), 'utf8')
+// workerd resolves modules by name, not through node_modules: every import of
+// core, bare or relative, points at the one core.js module.
+const toCore = (src) => src.replace(/(['"])@eve-pdpa-extension\/core\1/g, "'./core.js'")
+const lib = read('packages/core/dist/index.js')
+const modules =
+  PKG === 'http'
+    ? [
+        {
+          type: 'ESModule',
+          path: 'smoke.js',
+          contents: toCore(read('packages/http/smoke/dist.mjs')).replace(
+            '../dist/index.js',
+            './http.js',
+          ),
+        },
+        {
+          type: 'ESModule',
+          path: 'http.js',
+          contents: toCore(read('packages/http/dist/index.js')),
+        },
+        { type: 'ESModule', path: 'core.js', contents: lib },
+      ]
+    : [
+        {
+          type: 'ESModule',
+          path: 'smoke.js',
+          contents: read('packages/core/smoke/dist.mjs').replace('../dist/index.js', './core.js'),
+        },
+        { type: 'ESModule', path: 'core.js', contents: lib },
+      ]
 
 const mf = new Miniflare({
   compatibilityDate: '2026-08-06',
@@ -41,8 +71,7 @@ const mf = new Miniflare({
         `}`,
       ].join('\n'),
     },
-    { type: 'ESModule', path: 'smoke.js', contents: smoke },
-    { type: 'ESModule', path: 'core.js', contents: lib },
+    ...modules,
   ],
 })
 
