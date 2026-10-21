@@ -150,7 +150,7 @@ A Slack renderer for `message.completed`: the reply goes through the guard at `o
 
 ## `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
 
-Register it in `agent/hooks/pdpa.ts`. On `message.received` it stores the session's pdpa id (tools cannot see the channel address), and cancels the turn when the message holds data the policy blocks, or a type in `blockOn`. On `session.completed` and `session.failed` it calls `guard.endSession`. eve's `reset` reaches no hook: those tokens expire with `ttlSec`.
+Register it in `agent/hooks/pdpa.ts`. Its options are checked when it is created, so a missing guard or `sessionKey` stops eve from loading the hook rather than surfacing on the first message. On `message.received` it stores the session's pdpa id (tools cannot see the channel address), and cancels the turn when the message holds data the policy blocks, or a type in `blockOn`. On `session.completed` and `session.failed` it calls `guard.endSession`. eve's `reset` reaches no hook: those tokens expire with `ttlSec`.
 
 **A channel you forgot to wrap.** A wrapped channel hands eve text with nothing left to find, so when the hook still finds personal data in a recorded message — anything but `flag`, which passes on purpose — that message came through a channel nobody wrapped. The hook then calls `onUnmasked({ channel, entities })`, or without it warns once per channel (`Wrap agent/channels/<channel>.ts with withPdpaGuard`). Neither carries a value. `strict: true` cancels the turn as well, so the model never reads it — though eve has recorded it by then.
 

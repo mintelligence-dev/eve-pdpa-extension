@@ -100,6 +100,10 @@ export function pdpaHook(
     if (ctx?.session === undefined) return
     await settings().guard.endSession(await idFor(ctx as never))
   }
+  // Options passed as an object are complete now, so a missing guard or key
+  // stops eve from loading the hook instead of surfacing on the first message.
+  // A function is the extension's: its config is bound only after load.
+  if (typeof options !== 'function') settings()
 
   return defineHook({
     events: {

@@ -149,6 +149,34 @@ describe('pdpaHook', () => {
   })
 })
 
+describe('pdpaHook — options', () => {
+  it('checks options given as an object when it is created, naming no value', () => {
+    const { guard } = makeGuard()
+    expect(() => pdpaHook({} as never)).toThrow(/createGuard/)
+    expect(() => pdpaHook({ guard, sessionKey: '' })).toThrow(TypeError)
+    expect(() => pdpaHook({ guard, sessionKey: SESSION_KEY, files: 'drop' as never })).toThrow(
+      /files/,
+    )
+    const short = SESSION_KEY.slice(0, 20)
+    let thrown: unknown
+    try {
+      pdpaHook({ guard, sessionKey: short })
+    } catch (error) {
+      thrown = error
+    }
+    expect(thrown).toBeInstanceOf(TypeError)
+    expectNoLeak([thrown], [short])
+  })
+
+  it('checks options given as a function on the first event, not when it is created', async () => {
+    const options = vi.fn(() => ({}) as never)
+    const hook = pdpaHook(options)
+    expect(options).not.toHaveBeenCalled()
+    const { event: e, ctx } = received('สวัสดี')
+    await expect(on(hook, 'message.received')(e, ctx)).rejects.toThrow(/createGuard/)
+  })
+})
+
 describe('the extension', () => {
   const validate = (value: unknown) => configSchema['~standard'].validate(value)
 

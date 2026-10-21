@@ -150,7 +150,7 @@ Slack renderer สำหรับ `message.completed`: คำตอบผ่า�
 
 ## `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
 
-ลงทะเบียนใน `agent/hooks/pdpa.ts` · ตอน `message.received` เก็บ pdpa id ของ session (tool มองไม่เห็น address ของ channel) และยกเลิก turn เมื่อข้อความมีข้อมูลที่ policy สั่ง block หรือประเภทที่อยู่ใน `blockOn` · ตอน `session.completed` และ `session.failed` เรียก `guard.endSession` · `reset` ของ eve ไม่ส่ง event ให้ hook — token เหล่านั้นหมดอายุตาม `ttlSec`
+ลงทะเบียนใน `agent/hooks/pdpa.ts` · option ถูกตรวจตอนสร้าง hook ถ้าไม่มี guard หรือ `sessionKey` eve จะโหลด hook ไม่ขึ้นตั้งแต่เริ่ม ไม่ต้องรอข้อความแรก · ตอน `message.received` เก็บ pdpa id ของ session (tool มองไม่เห็น address ของ channel) และยกเลิก turn เมื่อข้อความมีข้อมูลที่ policy สั่ง block หรือประเภทที่อยู่ใน `blockOn` · ตอน `session.completed` และ `session.failed` เรียก `guard.endSession` · `reset` ของ eve ไม่ส่ง event ให้ hook — token เหล่านั้นหมดอายุตาม `ttlSec`
 
 **channel ที่ลืมห่อ** · channel ที่ห่อแล้วส่งข้อความที่ไม่มีอะไรให้หาอีก ถ้า hook ยังเจอข้อมูลส่วนบุคคลในข้อความที่ eve บันทึก — ยกเว้น `flag` ที่ปล่อยผ่านโดยตั้งใจ — แปลว่าข้อความนั้นมาจาก channel ที่ไม่ได้ห่อ · hook จะเรียก `onUnmasked({ channel, entities })` หรือถ้าไม่ได้ตั้งไว้ จะเตือน 1 ครั้งต่อ channel (`Wrap agent/channels/<channel>.ts with withPdpaGuard`) · ทั้งสองแบบไม่มีค่าข้อมูลจริง · `strict: true` จะยกเลิก turn ด้วย โมเดลจึงไม่ได้อ่าน แต่ eve บันทึกข้อความไปแล้ว
 
