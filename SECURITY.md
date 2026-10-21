@@ -5,8 +5,6 @@ real people's national ID numbers, phone numbers and addresses.
 
 ## Reporting a vulnerability
 
-**Do not open a public issue.**
-
 Email **kunlachat@m-intelligence.tech** with the subject line starting
 `[eve-pdpa-extension security]`. Include the version, the runtime, and the
 smallest input that reproduces the problem.
