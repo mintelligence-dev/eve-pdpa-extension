@@ -12,6 +12,28 @@ export interface PdpaHookOptions extends Omit<EveGuardOptions, 'onBlock'> {
    * for data the agent should never act on, whichever channel it came through.
    */
   readonly blockOn?: readonly string[]
+  /**
+   * Called when a message reaches a turn with personal data still in it: the
+   * channel it came through was not wrapped with `withPdpaGuard`. `channel` is
+   * the channel's file stem (`"eve"` for eve's HTTP channel); `entities` the
+   * kinds found. Never a value. Without it, the hook warns once per channel.
+   */
+  readonly onUnmasked?: (info: UnmaskedInfo) => void | Promise<void>
+  /** Cancel the turn as well, so an unwrapped channel cannot reach the model. Default false. */
+  readonly strict?: boolean
+}
+
+export interface UnmaskedInfo {
+  readonly channel: string
+  readonly entities: readonly string[]
+}
+
+// Once per channel per process: the point is to be noticed, not to flood the log.
+const warned = new Set<string>()
+
+/** The channel a hook's continuation token names, or eve's HTTP channel when there is none. */
+function channelOf(token: string | undefined): string {
+  return token === undefined ? 'eve' : (token.split(':')[0] ?? 'eve')
 }
 
 /**
@@ -42,6 +64,8 @@ export function pdpaHook(
         files: 'pass' | 'block'
         language: Language
         blockOn: ReadonlySet<string>
+        onUnmasked: PdpaHookOptions['onUnmasked']
+        strict: boolean
       }
     | undefined
   const settings = () => {
@@ -55,6 +79,8 @@ export function pdpaHook(
         files: checkFiles(o.files),
         language: o.language ?? 'th',
         blockOn: new Set(o.blockOn ?? []),
+        onUnmasked: o.onUnmasked,
+        strict: o.strict === true,
       }
     }
     return ready
@@ -94,11 +120,19 @@ export function pdpaHook(
                 p.type === 'text' ? [{ type: 'text' as const, text: p.text }] : [],
               )
         const seen: string[] = []
+        // A wrapped channel hands eve text with nothing left to find. Anything
+        // found here — other than `flag`, which leaves values on purpose — came
+        // through a channel nobody wrapped.
+        const unmasked = new Set<string>()
         const guard: Guard = {
           ...s.guard,
           process: async (text, opts) => {
             const out = await s.guard.process(text, opts)
-            for (const f of out.findings) if (f.allowlisted !== true) seen.push(f.entity)
+            for (const f of out.findings) {
+              if (f.allowlisted === true) continue
+              seen.push(f.entity)
+              if (f.action !== 'flag') unmasked.add(f.entity)
+            }
             return out
           },
         }
@@ -106,7 +140,24 @@ export function pdpaHook(
           { message },
           { guard, sessionId: id, boundary: 'inbound', files: 'pass', language: s.language },
         )
-        if (out.blocked || seen.some((entity) => s.blockOn.has(entity))) ctx.cancel()
+        let cancel = out.blocked || seen.some((entity) => s.blockOn.has(entity))
+        if (unmasked.size > 0) {
+          const info: UnmaskedInfo = {
+            channel: channelOf(ctx.channel?.continuationToken),
+            entities: [...unmasked],
+          }
+          if (s.onUnmasked !== undefined) {
+            await s.onUnmasked(info)
+          } else if (!warned.has(info.channel)) {
+            warned.add(info.channel)
+            console.warn(
+              `[@eve-pdpa-extension/eve] a message from channel "${info.channel}" reached eve with personal data in it (${info.entities.join(', ')}). ` +
+                `Wrap agent/channels/${info.channel}.ts with withPdpaGuard.`,
+            )
+          }
+          if (s.strict) cancel = true
+        }
+        if (cancel) ctx.cancel()
       },
       async 'session.completed'(_event, ctx) {
         await end(ctx)

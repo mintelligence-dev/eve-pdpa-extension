@@ -1,3 +1,4 @@
+import { definePolicy } from '@eve-pdpa-extension/core'
 import { describe, expect, it, vi } from 'vitest'
 
 // Session state outside eve: one slot per name, reset by each test. Inside eve
@@ -174,5 +175,84 @@ describe('the extension', () => {
     await on(extensionHook, 'message.received')(e, ctx)
     expect(ctx.cancel).toHaveBeenCalledOnce()
     expect(audit.at(-1)).toMatchObject({ type: 'scan', outcome: 'blocked' })
+  })
+})
+
+describe('pdpaHook — a channel nobody wrapped', () => {
+  const flagPhones = () =>
+    makeGuard(
+      definePolicy({
+        entitySet: '0.1',
+        entities: { PHONE: { action: 'flag' }, EMAIL: { action: 'redact' } },
+      }),
+    )
+
+  it('reports raw personal data in a recorded message, with the channel and kinds only', async () => {
+    slots.clear()
+    const { guard } = makeGuard(MASK)
+    const reports: unknown[] = []
+    const hook = on(
+      pdpaHook({ guard, sessionKey: SESSION_KEY, onUnmasked: (i) => void reports.push(i) }),
+      'message.received',
+    )
+    const { event: e, ctx } = received(
+      `โทร ${PHONE} เลขบัตร ${dashed(ID)}`,
+      undefined,
+      'telegram:12345',
+    )
+    await hook(e, ctx)
+    expect(reports).toEqual([{ channel: 'telegram', entities: ['PHONE', 'TH_NATIONAL_ID'] }])
+    expect(ctx.cancel).not.toHaveBeenCalled()
+    expectNoLeak(reports, [PHONE, ID])
+  })
+
+  it('stays quiet for what a wrapped channel hands eve', async () => {
+    slots.clear()
+    const { guard } = makeGuard()
+    const onUnmasked = vi.fn()
+    const sessionId = await derivePdpaSessionId(SESSION_KEY, 'slack:C1:1800.1')
+    const out = await guardContent(`โทร ${PHONE} เลขบัตร ${dashed(ID)}`, { guard, sessionId })
+    if (out.blocked) throw new Error('unexpected block')
+    const { event: e, ctx } = received(out.content, undefined, 'slack:C1:1800.1')
+    await on(pdpaHook({ guard, sessionKey: SESSION_KEY, onUnmasked }), 'message.received')(e, ctx)
+    expect(onUnmasked).not.toHaveBeenCalled()
+  })
+
+  it('cancels the turn under strict, and names eve’s HTTP channel when there is no address', async () => {
+    slots.clear()
+    const { guard } = makeGuard(MASK)
+    const onUnmasked = vi.fn()
+    const { event: e, ctx } = received(`โทร ${PHONE}`)
+    await on(
+      pdpaHook({ guard, sessionKey: SESSION_KEY, strict: true, onUnmasked }),
+      'message.received',
+    )(e, ctx)
+    expect(onUnmasked).toHaveBeenCalledWith({ channel: 'eve', entities: ['PHONE'] })
+    expect(ctx.cancel).toHaveBeenCalledOnce()
+  })
+
+  it('does not count values the policy flags: they pass on purpose', async () => {
+    slots.clear()
+    const { guard } = flagPhones()
+    const onUnmasked = vi.fn()
+    const { event: e, ctx } = received(`โทร ${PHONE}`, undefined, 'teams:T1')
+    await on(pdpaHook({ guard, sessionKey: SESSION_KEY, onUnmasked }), 'message.received')(e, ctx)
+    expect(onUnmasked).not.toHaveBeenCalled()
+  })
+
+  it('without onUnmasked, warns once per channel, with no value in the warning', async () => {
+    slots.clear()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const { guard } = makeGuard(MASK)
+    const hook = on(pdpaHook({ guard, sessionKey: SESSION_KEY }), 'message.received')
+    for (const token of ['discord:A', 'discord:B', 'linear:C']) {
+      const { event: e, ctx } = received(`โทร ${PHONE}`, undefined, token)
+      await hook(e, ctx)
+    }
+    const channels = warn.mock.calls.map((c) => String(c[0]).match(/channel "(\w+)"/)?.[1])
+    expect(channels).toEqual(['discord', 'linear'])
+    expect(String(warn.mock.calls[0]?.[0])).toContain('agent/channels/discord.ts')
+    expectNoLeak(warn.mock.calls, [PHONE])
+    warn.mockRestore()
   })
 })

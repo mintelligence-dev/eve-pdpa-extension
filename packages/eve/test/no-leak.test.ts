@@ -227,12 +227,14 @@ describe('no original value or secret leaves the package', () => {
     )
   })
 
-  it('has no console.log in the library, and one console.error with a fixed text', () => {
+  it('has no console.log in the library, one console.error and one console.warn', () => {
     const dir = new URL('../extension/lib/', import.meta.url)
     const all = readdirSync(dir)
       .map((f) => readFileSync(new URL(f, dir), 'utf8'))
       .join('\n')
-    expect(all).not.toMatch(/console\.(log|info|debug|warn)/)
+    expect(all).not.toMatch(/console\.(log|info|debug)/)
+    // pdpaHook's one-time notice about an unwrapped channel: a channel name and entity types.
+    expect(all.match(/console\.warn/g)).toHaveLength(1)
     expect(all.match(/console\.error/g)).toHaveLength(1)
   })
 })

@@ -148,9 +148,11 @@ Wraps an AI SDK model (or a gateway id string) with `wrapLanguageModel`; every t
 
 A Slack renderer for `message.completed`: the reply goes through the guard at `outbound`. Tokens become their display form, foreign or unknown tokens `[ข้อมูลที่ปิดไว้]`, and a reply the policy blocks is replaced by a notice. The narration before a tool call is rewritten too (Slack shows it as the thread status). Questions, approvals and sign-ins keep eve's default.
 
-## `pdpaHook({ guard, sessionKey, files?, blockOn? })`
+## `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
 
 Register it in `agent/hooks/pdpa.ts`. On `message.received` it stores the session's pdpa id (tools cannot see the channel address), and cancels the turn when the message holds data the policy blocks, or a type in `blockOn`. On `session.completed` and `session.failed` it calls `guard.endSession`. eve's `reset` reaches no hook: those tokens expire with `ttlSec`.
+
+**A channel you forgot to wrap.** A wrapped channel hands eve text with nothing left to find, so when the hook still finds personal data in a recorded message — anything but `flag`, which passes on purpose — that message came through a channel nobody wrapped. The hook then calls `onUnmasked({ channel, entities })`, or without it warns once per channel (`Wrap agent/channels/<channel>.ts with withPdpaGuard`). Neither carries a value. `strict: true` cancels the turn as well, so the model never reads it — though eve has recorded it by then.
 
 The package's default export mounts the same hook as an extension — `pdpa({ guard, sessionKey })` in `agent/extensions/pdpa.ts` — for setups without tokenise. With tokenise, register the hook in `agent/hooks/` so it shares session state with your tools.
 

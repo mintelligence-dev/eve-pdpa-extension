@@ -14,9 +14,19 @@ export interface PdpaExtensionConfig {
   readonly files?: 'pass' | 'block' | undefined
   readonly blockOn?: readonly string[] | undefined
   readonly language?: 'th' | 'en' | undefined
+  readonly onUnmasked?: PdpaHookOptions['onUnmasked'] | undefined
+  readonly strict?: boolean | undefined
 }
 
-const KEYS: ReadonlySet<string> = new Set(['guard', 'sessionKey', 'files', 'blockOn', 'language'])
+const KEYS: ReadonlySet<string> = new Set([
+  'guard',
+  'sessionKey',
+  'files',
+  'blockOn',
+  'language',
+  'onUnmasked',
+  'strict',
+])
 
 type Issue = StandardSchemaV1.Issue
 
@@ -62,6 +72,12 @@ function validate(value: unknown): StandardSchemaV1.Result<PdpaHookOptions> {
   }
   if (fields.language !== undefined && fields.language !== 'th' && fields.language !== 'en') {
     issues.push({ path: ['language'], message: 'expected "th" or "en"' })
+  }
+  if (fields.onUnmasked !== undefined && typeof fields.onUnmasked !== 'function') {
+    issues.push({ path: ['onUnmasked'], message: 'expected a function' })
+  }
+  if (fields.strict !== undefined && typeof fields.strict !== 'boolean') {
+    issues.push({ path: ['strict'], message: 'expected true or false' })
   }
   if (issues.length > 0) return { issues }
   return { value: fields as unknown as PdpaHookOptions }

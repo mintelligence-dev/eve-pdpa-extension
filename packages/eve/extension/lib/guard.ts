@@ -12,7 +12,7 @@ export type {
 } from './content.js'
 export { guardContent } from './content.js'
 export { PdpaBlockedError } from './errors.js'
-export type { PdpaHookOptions } from './hook.js'
+export type { PdpaHookOptions, UnmaskedInfo } from './hook.js'
 export { pdpaHook } from './hook.js'
 export type { GuardModelOptions } from './model.js'
 export { guardModel } from './model.js'
