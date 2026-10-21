@@ -1,0 +1,145 @@
+{
+  "info": {
+    "name": "eve-pdpa gateway",
+    "description": "The four routes of the gateway, signed by the collection pre-request script as API.md describes. Set baseUrl, pdpaSecret and pdpaResolveSecret in an environment (eve-pdpa-gateway.postman_environment.json is a template), never in the collection. Synthetic data only.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Signs every request the way API.md describes: HMAC-SHA256 over",
+          "// `${timestamp}.${scope}.${body}`, the scope taken from the route.",
+          "const route = pm.request.url.getPath().replace(/\\/+$/, \"\").split(\"/\").pop()",
+          "const scopes = { inbound: \"inbound\", outbound: \"outbound\", resolve: \"resolve\", \"end-session\": \"end-session\" }",
+          "const scope = scopes[route]",
+          "if (!scope) throw new Error(\"no signature scope for /\" + route)",
+          "const secret = pm.variables.get(scope === \"resolve\" ? \"pdpaResolveSecret\" : \"pdpaSecret\")",
+          "if (!secret) throw new Error(\"set pdpaSecret and pdpaResolveSecret in the environment\")",
+          "// The body exactly as Postman will send it, variables filled in.",
+          "const body = pm.variables.replaceIn(pm.request.body ? pm.request.body.raw : \"\")",
+          "const timestamp = String(Math.floor(Date.now() / 1000))",
+          "const mac = CryptoJS.HmacSHA256(timestamp + \".\" + scope + \".\" + body, secret).toString(CryptoJS.enc.Hex)",
+          "pm.request.headers.upsert({ key: \"x-pdpa-timestamp\", value: timestamp })",
+          "pm.request.headers.upsert({ key: \"x-pdpa-signature\", value: \"v1=\" + mac })",
+          "// A Vercel preview is behind Deployment Protection: Settings → Deployment",
+          "// Protection → Protection Bypass for Automation gives the value.",
+          "const bypass = pm.variables.get(\"vercelBypass\")",
+          "if (bypass) pm.request.headers.upsert({ key: \"x-vercel-protection-bypass\", value: bypass })"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Inbound — protect a message and forward it",
+      "request": {
+        "method": "POST",
+        "description": "Set forwardTo to a destination you control. The answer says processed or blocked; the protected text, with [tok:…] tokens, arrives at forwardTo.",
+        "header": [
+          {
+            "key": "content-type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"policy\": \"otp\",\n  \"sessionId\": \"conv_8f2a\",\n  \"ref\": \"msg_10293\",\n  \"text\": \"เบอร์ 091-888-7777 ค่ะ\",\n  \"context\": \"ขอเบอร์ติดต่อค่ะ\",\n  \"forwardTo\": \"https://ai.example.com/inbound\",\n  \"replyTo\": \"https://chat.example.com/reply\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/inbound",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "inbound"]
+        }
+      }
+    },
+    {
+      "name": "Outbound — check a reply",
+      "request": {
+        "method": "POST",
+        "description": "Send the policy, sessionId and replyTo that came with the forwarded message.",
+        "header": [
+          {
+            "key": "content-type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"policy\": \"otp\",\n  \"sessionId\": \"conv_8f2a\",\n  \"ref\": \"msg_10294\",\n  \"text\": \"ส่ง OTP ไปที่ [tok:rfdbkfrtnsmbvpsh] แล้วค่ะ\",\n  \"replyTo\": \"https://chat.example.com/reply\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/outbound",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "outbound"]
+        }
+      }
+    },
+    {
+      "name": "Resolve — exchange a token",
+      "request": {
+        "method": "POST",
+        "description": "Signed with pdpaResolveSecret. Put a token from a forwarded message in token; the example token answers ok: false, not_found.",
+        "header": [
+          {
+            "key": "content-type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"policy\": \"otp\",\n  \"token\": \"[tok:rfdbkfrtnsmbvpsh]\",\n  \"sessionId\": \"conv_8f2a\",\n  \"purpose\": \"otp_send\",\n  \"caller\": \"otp-service\",\n  \"ref\": \"call_77\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/resolve",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "resolve"]
+        }
+      }
+    },
+    {
+      "name": "End session — delete a chat's tokens",
+      "request": {
+        "method": "POST",
+        "description": "Call when the chat ends.",
+        "header": [
+          {
+            "key": "content-type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionId\": \"conv_8f2a\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/end-session",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "end-session"]
+        }
+      }
+    }
+  ]
+}

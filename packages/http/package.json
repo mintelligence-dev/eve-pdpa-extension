@@ -1,0 +1,59 @@
+{
+  "name": "@eve-pdpa-extension/http",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A signed gateway that protects Thai personal data in chat messages on their way to an AI model, and in its replies.",
+  "keywords": [
+    "pdpa",
+    "thai",
+    "pii",
+    "privacy",
+    "personal-data",
+    "redact",
+    "gateway",
+    "vercel"
+  ],
+  "bugs": {
+    "email": "kunlachat@m-intelligence.tech"
+  },
+  "license": "Apache-2.0",
+  "author": "M Intelligence",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mintelligence-dev/eve-pdpa-extension.git",
+    "directory": "packages/http"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@eve-pdpa-extension/core": "workspace:^"
+  },
+  "scripts": {
+    "prepack": "node ../../scripts/copy-legal.mjs",
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "tsdown": "0.23.0",
+    "typescript": "5.9.3"
+  }
+}
