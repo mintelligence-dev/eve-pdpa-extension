@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // Checks a deployment of the gateway end to end, with synthetic data only.
 //
-//   PDPA_SECRET=… PDPA_RESOLVE_SECRET=… [VERCEL_BYPASS=…] node apps/gateway/scripts/smoke.mjs <url> [--keep]
+//   PDPA_SECRET=… PDPA_RESOLVE_SECRET=… [VERCEL_BYPASS=…] node scripts/smoke.mjs <url> [--keep]
+//
+// From the gateway's own folder (apps/gateway in the monorepo, the root of the
+// deploy template).
 //
 // The last check ends the chat, which deletes its token from Upstash. --keep
 // skips it, so the token can be looked at in Upstash's Data Browser until it

@@ -4,7 +4,7 @@ gateway นี้เป็น **relay ที่ปิดข้อมูลส่
 **ไม่ใช่ปลายทาง webhook ของ LINE** — backend ของแอปแชทเป็นคนเรียก ด้วย JSON รูปแบบเดียวด้านล่าง
 
 - spec เต็ม: [`public/openapi.json`](./public/openapi.json) (OpenAPI 3.1) · ที่ deployment: `/openapi.json` · import เข้า Postman ได้ (Import → File)
-- spec กับเอกสารนี้มีเทสคุมไว้ (`packages/http/test/api-docs.test.ts`) — ถ้าโค้ดเปลี่ยนแต่เอกสารไม่เปลี่ยน เทสพัง
+- spec กับเอกสารนี้มีเทสคุมไว้ใน [repo ต้นทาง](https://github.com/mintelligence-dev/eve-pdpa-extension) (`packages/http/test/api-docs.test.ts`) — ถ้าโค้ดเปลี่ยนแต่เอกสารไม่เปลี่ยน เทสพัง
 
 ```
 แอปแชท ──POST /api/inbound──▶  gateway  ──POST forwardTo (scope: forward)──▶ ระบบที่ตอบ (AI)

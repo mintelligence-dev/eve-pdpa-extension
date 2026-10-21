@@ -10,7 +10,7 @@
     {
       "url": "https://{deployment}",
       "description": "The Vercel deployment",
-      "variables": { "deployment": { "default": "eve-pdpa-gateway.vercel.app" } }
+      "variables": { "deployment": { "default": "your-project.vercel.app" } }
     }
   ],
   "security": [{ "timestamp": [], "signature": [] }],
