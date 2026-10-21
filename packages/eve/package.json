@@ -71,6 +71,7 @@
     "typescript": "5.9.3"
   },
   "peerDependencies": {
+    "ai": "^7.0.137",
     "eve": "*"
   }
 }
