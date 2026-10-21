@@ -300,7 +300,7 @@ See [`@eve-pdpa-extension/cli`](https://www.npmjs.com/package/@eve-pdpa-extensio
 
 ## Reporting a vulnerability
 
-**Do not open a public issue.** Email **kunlachat@m-intelligence.tech** with the subject line starting `[eve-pdpa-extension security]`. Reproduce with made-up values — never send real personal data.
+Email **kunlachat@m-intelligence.tech** with the subject line starting `[eve-pdpa-extension security]`. Reproduce with made-up values — never send real personal data.
 
 ## License
 
