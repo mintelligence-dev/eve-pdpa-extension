@@ -128,3 +128,124 @@ f9abc08 docs(eve): point the default policy notes at apps/webhook
 75ffe13 test(eve): cover guardContent on strings, parts and policies
 ff50838 feat(eve): scaffold the eve extension package
 ```
+
+---
+
+# Run 2 — tokenise and the `apps/pdpa-agent` template
+
+Spec: `docs/eve-template-tokenise-spec.md` (delta on run 1). Branch `feat/eve-template`, from `feat/eve-adapter`. Local only: nothing published, pushed, tagged, deployed or linked. `packages/eve` and the template stay `"private": true`.
+
+## What works
+
+| | Status |
+|---|---|
+| Every helper takes the caller's core `guard` and a `sessionKey`; `guard.process` throughout, so an async store (Upstash) works | ✅ unit tests |
+| `derivePdpaSessionId` — `"eve_" + base32(HMAC-SHA256(key, conversation))[:26]`; audit only ever sees the derived id | ✅ `session.test.ts` |
+| `withPdpaGuard` — session id per conversation; eve HTTP create route split into create + first follow-up so tokens belong to the session; store failure blocks with its own reason; tokenising policy on eve's HTTP channel refused unless `allowRawTokensInOutput` | ✅ `channel.test.ts`, `channel-tokenise.test.ts` |
+| `withTokenResolution` — real value inside the tool only; result masked at `tool_output`; expired / wrong purpose / other chat / store down → original not called, safe refusal, `token.resolve` audited | ✅ `tool.test.ts` |
+| `pdpaSlackRenderer` — tokens to display form, foreign tokens to `[ข้อมูลที่ปิดไว้]`, blocked reply replaced | ✅ `slack.test.ts` (with the end-to-end chain: Slack in → token → tool → Slack out) |
+| `guardModel` — **landed**; prompt masked even when data arrives through a tool result | ✅ `model.test.ts` |
+| `pdpaHook` — stores the session id, blocks, `endSession` on `session.completed` / `session.failed` (a resolved token stops resolving) | ✅ `hook.test.ts` |
+| Hook canary — a hook that rewrites `message.received` cannot change what eve's mock model receives | ✅ `canary.test.ts` (real eve runtime) |
+| `apps/pdpa-agent` under `eve dev` with the mock model: OTP flow end to end, one derived session id across inbound / prompt / tool_output / token.resolve, follow-up in Thai digits, card → 422, no original or secret in prompts, history, audit or server log | ✅ `apps/pdpa-agent/test/e2e.test.ts` |
+| Template startup rules (no in-memory store and no missing secret in production) | ✅ `apps/pdpa-agent/test/store.test.ts` |
+| `eve build --skip-sandbox-prewarm` for the template | ✅ by hand, and in the new CI job |
+| No-leak sweep: synthetic values, `sessionKey` and `hmacKey` absent from returns, errors, causes, `onBlock`, HTTP answers, sends, tool results, prompts, renderer output, audit and console | ✅ `no-leak.test.ts` + e2e |
+
+### Reproduce
+
+```bash
+corepack pnpm install
+corepack pnpm verify
+corepack pnpm --filter @eve-pdpa-extension/eve test
+corepack pnpm --filter ./apps/pdpa-agent test
+
+cd apps/pdpa-agent && corepack pnpm dev:mock          # then the curl in its README
+```
+
+The template imports `packages/eve`, `packages/http` and `packages/core` as built: run `corepack pnpm build` first after changing them (`verify` does).
+
+## Choices the spec left open
+
+- **Session id mechanism (2.2)**: tools see no channel address (eve 0.80.1 `ToolContext`), so `pdpaHook` stores the derived id in a `defineState` slot on the first `message.received`; tools, the model middleware and the Slack renderer read it. The conversation string is the hook's `ctx.channel.continuationToken` — eve already gives it as `"<channel>:<address>"` — or `"session:<eve id>"` for eve's HTTP channel, whose sessions have no address. Checked with a probe agent (NOTES.md, run 2) and by the template e2e test.
+- **Extension vs agent hook (2.6)**: the mount factory takes `{ guard, sessionKey, files?, blockOn?, language? }` (eve keeps config in memory, so a live guard can travel in it), but the template registers `pdpaHook` in `agent/hooks/pdpa.ts`: an agent hook and an agent tool share session state, which was proven; extension-scoped state reaching agent tools was not.
+- **`guardModel` (2.5)**: landed. `defineAgent` takes a model instance.
+
+## Merge of `feat/webhook`
+
+Clean: `origin/feat/webhook` was already contained in `feat/eve-adapter` (`git merge --no-edit origin/feat/webhook` → *Already up to date*). `pnpm-workspace.yaml` already had `apps/*`; the run-1 entry `examples/line-agent` was removed when the example moved to `apps/pdpa-agent` with `git mv`.
+
+## Deviations from the spec
+
+| Spec | Done | Why |
+|---|---|---|
+| `onBlock({ reason, blockedBy })` | as specified | `address` from run 1 dropped with it |
+| streaming guard checks "the guard's policy" | `withPdpaGuard({ policy })` for the wrap-time check; without it, the first message tokenised on eve's HTTP channel is refused (`500 pdpa_config`, one `console.error`) | core's `Guard` does not expose its policy |
+| eve HTTP create route | split into an empty create and a first follow-up; `callback` or `operationId` with a message is refused (`400 pdpa_unsupported`) | the create route goes through an internal creator, and the session id must exist before the message is tokenised; a split would re-send on an `operationId` retry |
+| Slack renderer: `finishReason: "tool-calls"` → `next()` | narration before a tool call is rewritten too | Slack shows that narration as the thread status, so a token there would reach the customer |
+| `./guard` exports | adds `guardContent` and types; **`guardChatSdk` removed** (`withPdpaGuard` covers the Chat SDK bridge, LINE is deferred); `DEFAULT_POLICY` removed (the caller owns the policy) | |
+| template lists `extensions/pdpa.ts` | `hooks/pdpa.ts` | 2.6 decision above |
+| template `test/` e2e "like §3.2" | the Slack leg of §3.2 is covered in `packages/eve/test/slack.test.ts`, not the template e2e | a real Slack round trip needs a signed event and Slack's API |
+| `modelContextWindowTokens` not mentioned | set in the template (200k real, 1M mock) | eve finds a context window by model id in the AI Gateway catalog; a wrapped gateway model reports `gateway/<id>`, which the catalog does not list, and `eve build` fails without it |
+| Deploy with Vercel button | TODO comment in the template README | Vercel's deploy button has no root-directory parameter (checked its docs); a subfolder in `repository-url` clones only that folder, and the template cannot build without the workspace packages |
+| — | root `vitest.config.ts` includes `apps/*/test` | so `pnpm test` (and `verify`) runs the template tests too |
+
+## Blockers and skipped tests
+
+None blocked; nothing skipped on Node 24. The runtime tests (`canary`, template `e2e`) skip with a reason below Node 24 or when eve / the built package is missing, and fail loudly if `eve dev` does not start.
+
+## Findings worth knowing
+
+1. **eve's `reset` reaches no hook**, so `pdpaHook` cannot end a pdpa session that was reset; those tokens live until `ttlSec`.
+2. **`disableRoute()` only replaces eve's own default slots** (`channels/eve.ts`, `channels/home.ts`); a channel file with no routes fails eve's compile. The template's Slack channel is therefore always exported; `slackChannel()` checks credentials per request.
+3. **`eve dev` loads channel, hook and tool modules separately** (one `policy.loaded` per load), so an in-memory token store must sit on `globalThis` to be one store per process.
+4. **Reading a JSON file via `import.meta.url` breaks under eve's bundling**; the template imports `policies/pdpa-policy.json` instead.
+5. **`eve build` fetches the AI Gateway model catalog** (network, cached in `.eve/cache`) for a gateway model; the template's explicit `modelContextWindowTokens` avoids the lookup. Sandbox prewarm needs Docker or `microsandbox`; the template opens no sandbox, so CI builds with `--skip-sandbox-prewarm`.
+6. The template's dist dependency: `eve dev` builds only *mounted* workspace extensions; the template imports `@eve-pdpa-extension/eve/guard` directly, so a stale `packages/eve/dist` is used until `pnpm build`. One bug in this run (a session id derived twice on the HTTP path) was hidden that way for one manual run.
+
+## Requests
+
+- **core**: expose the policy a guard was built with (`guard.policy`), so wrappers can check for `tokenise` without the caller passing the policy twice. Run-1 requests still stand (`isCompiledPolicy`, entity-name tables, a default policy, the card/ID overlap, a scan-only call).
+- **http**: none — `createUpstashTokenStore` is exported and the template imports it as is.
+- **eve** (upstream, for the record): a hook event on `reset`; a way for a wrapped model to keep its gateway catalog id.
+
+## Left for the owner
+
+- [ ] Create the Upstash database (Vercel Marketplace or upstash.com) and add its env vars to the Vercel project
+- [ ] `openssl rand -hex 32` twice → `PDPA_HMAC_KEY`, `PDPA_SESSION_KEY`
+- [ ] Slack app: create it, set `SLACK_BOT_TOKEN` / `SLACK_SIGNING_SECRET`, point Event Subscriptions at `/eve/v1/slack`
+- [ ] Vercel project: Root Directory `apps/pdpa-agent`, include files outside the root, Build Command `corepack pnpm --dir ../.. build && eve build`, region `sin1`, env vars from `.env.example`
+- [ ] Replace `placeholderAuth()` in `apps/pdpa-agent/agent/channels/eve.ts`, or drop the HTTP channel in production
+- [ ] Deploy (`eve deploy`) — not run here
+- [ ] After deploy, verify `guardModel` with OIDC: one message → a real reply and a `scan` at `boundary: "prompt"` in audit
+- [ ] Flip `"private"` in `packages/eve/package.json` when ready; create `.github/workflows/publish-eve.yml` with tag pattern `eve-v*` (not created here)
+- [ ] Re-date the eve commits on the 21st as planned — both `feat/eve-adapter` and `feat/eve-template` are local
+
+## Final verification (run 2)
+
+20 Oct 2026, Node 24.22.0, pnpm 12.4.2, after deleting every package's `dist/` and `.size/`:
+
+| Command | Result |
+|---|---|
+| `corepack pnpm install` | ✅ |
+| `corepack pnpm verify` | ✅ exit 0 — lint · build · typecheck (incl. `consumer-eve`, `pdpa-agent`) · 57 test files / 877 tests · gates (`assert-tarballs ok (core, cli, http)`) · size (core 38.71 kB / 14.69 kB gzip, unchanged) · smoke on every runtime · smoke:cli · `check-readme ok (34 checks)` |
+| `corepack pnpm --filter @eve-pdpa-extension/eve test` | ✅ 10 files, 69 tests |
+| `corepack pnpm --filter ./apps/pdpa-agent test` | ✅ 2 files, 8 tests |
+
+No `eve dev` process was left running.
+
+## Commits on `feat/eve-template`
+
+On top of `feat/eve-adapter` (`git log --oneline feat/eve-adapter..feat/eve-template`, newest first), followed by the commit that adds this section:
+
+```
+1b85f03 ci(eve): add a Node 24 job for the adapter and the template
+3cd3848 feat(pdpa-agent): wire every layer into the template agent
+9cb2108 test(eve): prove hooks cannot mask, and type-check every export
+78e78d5 feat(eve): mask the whole prompt with guardModel
+0be86b2 feat(eve): rewrite Slack replies with pdpaSlackRenderer
+cedadc7 feat(eve): resolve tokens for a tool with withTokenResolution
+fdcdef7 test(eve): cover a down token store and tokens in unrewritten replies
+2cf52d7 feat(eve): take the caller's core guard and derive session ids
+a7ec3e6 chore(eve): move the example agent to apps/pdpa-agent
+```
