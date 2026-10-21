@@ -13,7 +13,7 @@
 | [`@eve-pdpa-extension/core`](packages/core) | ไลบรารีที่แอปเรียกทุกข้อความ · ตรวจ 6 ประเภท · ปิด 6 แบบตาม policy · audit ที่ไม่มีค่าจริง · zero dependency · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser | [ไทย](packages/core/README.th.md) · [English](packages/core/README.md) |
 | [`@eve-pdpa-extension/cli`](packages/cli) | ตรวจไฟล์แชทเก่าโดยไม่ต้องเขียนโค้ด · JSONL · CSV · ไฟล์ export จาก LINE OA · `policy validate` | [ไทย](packages/cli/README.th.md) · [English](packages/cli/README.md) |
 | [`@eve-pdpa-extension/http`](packages/http) | gateway ที่ลงลายเซ็น ตั้งคั่นระหว่างแอปแชทกับ AI · ปิดข้อมูลทั้งขาเข้าและขาออก · แลก token เป็นค่าจริงตาม purpose · Upstash Redis สำหรับ serverless · Node 20+ · Vercel · Deno · Bun · Cloudflare Workers · ยังไม่ขึ้น npm · deploy ด้วยปุ่มใน [eve-pdpa-gateway](https://github.com/kurachatsarakarn/eve-pdpa-gateway) | [ไทย](packages/http/README.th.md) · [English](packages/http/README.md) |
-| [`@eve-pdpa-extension/eve`](packages/eve) | ห่อ channel ของ agent ที่สร้างด้วย eve ให้ปิดข้อมูลก่อน eve บันทึกและก่อนโมเดลอ่าน · eve HTTP · Slack · Chat SDK (LINE) · hook ยกเลิก turn ที่ต้อง block · Node 24+ · ยังไม่ขึ้น npm | [ไทย](packages/eve/README.th.md) · [English](packages/eve/README.md) |
+| [`@eve-pdpa-extension/eve`](packages/eve) | ปิดข้อมูลใน agent ที่สร้างด้วย eve ครบ 4 ชั้น: channel ขาเข้า · tool ที่แลก token เป็นค่าจริงตาม purpose · prompt ก่อนถึงโมเดล · คำตอบ Slack · hook ยกเลิก turn ที่ต้อง block · Node 24+ · ยังไม่ขึ้น npm | [ไทย](packages/eve/README.th.md) · [English](packages/eve/README.md) |
 
 วิธีใช้ ตัวอย่าง ข้อควรรู้ และข้อจำกัด อยู่ใน README ของแต่ละแพ็กเกจ ซึ่งเป็นหน้าเดียวกับที่ขึ้นบน npm · ไฟล์นี้ไม่เขียนซ้ำ จะได้ไม่มีสองที่ที่ต้องแก้ให้ตรงกัน
 
@@ -25,9 +25,10 @@
 packages/core/       @eve-pdpa-extension/core   zero deps · ทุก runtime · งบขนาด 150 KB
 packages/cli/        @eve-pdpa-extension/cli    Node เท่านั้น
 packages/http/       @eve-pdpa-extension/http   gateway · web standard เท่านั้น · Node 20+ · docs/ = API ของ gateway ที่ deploy
-packages/eve/        @eve-pdpa-extension/eve    adapter สำหรับ eve · Node 24+ · ยังเป็น private
+packages/eve/        @eve-pdpa-extension/eve    adapter สำหรับ eve: channel · tool · model · Slack renderer · hook · Node 24+ · ยังเป็น private
 packages/{policy,ner,ner-model-th,mcp}/   มีแต่ README · ยังไม่เริ่ม (หลัง 0.1)
-examples/            ไฟล์ policy ตัวอย่าง · line-agent: eve agent ที่ห่อ channel แล้ว รันได้ด้วยโมเดลจำลอง
+apps/pdpa-agent/     template agent ของ eve ที่ต่อ packages/eve ครบทุกชั้น · tokenise เบอร์สำหรับ OTP · Slack · รันในเครื่องด้วยโมเดลจำลอง · deploy เอง
+examples/            ไฟล์ policy ตัวอย่าง
 bench/               แม่แบบแชทและโปรแกรมวัดความแม่นยำ · ข้อมูลที่สร้างแล้วไม่ขึ้น git
 internal/            consumer fixture 4 ตัว พิสูจน์ว่า exports map ใช้ได้จริง
 scripts/             gate ที่บังคับข้อจำกัดของ core · smoke test 5 runtime · demo

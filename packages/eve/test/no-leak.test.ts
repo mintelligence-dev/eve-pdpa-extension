@@ -15,9 +15,18 @@ vi.mock('eve/context', () => ({
   }),
 }))
 
-const { derivePdpaSessionId, guardContent, pdpaHook, withPdpaGuard } = await import(
-  '../extension/lib/guard.js'
-)
+const {
+  derivePdpaSessionId,
+  guardContent,
+  guardModel,
+  pdpaHook,
+  pdpaSlackRenderer,
+  withPdpaGuard,
+  withTokenResolution,
+} = await import('../extension/lib/guard.js')
+const { defineTool } = await import('eve/tools')
+const { generateText } = await import('ai')
+const { mockModel } = await import('eve/evals')
 const { eveLike, fakeArgs, post } = await import('./fakes.js')
 const helpers = await import('./helpers.js')
 const {
@@ -136,6 +145,87 @@ describe('no original value or secret leaves the package', () => {
       )
     })
   }
+
+  it('through the tool, model and Slack layers (tokenising policy)', async () => {
+    slots.clear()
+    const consoles = (['log', 'warn', 'error', 'info'] as const).map((m) => vi.spyOn(console, m))
+    const { guard, audit } = makeGuard(TOKENISE)
+    const opts = { guard, sessionKey: SESSION_KEY }
+    const sessionId = await derivePdpaSessionId(SESSION_KEY, 'slack:C9:1')
+    slots.set('eve-pdpa-extension.session', { id: sessionId })
+    const seen: unknown[] = []
+    const ctx = { session: { id: 'wrun_9' }, callId: 'c', toolName: 't', messages: [] } as never
+
+    for (const message of MESSAGES) {
+      const masked = await guardContent(message, { guard, sessionId })
+      seen.push(masked)
+      const text = masked.blocked ? '' : masked.content
+      // A tool that echoes everything it is given, real values included.
+      const echo = withTokenResolution(
+        defineTool({
+          description: 'echo',
+          inputSchema: { type: 'object', properties: { text: { type: 'string' } } },
+          async execute(input: { text: string }) {
+            return { echoed: input.text, again: `${input.text} ${message}` }
+          },
+        }),
+        { ...opts, purpose: 'otp_send' },
+      )
+      await keep(seen, () => echo.execute({ text }, ctx))
+      const prompts: unknown[] = []
+      await keep(seen, () =>
+        generateText({
+          model: guardModel(
+            mockModel(({ messages }) => {
+              prompts.push(messages)
+              return 'ok'
+            }),
+            opts,
+          ),
+          messages: [
+            { role: 'user', content: message },
+            {
+              role: 'assistant',
+              content: [{ type: 'tool-call', toolCallId: 'x', toolName: 'crm', input: {} }],
+            },
+            {
+              role: 'tool',
+              content: [
+                {
+                  type: 'tool-result',
+                  toolCallId: 'x',
+                  toolName: 'crm',
+                  output: { type: 'json', value: { note: message } },
+                },
+              ],
+            },
+          ],
+        }).then((r) => r.text),
+      )
+      seen.push(prompts)
+      const next = vi.fn(async () => {})
+      await (pdpaSlackRenderer(opts).events?.['message.completed'] as Function)(
+        {
+          message: `${text} / ${message}`,
+          finishReason: 'stop',
+          sequence: 1,
+          stepIndex: 0,
+          turnId: 't',
+        },
+        {},
+        { session: { id: 'wrun_9' } },
+        next,
+      )
+      seen.push(next.mock.calls)
+    }
+
+    expect(seen.length).toBeGreaterThan(10)
+    expectNoLeak([seen, audit], SECRETS)
+    expectNoLeak(
+      consoles.flatMap((spy) => spy.mock.calls),
+      SECRETS,
+    )
+  })
 
   it('has no console.log in the library, and one console.error with a fixed text', () => {
     const dir = new URL('../extension/lib/', import.meta.url)

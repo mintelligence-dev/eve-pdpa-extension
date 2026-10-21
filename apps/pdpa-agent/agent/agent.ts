@@ -19,7 +19,10 @@ const mock = process.env.PDPA_TEMPLATE_MOCK_MODEL === '1'
 
 export default defineAgent({
   model: guardModel(mock ? recordingModel() : 'anthropic/claude-opus-5.5', pdpa),
-  // The mock's own window; a wrapped model no longer carries it.
-  ...(mock ? { modelContextWindowTokens: 1_000_000 } : {}),
+  // eve finds a model's context window in the AI Gateway catalog by its id. A
+  // wrapped model reports "gateway/<id>", which the catalog does not list, so
+  // the window is given here: set it to the model you choose. 200k is what eve
+  // itself records for Claude Opus; the mock's window is its own 1M.
+  modelContextWindowTokens: mock ? 1_000_000 : 200_000,
   defaultTools: false,
 })
