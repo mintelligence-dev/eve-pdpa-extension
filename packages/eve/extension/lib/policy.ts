@@ -2,7 +2,7 @@ import { type CompiledPolicy, definePolicy, PdpaError } from '@eve-pdpa-extensio
 
 /**
  * What a guard uses when it is given no policy. core has no default of its
- * own, so this one ships here: the rules of examples/vercel/policies/default.json.
+ * own, so this one ships here: the rules of apps/webhook/policies/default.json.
  *
  * No `tokenise` and no `hash`, so it needs no token store and no key. A credit
  * card stops the message; everything else is hidden before eve records it.

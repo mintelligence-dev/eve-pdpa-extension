@@ -62,7 +62,7 @@ every item here before moving the pin.
    compiled copy of the code serves both entry points, and no second bundler is
    needed.
 7. **Core has no default policy.** The package ships `DEFAULT_POLICY`, the same
-   rules as `examples/vercel/policies/default.json` (no `tokenise`, no `hash`, so no
+   rules as `apps/webhook/policies/default.json` (no `tokenise`, no `hash`, so no
    key and no token store are needed).
 
 ## Differences from the spec
