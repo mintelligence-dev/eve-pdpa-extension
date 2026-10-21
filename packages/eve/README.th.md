@@ -187,7 +187,7 @@ Node 24 ขึ้นไป · eve 0.80.1 (ทดสอบแล้ว) · AI SDK
 
 ## แจ้งช่องโหว่
 
-**อย่าเปิด issue สาธารณะ** · อีเมลไปที่ **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[eve-pdpa-extension security]` · ทำซ้ำด้วยค่าสมมติ ห้ามส่งข้อมูลส่วนบุคคลจริง
+อีเมลไปที่ **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[eve-pdpa-extension security]` · ทำซ้ำด้วยค่าสมมติ ห้ามส่งข้อมูลส่วนบุคคลจริง
 
 ## License
 

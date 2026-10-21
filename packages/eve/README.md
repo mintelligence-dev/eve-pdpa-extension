@@ -187,7 +187,7 @@ Node 24+ · eve 0.80.1 (tested) · AI SDK 7 (`ai`, a peer, as for eve)
 
 ## Reporting a vulnerability
 
-**Do not open a public issue.** Email **kunlachat@m-intelligence.tech** with the subject line starting `[eve-pdpa-extension security]`. Reproduce with made-up values — never send real personal data.
+Email **kunlachat@m-intelligence.tech** with the subject line starting `[eve-pdpa-extension security]`. Reproduce with made-up values — never send real personal data.
 
 ## License
 
