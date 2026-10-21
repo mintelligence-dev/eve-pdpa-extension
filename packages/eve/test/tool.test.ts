@@ -17,7 +17,9 @@ vi.mock('eve/context', () => ({
 }))
 
 const { defineTool } = await import('eve/tools')
-const { pdpaHook, withPdpaGuard, withTokenResolution } = await import('../extension/lib/guard.js')
+const { pdpaHook, withOutputGuard, withPdpaGuard, withTokenResolution } = await import(
+  '../extension/lib/guard.js'
+)
 const { fakeArgs, post } = await import('./fakes.js')
 const { expectNoLeak, makeGuard, PHONE, SESSION_KEY, thaiDigits, TOKEN, TOKENISE } = await import(
   './helpers.js'
@@ -259,5 +261,83 @@ describe('withTokenResolution — when the token cannot be used', () => {
     const c = await conversation(`เบอร์ ${PHONE}`, makeGuard(TOKENISE, flaky))
     down = true
     expect(await refused(c)).toMatchObject({ ok: false, reason: 'unavailable' })
+  })
+})
+
+describe('withOutputGuard — a tool that reads personal data itself', () => {
+  /** A CRM lookup: returns a customer record with real values in it. */
+  function crmLookup() {
+    const received: unknown[] = []
+    const tool = defineTool({
+      description: 'Look up the customer record.',
+      inputSchema: { type: 'object', properties: { phone: { type: 'string' } } },
+      label: { start: () => 'Looking up' },
+      async execute(input: { phone?: string }) {
+        received.push(input)
+        return { name: 'ลูกค้าทดสอบ', phone: PHONE, note: `โทรกลับที่ ${PHONE}` }
+      },
+    })
+    return { tool, received }
+  }
+
+  it('masks what the tool returns, at tool_output, and keeps the rest of the tool', async () => {
+    slots.clear()
+    const c = await conversation('สวัสดีค่ะ')
+    const { tool } = crmLookup()
+    const guarded = withOutputGuard(tool, { guard: c.guard, sessionKey: SESSION_KEY })
+    expect(guarded.description).toBe(tool.description)
+    expect(guarded.inputSchema).toBe(tool.inputSchema)
+    expect(guarded.label).toBe(tool.label)
+    const result = await guarded.execute({}, ctx)
+    expect(result).toMatchObject({ name: 'ลูกค้าทดสอบ' })
+    expectNoLeak(result, [PHONE])
+    expect(c.audit.at(-1)).toMatchObject({ type: 'scan', boundary: 'tool_output' })
+    expectNoLeak(c.audit, [PHONE, SESSION_KEY])
+  })
+
+  it('passes the input as it is: a token stays a token, and nothing is resolved', async () => {
+    slots.clear()
+    const c = await conversation(`เบอร์ ${PHONE}`)
+    const { tool, received } = crmLookup()
+    await withOutputGuard(tool, { guard: c.guard, sessionKey: SESSION_KEY }).execute(
+      { phone: c.token },
+      ctx,
+    )
+    expect(received).toEqual([{ phone: c.token }])
+    expect(resolveEvents(c.audit)).toEqual([])
+  })
+
+  it('masks every snapshot of a generator tool, and blocked data becomes a refusal', async () => {
+    slots.clear()
+    const c = await conversation('สวัสดี')
+    const stream = defineTool({
+      description: 'streams',
+      inputSchema: { type: 'object', properties: {} },
+      async *execute() {
+        yield { step: 'found', phone: PHONE }
+        yield { step: 'card', card: '4111 1111 1111 1111' }
+      },
+    })
+    const out = withOutputGuard(stream, { guard: c.guard, sessionKey: SESSION_KEY }).execute(
+      {},
+      ctx,
+    ) as AsyncIterable<unknown>
+    const items: unknown[] = []
+    for await (const item of out) items.push(item)
+    expect(items).toHaveLength(2)
+    expect(items[1]).toMatchObject({ ok: false, reason: 'blocked' })
+    expectNoLeak(items, [PHONE, '4111 1111 1111 1111'])
+  })
+
+  it('checks its options when it wraps', () => {
+    const { guard } = makeGuard(TOKENISE)
+    const { tool } = crmLookup()
+    expect(() => withOutputGuard(tool, { guard: {} as never, sessionKey: SESSION_KEY })).toThrow(
+      /createGuard/,
+    )
+    expect(() => withOutputGuard(tool, { guard, sessionKey: 'short' })).toThrow(TypeError)
+    expect(() =>
+      withOutputGuard({ description: 'x' } as never, { guard, sessionKey: SESSION_KEY }),
+    ).toThrow(/execute/)
   })
 })

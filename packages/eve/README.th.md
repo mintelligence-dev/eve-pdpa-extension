@@ -38,6 +38,7 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
                    │
                    ▼
          withTokenResolution ─────── ให้ tool ที่อนุญาตได้ค่าจริงหลัง token
+          withOutputGuard ────────── ปิดผลของ tool ที่ดึงข้อมูลส่วนบุคคลมาเอง
 ```
 
 | ตัวช่วย | ห่ออะไร | ถ้าไม่ใส่ |
@@ -46,7 +47,8 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
 | `pdpaSlackRenderer` / `pdpaTelegramEvents` | คำตอบขาออกบน Slack / Telegram | ลูกค้าเห็น `[tok:…]` ดิบๆ ในคำตอบ |
 | `pdpaHook` | hook ของ agent | tool แลก token ที่ออกบน Slack หรือ Telegram ไม่ได้ เพราะไม่รู้ว่าเป็นแชตไหน (HTTP channel ของ eve ยังใช้ได้) |
 | `guardModel` | โมเดล | ผลจาก tool ที่ไม่ได้ห่อ connection และ memory จะส่งค่าจริงไปหาผู้ให้บริการโมเดล |
-| `withTokenResolution` | tool ทีละตัว | tool ได้ `[tok:…]` แทนเบอร์จริง เลยทำงานไม่ได้ |
+| `withTokenResolution` | tool ที่ต้องใช้ค่าจริง | tool ได้ `[tok:…]` แทนเบอร์จริง เลยทำงานไม่ได้ |
+| `withOutputGuard` | tool ที่ดึงข้อมูลส่วนบุคคลมาเอง เช่น CRM | eve บันทึกและ stream ผลของ tool พร้อมค่าจริง |
 
 > **mount เป็น extension อย่างเดียวไม่ได้ปิดข้อมูลเลย** eve เรียก hook *หลัง* บันทึกข้อความไปแล้ว และ hook เปลี่ยนสิ่งที่โมเดลอ่านไม่ได้ การปิดข้อมูลเกิดตรงที่คุณห่อ channel, tool และ model เอง
 
@@ -122,7 +124,9 @@ export default pdpaHook(pdpa)
 
 tool มองไม่เห็นว่าข้อความมาจากแชตไหน hook ตัวนี้จะจำไว้ให้ ถ้าใช้ `tokenise` ต้องมี hook นี้เสมอ
 
-### 4. ห่อ tool ที่ต้องใช้ค่าจริง
+### 4. ห่อ tool ที่ยุ่งกับข้อมูลส่วนบุคคล
+
+tool ที่ต้องใช้ค่าจริงจากแชต ให้ห่อด้วย `withTokenResolution`
 
 ```ts
 // agent/tools/otp_send.ts
@@ -143,7 +147,14 @@ export default withTokenResolution(
 )
 ```
 
-ห่อ tool ที่ต้องใช้ค่าจริง และ tool ที่ดึงข้อมูลส่วนบุคคลมาจากที่อื่น เช่น CRM เพราะ eve เก็บและ stream ผลของ tool ไว้ตามที่ได้มา `guardModel` ปิดให้เฉพาะตอนส่งให้โมเดล tool ที่ไม่ได้ยุ่งกับข้อมูลส่วนบุคคลไม่ต้องห่อ
+tool ที่ดึงข้อมูลส่วนบุคคลมาจากที่อื่นเอง เช่น CRM หรือฐานข้อมูล ให้ห่อด้วย `withOutputGuard` ตัวนี้ไม่ต้องใส่ `purpose` เพราะไม่ได้แลก token
+
+```ts
+// agent/tools/crm_lookup.ts
+export default withOutputGuard(crmLookupTool, pdpa)
+```
+
+ต้องห่อเพราะ eve เก็บและ stream ผลของ tool ไว้ตามที่ได้มา ส่วน `guardModel` ปิดให้แค่ตอนส่งให้โมเดล tool ที่ไม่ได้ยุ่งกับข้อมูลส่วนบุคคลไม่ต้องห่อ
 
 ### 5. ห่อโมเดล
 
@@ -211,6 +222,14 @@ guard ของ core ไม่เปิดให้อ่าน policy จึง
 | token store ล่ม | เหมือนกัน |
 
 description, schema, approval และ label ของ tool คงเดิม tool แบบ generator ก็ยังเป็น generator
+
+### `withOutputGuard(tool, { guard, sessionKey })`
+
+ตอน tool ถูกเรียก จะเรียก `execute` เดิมด้วย input ตามที่ได้มา (token ยังเป็น token ไม่มีการแลก) แล้วปิดข้อมูลในผลลัพธ์ (boundary `tool_output`) ก่อนคืน เหมือนข้อ 3 ของ `withTokenResolution`
+
+- ผลที่มีข้อมูลที่ policy สั่ง block จะกลายเป็น `{ ok: false, reason: 'blocked', ask }`
+- description, schema, approval และ label ของ tool คงเดิม tool แบบ generator ก็ยังเป็น generator และทุกค่าที่ yield ถูกปิดทีละค่า
+- tool ที่ต้องทั้งแลก token และดึงข้อมูลเอง ใช้ `withTokenResolution` ตัวเดียวพอ เพราะปิดผลลัพธ์ให้อยู่แล้ว
 
 ### `guardModel(model, { guard, sessionKey })`
 

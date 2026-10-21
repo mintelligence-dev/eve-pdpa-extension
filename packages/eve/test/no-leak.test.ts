@@ -21,6 +21,7 @@ const {
   guardModel,
   pdpaHook,
   pdpaSlackRenderer,
+  withOutputGuard,
   withPdpaGuard,
   withTokenResolution,
 } = await import('../extension/lib/guard.js')
@@ -172,6 +173,18 @@ describe('no original value or secret leaves the package', () => {
         { ...opts, purpose: 'otp_send' },
       )
       await keep(seen, () => echo.execute({ text }, ctx))
+      // A tool that reads the real values from elsewhere and returns them.
+      const lookup = withOutputGuard(
+        defineTool({
+          description: 'lookup',
+          inputSchema: { type: 'object', properties: { text: { type: 'string' } } },
+          async execute(input: { text: string }) {
+            return { record: message, asked: input.text }
+          },
+        }),
+        opts,
+      )
+      await keep(seen, () => lookup.execute({ text }, ctx))
       const prompts: unknown[] = []
       await keep(seen, () =>
         generateText({

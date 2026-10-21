@@ -1,7 +1,8 @@
 /**
  * withTokenResolution: lets one tool use the real values behind the tokens
  * the model passes it, for one purpose, and keeps every real value out of
- * what the tool hands back.
+ * what the tool hands back. withOutputGuard: only the second half, for a tool
+ * that fetches personal data itself and never needs a token resolved.
  *
  * eve records a tool's result as the `action.result` event — streamed to the
  * client, kept in history, read by hooks — as well as giving it to the model.
@@ -24,6 +25,12 @@ export interface TokenResolutionOptions {
    * string in the input. A token anywhere else is passed through as a token.
    */
   readonly fields?: readonly string[]
+}
+
+export interface OutputGuardOptions {
+  /** The agent's core guard. */
+  readonly guard: Guard
+  readonly sessionKey: string
 }
 
 /** What the tool returns instead of running, when a token cannot be used. */
@@ -178,30 +185,25 @@ async function protectOutput(output: unknown, guard: Guard, sessionId: string): 
 }
 
 /**
- * Returns the tool with an `execute` that resolves tokens in its input for
- * `purpose`, runs the original with the real values, and masks what it
- * returns. Description, schemas, approval and label are kept.
- *
- * If a token cannot be used, the original `execute` is not called; the model
- * gets a `TokenRefusal` it can act on — usually, ask the customer again.
+ * The tool with an `execute` that runs `before` on the input — which may
+ * refuse the call — then the original, and masks every result it returns or
+ * yields. Everything else about the tool is kept.
  */
-export function withTokenResolution<TInput, TOutput>(
+function wrapExecute<TInput, TOutput>(
   tool: ToolDefinition<TInput, TOutput>,
-  options: TokenResolutionOptions,
+  guard: Guard,
+  sessionKey: string,
+  before: (
+    input: TInput,
+    sessionId: string,
+  ) => Promise<{ input: unknown } | { refusal: TokenRefusal }>,
 ): ToolDefinition<TInput, TOutput | TokenRefusal> {
-  checkGuard(options?.guard)
-  checkSessionKey(options.sessionKey)
-  if (typeof options.purpose !== 'string' || options.purpose.length === 0) {
-    throw new TypeError('purpose: expected the purpose this tool resolves tokens for')
-  }
   if (typeof tool?.execute !== 'function') throw new TypeError('tool: expected a tool with execute')
-  const { guard, sessionKey, purpose } = options
-  const fields = options.fields === undefined ? null : options.fields.map((f) => f.split('.'))
   const original = tool.execute
 
   const prepare = async (input: TInput, ctx: Parameters<typeof original>[1]) => {
     const sessionId = await currentPdpaSessionId(sessionKey, ctx.session.id)
-    return { sessionId, resolved: await resolveInput(input, guard, { purpose, sessionId, fields }) }
+    return { sessionId, resolved: await before(input, sessionId) }
   }
 
   // A generator tool streams snapshots and ends with its result: it has to stay
@@ -226,4 +228,46 @@ export function withTokenResolution<TInput, TOutput>(
         }
 
   return defineTool({ ...tool, execute } as ToolDefinition<TInput, TOutput | TokenRefusal>)
+}
+
+/**
+ * Returns the tool with an `execute` that resolves tokens in its input for
+ * `purpose`, runs the original with the real values, and masks what it
+ * returns. Description, schemas, approval and label are kept.
+ *
+ * If a token cannot be used, the original `execute` is not called; the model
+ * gets a `TokenRefusal` it can act on — usually, ask the customer again.
+ */
+export function withTokenResolution<TInput, TOutput>(
+  tool: ToolDefinition<TInput, TOutput>,
+  options: TokenResolutionOptions,
+): ToolDefinition<TInput, TOutput | TokenRefusal> {
+  checkGuard(options?.guard)
+  checkSessionKey(options.sessionKey)
+  if (typeof options.purpose !== 'string' || options.purpose.length === 0) {
+    throw new TypeError('purpose: expected the purpose this tool resolves tokens for')
+  }
+  const { guard, purpose } = options
+  const fields = options.fields === undefined ? null : options.fields.map((f) => f.split('.'))
+  return wrapExecute(tool, guard, options.sessionKey, (input, sessionId) =>
+    resolveInput(input, guard, { purpose, sessionId, fields }),
+  )
+}
+
+/**
+ * Returns the tool with an `execute` that masks what the original returns, at
+ * `tool_output`, before eve records or streams it. The input is passed as it
+ * is: tokens stay tokens. For a tool that reads personal data from elsewhere —
+ * a CRM, a database — and needs no real value from the chat.
+ *
+ * A result that holds data the policy blocks becomes a `TokenRefusal` with
+ * `reason: 'blocked'`.
+ */
+export function withOutputGuard<TInput, TOutput>(
+  tool: ToolDefinition<TInput, TOutput>,
+  options: OutputGuardOptions,
+): ToolDefinition<TInput, TOutput | TokenRefusal> {
+  checkGuard(options?.guard)
+  checkSessionKey(options.sessionKey)
+  return wrapExecute(tool, options.guard, options.sessionKey, async (input) => ({ input }))
 }

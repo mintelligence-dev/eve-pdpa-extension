@@ -38,6 +38,7 @@ customer ──▶ channel
                      │
                      ▼
            withTokenResolution ─────── gives the real value behind a token to the tools you allow
+            withOutputGuard ────────── masks the result of a tool that fetches personal data itself
 ```
 
 | Helper | Wraps | Without it |
@@ -46,7 +47,8 @@ customer ──▶ channel
 | `pdpaSlackRenderer` / `pdpaTelegramEvents` | the reply on Slack / Telegram | the customer sees raw `[tok:…]` in the reply |
 | `pdpaHook` | an agent hook | tools cannot resolve tokens issued on Slack or Telegram, because they cannot tell which chat it is (eve's HTTP channel still works) |
 | `guardModel` | the model | results from unwrapped tools, connections and memory reach the model provider with real values |
-| `withTokenResolution` | one tool at a time | the tool gets `[tok:…]` instead of the real number and cannot do its job |
+| `withTokenResolution` | a tool that needs real values | the tool gets `[tok:…]` instead of the real number and cannot do its job |
+| `withOutputGuard` | a tool that fetches personal data itself, such as a CRM lookup | eve records and streams the tool's result with the real values in it |
 
 > **Mounting the extension alone does not mask anything.** eve runs hooks *after* it has recorded a message, and a hook cannot change what the model reads. Masking happens where you wrap your channels, tools and model.
 
@@ -122,7 +124,9 @@ export default pdpaHook(pdpa)
 
 Tools cannot see which chat a message came from; this hook remembers it for them. With `tokenise`, it is required.
 
-### 4. Wrap the tools that need real values
+### 4. Wrap the tools that touch personal data
+
+A tool that needs real values from the chat: wrap it with `withTokenResolution`.
 
 ```ts
 // agent/tools/otp_send.ts
@@ -143,7 +147,14 @@ export default withTokenResolution(
 )
 ```
 
-Wrap the tools that need real values, and the tools that fetch personal data from elsewhere, such as a CRM: eve keeps and streams a tool's result as it is, and `guardModel` masks it only on its way to the model. A tool that never touches personal data needs no wrapper.
+A tool that fetches personal data from elsewhere, such as a CRM or a database: wrap it with `withOutputGuard`. It takes no `purpose`, since it resolves no token.
+
+```ts
+// agent/tools/crm_lookup.ts
+export default withOutputGuard(crmLookupTool, pdpa)
+```
+
+Both are needed because eve keeps and streams a tool's result as it is; `guardModel` masks it only on its way to the model. A tool that never touches personal data needs no wrapper.
 
 ### 5. Wrap the model
 
@@ -211,6 +222,14 @@ If a token cannot be used, the original `execute` is **not called**. The model g
 | the token store is down | the same |
 
 Description, schemas, approval and label are kept; generator tools stay generators.
+
+### `withOutputGuard(tool, { guard, sessionKey })`
+
+When the tool is called, the original `execute` runs with the input as given (tokens stay tokens; nothing is resolved), and its result is masked (boundary `tool_output`) before it is returned, as in step 3 of `withTokenResolution`.
+
+- a result that holds data the policy blocks becomes `{ ok: false, reason: 'blocked', ask }`
+- description, schemas, approval and label are kept; a generator tool stays a generator, and each value it yields is masked
+- a tool that both resolves tokens and fetches data itself needs only `withTokenResolution`, which masks its result already
 
 ### `guardModel(model, { guard, sessionKey })`
 
