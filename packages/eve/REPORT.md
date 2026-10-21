@@ -249,3 +249,9 @@ fdcdef7 test(eve): cover a down token store and tokens in unrewritten replies
 2cf52d7 feat(eve): take the caller's core guard and derive session ids
 a7ec3e6 chore(eve): move the example agent to apps/pdpa-agent
 ```
+
+---
+
+## 21 Oct 2026 — the template moved out
+
+`apps/pdpa-agent` now lives in its own private repository (`kurachatsarakarn/eve-pdpa-agent`), with copies of `packages/core`, `packages/http` and `packages/eve` beside it so it builds on its own; a fresh history, and a `SOURCE.json` naming the monorepo commits it came from. It is removed here, with its CI steps; the `eve` CI job keeps building and testing `packages/eve`. Everything above about the template describes it as it was when it lived in this repository.

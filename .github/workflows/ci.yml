@@ -210,7 +210,7 @@ jobs:
       - run: npm i --no-save playwright@1.63.0
       - run: node scripts/smoke-browser.mjs
 
-  # The eve adapter and the template agent. eve needs Node 24, and nothing of
+  # The eve adapter. eve needs Node 24, and nothing of
   # it goes near core's smoke matrix: core stays zero-dependency and runs on
   # Node 18 and every runtime above; this package runs on Node 24 only.
   eve:
@@ -223,12 +223,5 @@ jobs:
       - uses: actions/setup-node@v6
         with: { node-version: '24', cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      # The template imports core, http and eve as built.
       - run: pnpm build
       - run: pnpm --filter @eve-pdpa-extension/eve test
-      # Starts the template under eve dev with its mock model: no API key.
-      - run: pnpm --filter ./apps/pdpa-agent test
-      # Compiles the template as a deploy would, without preparing a sandbox
-      # (it sets defaultTools: false and never opens one).
-      - run: pnpm exec eve build --skip-sandbox-prewarm
-        working-directory: apps/pdpa-agent

@@ -10,7 +10,7 @@ Protect Thai personal data in an [eve](https://eve.dev) agent at every point it 
 
 > **This is a technical tool, not a certification of compliance with Thailand's Personal Data Protection Act (PDPA).**
 
-> **0.1.0 is not on npm yet** (`"private": true`). The full working setup is [`apps/pdpa-agent`](../../apps/pdpa-agent).
+> **0.1.0 is not on npm yet** (`"private": true`). A full working agent that uses every layer is kept in a separate private repository.
 
 [ภาษาไทย](./README.th.md)
 

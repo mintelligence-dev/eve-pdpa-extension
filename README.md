@@ -27,7 +27,7 @@ packages/cli/        @eve-pdpa-extension/cli    Node เท่านั้น
 packages/http/       @eve-pdpa-extension/http   gateway · web standard เท่านั้น · Node 20+ · docs/ = API ของ gateway ที่ deploy
 packages/eve/        @eve-pdpa-extension/eve    adapter สำหรับ eve: channel · tool · model · Slack renderer · hook · Node 24+ · ยังเป็น private
 packages/{policy,ner,ner-model-th,mcp}/   มีแต่ README · ยังไม่เริ่ม (หลัง 0.1)
-apps/pdpa-agent/     template agent ของ eve ที่ต่อ packages/eve ครบทุกชั้น · tokenise เบอร์สำหรับ OTP · Slack · รันในเครื่องด้วยโมเดลจำลอง · deploy เอง
+
 examples/            ไฟล์ policy ตัวอย่าง
 bench/               แม่แบบแชทและโปรแกรมวัดความแม่นยำ · ข้อมูลที่สร้างแล้วไม่ขึ้น git
 internal/            consumer fixture 4 ตัว พิสูจน์ว่า exports map ใช้ได้จริง
