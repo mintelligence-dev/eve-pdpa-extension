@@ -1,3 +1,12 @@
+import {
+  type AuditRecord,
+  type CompiledPolicy,
+  createGuard,
+  createMemoryTokenStore,
+  definePolicy,
+  type Guard,
+  type TokenStore,
+} from '@eve-pdpa-extension/core'
 import { expect } from 'vitest'
 import { makeThaiId } from '../../core/test/helpers/make-thai-id.js'
 
@@ -50,3 +59,66 @@ export function expectNoLeak(value: unknown, originals: readonly string[]): void
     for (const form of forms) expect(seen, `leaked ${form}`).not.toContain(form)
   }
 }
+
+// ---- guards ----------------------------------------------------------------
+
+/** 64 hex characters, as `openssl rand -hex 32` makes. Synthetic. */
+export const SESSION_KEY = 'a1'.repeat(32)
+export const HMAC_KEY = 'b2'.repeat(32)
+
+/** The template's policy: phones become tokens for OTP, cards stop the message. */
+export const TOKENISE: CompiledPolicy = definePolicy({
+  entitySet: '0.1',
+  onUnmapped: 'redact',
+  placeholderLanguage: 'th',
+  entities: {
+    PHONE: { action: 'tokenise', allowedPurposes: ['otp_send'], ttlSec: 300, display: 'mask' },
+    TH_NATIONAL_ID: { action: 'redact' },
+    CREDIT_CARD: { action: 'block', minConfidence: 0.6 },
+    EMAIL: { action: 'hash' },
+    BANK_ACCOUNT: { action: 'mask', keep: 'last4' },
+    LINE_USER_ID: { action: 'redact' },
+  },
+})
+
+/** Masks only: no token store, no key. */
+export const MASK: CompiledPolicy = definePolicy({
+  entitySet: '0.1',
+  onUnmapped: 'redact',
+  entities: {
+    PHONE: { action: 'mask', keep: 'last4' },
+    TH_NATIONAL_ID: { action: 'redact' },
+    EMAIL: { action: 'redact' },
+    CREDIT_CARD: { action: 'block', minConfidence: 0.6 },
+  },
+})
+
+export interface TestGuard {
+  readonly guard: Guard
+  readonly audit: AuditRecord[]
+  readonly store: TokenStore
+}
+
+export function makeGuard(
+  policy: CompiledPolicy = TOKENISE,
+  store: TokenStore = createMemoryTokenStore(),
+): TestGuard {
+  const audit: AuditRecord[] = []
+  const guard = createGuard({
+    policy,
+    hmacKey: HMAC_KEY,
+    tokenStore: store,
+    onAudit: (event) => {
+      audit.push(event)
+    },
+  })
+  return { guard, audit, store }
+}
+
+/** A token store that is down: every call rejects. */
+export function failingStore(): TokenStore {
+  const down = () => Promise.reject(new Error('store down'))
+  return { sync: false, set: down, get: down, delete: down, clearSession: down }
+}
+
+export const TOKEN = /\[tok:[a-z]{16}\]/

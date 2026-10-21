@@ -44,3 +44,10 @@ export function filesReason(language: Language): string {
     ? 'This message was not passed on because it has a file attached. Only text is accepted here.'
     : 'ข้อความนี้ไม่ได้ถูกส่งต่อ เพราะมีไฟล์แนบ ช่องทางนี้รับเฉพาะข้อความ'
 }
+
+/** Core blocked because the token store failed: try again later, nothing about the data. */
+export function storeReason(language: Language): string {
+  return language === 'en'
+    ? 'This message could not be protected right now, so it was not passed on. Please try again in a moment.'
+    : 'ระบบปิดข้อมูลส่วนตัวไม่สำเร็จชั่วคราว ข้อความนี้จึงไม่ได้ถูกส่งต่อ กรุณาลองใหม่อีกครั้ง'
+}

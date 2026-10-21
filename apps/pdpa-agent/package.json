@@ -9,13 +9,15 @@
   },
   "scripts": {
     "dev": "eve dev",
-    "dev:mock": "PDPA_EXAMPLE_MOCK_MODEL=1 eve dev --no-default-extensions",
+    "dev:mock": "PDPA_TEMPLATE_MOCK_MODEL=1 eve dev --no-default-extensions",
     "build": "eve build",
     "start": "eve start",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@eve-pdpa-extension/eve": "workspace:*",
+    "@eve-pdpa-extension/core": "workspace:^",
+    "@eve-pdpa-extension/eve": "workspace:^",
+    "@eve-pdpa-extension/http": "workspace:^",
     "ai": "7.0.143",
     "eve": "0.80.1"
   },

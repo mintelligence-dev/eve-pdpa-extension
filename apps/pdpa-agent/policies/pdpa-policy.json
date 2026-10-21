@@ -1,0 +1,19 @@
+{
+  "$schema": "../node_modules/@eve-pdpa-extension/core/schema/policy.schema.json",
+  "entitySet": "0.1",
+  "onUnmapped": "redact",
+  "placeholderLanguage": "th",
+  "entities": {
+    "PHONE": {
+      "action": "tokenise",
+      "allowedPurposes": ["otp_send"],
+      "ttlSec": 300,
+      "display": "mask"
+    },
+    "TH_NATIONAL_ID": { "action": "redact" },
+    "CREDIT_CARD": { "action": "block", "minConfidence": 0.6 },
+    "EMAIL": { "action": "hash" },
+    "BANK_ACCOUNT": { "action": "mask", "keep": "last4" },
+    "LINE_USER_ID": { "action": "redact" }
+  }
+}

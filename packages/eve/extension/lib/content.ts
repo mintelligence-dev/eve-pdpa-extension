@@ -1,69 +1,47 @@
 /**
- * core's guard applied to what eve accepts as a user message: a string, or an
+ * Core's guard applied to what eve accepts as a user message: a string, or an
  * AI SDK `UserContent` array of text, image and file parts.
  *
- * Every wrapper in this package goes through `createContentGuard`, so there is
- * one place that decides what a message becomes.
+ * The caller owns the guard — policy, hmacKey, token store and audit sink all
+ * live in core's `createGuard` — and this package only decides which strings
+ * to hand it, under which session id and boundary.
  */
-import {
-  type AuditEvent,
-  type AuditRecord,
-  type CompiledPolicy,
-  type GuardOptions as CoreGuardOptions,
-  createGuard,
-  type Detector,
-  type EntityType,
-  type Guard,
-} from '@eve-pdpa-extension/core'
+import type { AuditFinding, Boundary, EntityType, Guard } from '@eve-pdpa-extension/core'
 import type { UserContent } from 'ai'
-import { DEFAULT_POLICY, refuseTokenise } from './policy.js'
-import { blockedReason, filesReason, type Language } from './reason.js'
+import { blockedReason, filesReason, type Language, storeReason } from './reason.js'
 
-/** Which wrapper ran the scan. `direct` is a call to `guardContent` itself. */
-export type GuardSource = 'channel' | 'chat-sdk' | 'hook' | 'direct'
-
-export interface GuardAuditContext {
-  readonly source: GuardSource
+export interface EveGuardOptions {
+  /** From core's `createGuard`. It holds the policy, `hmacKey`, token store and `onAudit`. */
+  readonly guard: Guard
   /**
-   * The platform's address for the conversation, as eve's channel saw it: a
-   * Slack `channel:thread`, a LINE thread id, a phone number on Twilio. Often
-   * personal data itself — hash it before it goes anywhere audit goes.
+   * Secret, at least 32 bytes, that turns a conversation into the session id
+   * core writes to audit and keeps tokens apart by. Same value everywhere in
+   * one deployment: the channel wrapper, the tool wrapper, the model
+   * middleware, the Slack renderer and the hook.
    */
-  readonly address?: string
-}
-
-export interface GuardOptions {
-  /** From core's `definePolicy` or `parsePolicy`. Defaults to `DEFAULT_POLICY`. */
-  readonly policy?: CompiledPolicy
-  /** For a policy that uses `hash`. At least 32 bytes, as core's `createGuard`. */
-  readonly hmacKey?: string | Uint8Array
-  /** Replaces core's built-in detectors, as core's `createGuard`. */
-  readonly detectors?: readonly Detector[]
-  /** Told about failures core caught instead of throwing, such as an `onAudit` that threw. */
-  readonly onError?: CoreGuardOptions['onError']
+  readonly sessionKey: string
   /**
    * Image and file parts are passed on untouched (`pass`, the default) — their
    * contents are not scanned — or stop the whole message (`block`).
    */
   readonly files?: 'pass' | 'block'
   /**
-   * Every audit event from core: one `policy.loaded` when the guard is built,
-   * then one `scan` per string scanned. Events carry positions and types, never
-   * a value. Leave it out and audit is discarded, with one warning per process.
+   * Called once for each message the policy stops. `reason` is safe to show
+   * the person who sent it; `blockedBy` lists the entity types.
    */
-  readonly onAudit?: (event: AuditRecord, ctx: GuardAuditContext) => void
+  readonly onBlock?: (info: BlockInfo) => void | Promise<void>
+  /** Language of the block reason. Default `th`. */
+  readonly language?: Language
 }
 
-export type GuardResult<T> =
-  | { readonly blocked: false; readonly content: T; readonly events: readonly AuditEvent[] }
-  | {
-      readonly blocked: true
-      /** Kinds of data only. Safe to show the person who sent the message. */
-      readonly reason: string
-      readonly events: readonly AuditEvent[]
-    }
+export interface BlockInfo {
+  /** Kinds of data only. Safe to show the person who sent the message. */
+  readonly reason: string
+  /** Entity types that stopped it, in reading order. Empty for a file. */
+  readonly blockedBy: readonly string[]
+}
 
-/** What one send carries that eve may record or show the model. */
+/** What one delivery carries that eve may record or show the model. */
 export interface Delivery {
   readonly message: UserContent
   /** Appended to session history as user messages. */
@@ -78,189 +56,182 @@ export type DeliveryResult =
       readonly message: UserContent
       readonly context?: readonly string[]
       readonly title?: string
-      readonly events: readonly AuditEvent[]
+      /** Some value became a token. A channel that cannot rewrite replies would show it. */
+      readonly tokenised: boolean
     }
-  | { readonly blocked: true; readonly reason: string; readonly events: readonly AuditEvent[] }
+  | ({ readonly blocked: true } & BlockInfo)
 
-export interface ContentGuard {
+export interface ScanOptions {
+  readonly guard: Guard
+  readonly sessionId: string
+  readonly boundary: Boundary
   readonly files: 'pass' | 'block'
   readonly language: Language
-  deliver(input: Delivery, address?: string): DeliveryResult
 }
 
-// Once per process, as core does: a warning repeated per guard gets filtered out.
-let warnedNoAudit = false
+/** True when core blocked because the token store failed, not because the policy said so. */
+function storeFailed(findings: readonly AuditFinding[]): boolean {
+  return findings.some((f) => f.failed === 'token_store')
+}
 
 /**
- * Builds core's guard once, up front: a bad policy or a missing key fails when
- * the wrapper is created, not on the first customer's message.
+ * Every string of one delivery through `guard.process`, in order. Async: a
+ * token store such as Redis needs `process`, never `processSync`.
+ *
+ * Any one string the policy blocks stops the whole delivery. Core already
+ * returns `text: ''` for a blocked string; nothing of it is kept here either.
  */
-export function createContentGuard(options: GuardOptions, source: GuardSource): ContentGuard {
-  const files = options.files ?? 'pass'
-  if (files !== 'pass' && files !== 'block') {
-    throw new TypeError('files: expected "pass" or "block"')
+export async function scanDelivery(input: Delivery, options: ScanOptions): Promise<DeliveryResult> {
+  const { guard, sessionId, boundary, files, language } = options
+  const message = input.message
+  if (typeof message !== 'string' && !Array.isArray(message)) {
+    // Fail closed: a shape this guard cannot read is not passed on unread.
+    throw new TypeError('message: expected a string or an array of message parts')
   }
-  const policy = options.policy ?? DEFAULT_POLICY
-  refuseTokenise(policy)
-
-  const onAudit = options.onAudit
-  if (onAudit === undefined && !warnedNoAudit) {
-    warnedNoAudit = true
-    console.warn(
-      '[@eve-pdpa-extension/eve] no onAudit was given: audit events are being discarded. ' +
-        'Pass onAudit to keep them, or onAudit: () => {} to discard them on purpose.',
-    )
+  if (files === 'block' && Array.isArray(message) && message.some((p) => p?.type !== 'text')) {
+    return { blocked: true, reason: filesReason(language), blockedBy: [] }
   }
 
-  // Set for the length of one synchronous deliver(), read by the sink below.
-  let collecting: AuditEvent[] | null = null
-  let auditContext: GuardAuditContext = { source }
-
-  const guard: Guard = createGuard({
-    policy,
-    onAudit(event) {
-      if (event.type === 'scan') collecting?.push(event)
-      // A Promise the caller's sink returns goes back to core, which counts a
-      // rejection the same as a throw.
-      return onAudit?.(event, auditContext)
-    },
-    ...(options.hmacKey === undefined ? {} : { hmacKey: options.hmacKey }),
-    ...(options.detectors === undefined ? {} : { detectors: options.detectors }),
-    ...(options.onError === undefined ? {} : { onError: options.onError }),
-  })
-
-  const language: Language = policy.placeholderLanguage === 'en' ? 'en' : 'th'
-
-  function deliver(input: Delivery, address?: string): DeliveryResult {
-    const events: AuditEvent[] = []
-    const outer = { collecting, auditContext }
-    collecting = events
-    auditContext = address === undefined ? { source } : { source, address }
-    try {
-      return run(input, events)
-    } finally {
-      collecting = outer.collecting
-      auditContext = outer.auditContext
-    }
+  // An object, not a let: TypeScript does not see writes made inside a closure.
+  const stop: { by: readonly EntityType[] | null; store: boolean; tokenised: boolean } = {
+    by: null,
+    store: false,
+    tokenised: false,
   }
-
-  function run(input: Delivery, events: AuditEvent[]): DeliveryResult {
-    const message = input.message
-    if (typeof message !== 'string' && !Array.isArray(message)) {
-      // Fail closed: a shape this guard cannot read is not passed on unread.
-      throw new TypeError('message: expected a string or an array of message parts')
+  const protect = async (text: string): Promise<string> => {
+    const out = await guard.process(text, { sessionId, boundary })
+    if (out.findings.some((f) => f.tokenId !== undefined && f.allowlisted !== true)) {
+      stop.tokenised = true
     }
-    if (files === 'block' && Array.isArray(message) && message.some((p) => p?.type !== 'text')) {
-      return { blocked: true, reason: filesReason(language), events }
+    if (out.outcome === 'blocked') {
+      stop.by = out.blockedBy ?? []
+      stop.store = storeFailed(out.findings)
     }
-
-    // An object, not a let: the closure below writes it, and TypeScript does not
-    // see writes made inside a function when it narrows a variable.
-    const stop: { by: readonly EntityType[] | null } = { by: null }
-    const protect = (text: string): string => {
-      const out = guard.processSync(text, { boundary: 'inbound' })
-      if (out.outcome === 'blocked') stop.by = out.blockedBy ?? []
-      return out.text
-    }
-    const blocked = (by: readonly EntityType[]): DeliveryResult => ({
-      blocked: true,
-      reason: blockedReason(by, language),
-      events,
-    })
-
-    let guarded: UserContent
-    if (typeof message === 'string') {
-      guarded = protect(message)
-    } else {
-      let changed = false
-      const parts: Exclude<UserContent, string> = []
-      for (const [i, part] of message.entries()) {
-        if (part?.type !== 'text') {
-          parts.push(part)
-          continue
-        }
-        if (typeof part.text !== 'string') {
-          throw new TypeError(`message[${i}].text: expected a string`)
-        }
-        const text = protect(part.text)
-        if (stop.by !== null) break
-        if (text === part.text) {
-          parts.push(part)
-        } else {
-          changed = true
-          parts.push({ ...part, text })
-        }
-      }
-      // Nothing to hide: hand back the caller's own array, not a copy.
-      guarded = changed ? parts : message
-    }
-    if (stop.by !== null) return blocked(stop.by)
-
-    let context: readonly string[] | undefined
-    if (input.context !== undefined) {
-      if (!Array.isArray(input.context))
-        throw new TypeError('context: expected an array of strings')
-      const out: string[] = []
-      for (const [i, entry] of input.context.entries()) {
-        if (typeof entry !== 'string') throw new TypeError(`context[${i}]: expected a string`)
-        out.push(protect(entry))
-        if (stop.by !== null) return blocked(stop.by)
-      }
-      context = out
-    }
-
-    let title: string | undefined
-    if (input.title !== undefined) {
-      if (typeof input.title !== 'string') throw new TypeError('title: expected a string')
-      title = protect(input.title)
-      if (stop.by !== null) return blocked(stop.by)
-    }
-
+    return out.text
+  }
+  const blocked = (): DeliveryResult => {
+    const by = stop.by ?? []
     return {
-      blocked: false,
-      message: guarded,
-      ...(context === undefined ? {} : { context }),
-      ...(title === undefined ? {} : { title }),
-      events,
+      blocked: true,
+      reason: stop.store ? storeReason(language) : blockedReason(by, language),
+      blockedBy: [...by],
     }
   }
 
-  return { files, language, deliver }
+  let guarded: UserContent
+  if (typeof message === 'string') {
+    guarded = await protect(message)
+  } else {
+    let changed = false
+    const parts: Exclude<UserContent, string> = []
+    for (const [i, part] of message.entries()) {
+      if (part?.type !== 'text') {
+        parts.push(part)
+        continue
+      }
+      if (typeof part.text !== 'string') {
+        throw new TypeError(`message[${i}].text: expected a string`)
+      }
+      const text = await protect(part.text)
+      if (stop.by !== null) break
+      if (text === part.text) {
+        parts.push(part)
+      } else {
+        changed = true
+        parts.push({ ...part, text })
+      }
+    }
+    // Nothing to hide: hand back the caller's own array, not a copy.
+    guarded = changed ? parts : message
+  }
+  if (stop.by !== null) return blocked()
+
+  let context: readonly string[] | undefined
+  if (input.context !== undefined) {
+    if (!Array.isArray(input.context)) throw new TypeError('context: expected an array of strings')
+    const out: string[] = []
+    for (const [i, entry] of input.context.entries()) {
+      if (typeof entry !== 'string') throw new TypeError(`context[${i}]: expected a string`)
+      out.push(await protect(entry))
+      if (stop.by !== null) return blocked()
+    }
+    context = out
+  }
+
+  let title: string | undefined
+  if (input.title !== undefined) {
+    if (typeof input.title !== 'string') throw new TypeError('title: expected a string')
+    title = await protect(input.title)
+    if (stop.by !== null) return blocked()
+  }
+
+  return {
+    blocked: false,
+    message: guarded,
+    ...(context === undefined ? {} : { context }),
+    ...(title === undefined ? {} : { title }),
+    tokenised: stop.tokenised,
+  }
 }
 
-const guards = new WeakMap<GuardOptions, ContentGuard>()
-let defaultGuard: ContentGuard | undefined
+/** Fails at wrap time, not on the first customer's message. */
+export function checkGuard(guard: unknown): asserts guard is Guard {
+  const g = guard as Partial<Guard> | null
+  if (
+    typeof g !== 'object' ||
+    g === null ||
+    typeof g.process !== 'function' ||
+    typeof g.resolve !== 'function' ||
+    typeof g.endSession !== 'function'
+  ) {
+    throw new TypeError("guard: expected a guard from @eve-pdpa-extension/core's createGuard()")
+  }
+}
 
-function guardFor(options: GuardOptions | undefined): ContentGuard {
-  if (options === undefined) {
-    defaultGuard ??= createContentGuard({}, 'direct')
-    return defaultGuard
-  }
-  let guard = guards.get(options)
-  if (guard === undefined) {
-    guard = createContentGuard(options, 'direct')
-    guards.set(options, guard)
-  }
-  return guard
+export function checkFiles(files: unknown): 'pass' | 'block' {
+  if (files === undefined) return 'pass'
+  if (files !== 'pass' && files !== 'block')
+    throw new TypeError('files: expected "pass" or "block"')
+  return files
+}
+
+export type GuardResult<T> =
+  | { readonly blocked: false; readonly content: T }
+  | ({ readonly blocked: true } & BlockInfo)
+
+export interface GuardContentOptions {
+  readonly guard: Guard
+  /** A pdpa session id — from `derivePdpaSessionId`, never a platform id. */
+  readonly sessionId: string
+  /** Where the text sits. Default `inbound`. */
+  readonly boundary?: Boundary
+  readonly files?: 'pass' | 'block'
+  readonly language?: Language
 }
 
 /**
- * Masks a message with core before anything else sees it. Synchronous, and
- * never changes `content`: a string comes back as a new string, an array as a
- * new array whose text parts are rewritten and whose other parts are the same
- * objects — or as `content` itself when there was nothing to hide.
- *
- * Any text part the policy blocks stops the whole message.
- *
- * The guard behind it is built once per `options` object and kept, so pass the
- * same object each time rather than a fresh literal per call.
+ * Masks one message with the caller's guard. Never changes `content`: a
+ * string comes back as a new string, an array as a new array whose text parts
+ * are rewritten and whose other parts are the same objects — or as `content`
+ * itself when there was nothing to hide. Any text part the policy blocks
+ * stops the whole message.
  */
-export function guardContent<T extends string | UserContent>(
+export async function guardContent<T extends string | UserContent>(
   content: T,
-  options?: GuardOptions,
-): GuardResult<T> {
-  const out = guardFor(options).deliver({ message: content })
+  options: GuardContentOptions,
+): Promise<GuardResult<T>> {
+  checkGuard(options.guard)
+  const out = await scanDelivery(
+    { message: content },
+    {
+      guard: options.guard,
+      sessionId: options.sessionId,
+      boundary: options.boundary ?? 'inbound',
+      files: checkFiles(options.files),
+      language: options.language ?? 'th',
+    },
+  )
   return out.blocked
-    ? { blocked: true, reason: out.reason, events: out.events }
-    : { blocked: false, content: out.message as T, events: out.events }
+    ? { blocked: true, reason: out.reason, blockedBy: out.blockedBy }
+    : { blocked: false, content: out.message as T }
 }

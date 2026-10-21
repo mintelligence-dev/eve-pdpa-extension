@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@eve-pdpa-extension/core": "workspace:*",
     "@eve-pdpa-extension/eve": "workspace:*"
   },
   "devDependencies": {
