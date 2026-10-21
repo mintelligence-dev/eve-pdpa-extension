@@ -13,6 +13,11 @@ export function seeded(seed: number): () => number {
   }
 }
 
+/**
+ * Seed 3 gives an id that also passes the card checksum in an issuer's range,
+ * which core reads as a credit card and blocks (it settles an overlap toward
+ * the stricter action). Tests that want a masked id avoid it.
+ */
 export function syntheticId(seed: number): string {
   return makeThaiId(seeded(seed))
 }
