@@ -58,6 +58,7 @@
     "prepack": "node ../../scripts/copy-legal.mjs",
     "build": "eve extension build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --root ../.. packages/eve/test",
     "check:pack": "publint --strict && attw --pack --profile esm-only"
   },
   "dependencies": {
