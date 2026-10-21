@@ -225,3 +225,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm --filter @eve-pdpa-extension/eve test
+      # What npm would get: publint --strict on the packed tarball, and attw
+      # on its types. ESM only, as eve is — CJS and node10 are not checked.
+      - run: pnpm --filter @eve-pdpa-extension/eve check:pack
