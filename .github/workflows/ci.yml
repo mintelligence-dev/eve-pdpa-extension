@@ -209,3 +209,22 @@ jobs:
       - run: npx --yes playwright@1.63.0 install --with-deps chromium
       - run: npm i --no-save playwright@1.63.0
       - run: node scripts/smoke-browser.mjs
+
+  # The eve adapter. eve needs Node 24, and nothing of
+  # it goes near core's smoke matrix: core stays zero-dependency and runs on
+  # Node 18 and every runtime above; this package runs on Node 24 only.
+  eve:
+    runs-on: ubuntu-latest
+    env:
+      EVE_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with: { node-version: '24', cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter @eve-pdpa-extension/eve test
+      # What npm would get: publint --strict on the packed tarball, and attw
+      # on its types. ESM only, as eve is — CJS and node10 are not checked.
+      - run: pnpm --filter @eve-pdpa-extension/eve check:pack

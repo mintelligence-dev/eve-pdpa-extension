@@ -1,0 +1,76 @@
+{
+  "name": "@eve-pdpa-extension/eve",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mask Thai personal data in eve agent channels before eve records a message or a model reads it.",
+  "keywords": [
+    "pdpa",
+    "thai",
+    "pii",
+    "privacy",
+    "personal-data",
+    "redact",
+    "eve",
+    "agent"
+  ],
+  "bugs": {
+    "email": "kunlachat@m-intelligence.tech"
+  },
+  "license": "Apache-2.0",
+  "author": "M Intelligence",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mintelligence-dev/eve-pdpa-extension.git",
+    "directory": "packages/eve"
+  },
+  "type": "module",
+  "eve": {
+    "extension": {
+      "source": "./extension",
+      "dist": "./dist/extension"
+    }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./guard": {
+      "types": "./dist/extension/lib/guard.d.ts",
+      "default": "./dist/extension/lib/guard.mjs"
+    },
+    "./package.json": "./package.json",
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "default": "./dist/tools/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "prepack": "node ../../scripts/copy-legal.mjs",
+    "build": "eve extension build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --root ../.. packages/eve/test",
+    "check:pack": "publint --strict && attw --pack --profile esm-only"
+  },
+  "dependencies": {
+    "@eve-pdpa-extension/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "ai": "7.0.143",
+    "eve": "0.80.1",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "ai": "^7.0.137",
+    "eve": "*"
+  }
+}

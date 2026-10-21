@@ -4,8 +4,10 @@
     { "path": "./packages/core" },
     { "path": "./packages/cli" },
     { "path": "./packages/http" },
+    { "path": "./packages/eve" },
     { "path": "./internal/consumer-node16" },
     { "path": "./internal/consumer-bundler" },
-    { "path": "./internal/consumer-cjs" }
+    { "path": "./internal/consumer-cjs" },
+    { "path": "./internal/consumer-eve" }
   ]
 }
