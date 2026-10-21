@@ -1,38 +1,62 @@
 # @eve-pdpa-extension/eve
 
-ปกป้องข้อมูลส่วนบุคคลไทยใน agent ที่สร้างด้วย [eve](https://eve.dev) ทุกจุดที่ข้อมูลรั่วได้: ข้อความลูกค้าก่อน eve บันทึก · tool ที่ต้องใช้ค่าจริง · prompt ก่อนออกไปหา provider ของโมเดล · และคำตอบบน Slack
+ปิดข้อมูลส่วนบุคคลไทยใน agent ที่สร้างด้วย [eve](https://eve.dev) ก่อนที่ข้อมูลจะไปถึงโมเดล ถูกบันทึก หรือถูกส่งกลับไปให้ลูกค้า
 
-> **mount extension อย่างเดียวไม่ได้ปิดข้อมูลอะไรเลย** · eve เรียก hook *หลัง* บันทึกข้อความไปแล้ว และ hook เปลี่ยนสิ่งที่โมเดลอ่านไม่ได้ · การปิดข้อมูลเกิดตรงที่แพ็กเกจนี้ห่อ channel, tool และ model ของคุณ — ดู[4 ชั้น](#4-ชั้น) · extension ทำได้แค่ block และ audit
+```text
+ลูกค้าพิมพ์          ขอ OTP ที่เบอร์ 091-888-7777
+eve บันทึก / โมเดลอ่าน  ขอ OTP ที่เบอร์ [tok:pmkjhrpmbrqfnbqc]
+tool otp_send ได้     0918887777                     ← ค่าจริง เห็นแค่ใน tool นี้
+คำตอบบน Slack       ส่ง OTP ไปที่ xxx-xxx-7777 แล้วค่ะ
+```
 
-- ใช้ [`@eve-pdpa-extension/core`](../core): เลขบัตรประชาชน · เบอร์โทร · อีเมล · เลขบัญชี · บัตรเครดิต · LINE user ID · audit event ที่**ไม่มีค่าจริงอยู่ข้างใน**
-- **Tokenise**: เบอร์โทรกลายเป็น `[tok:…]` ให้โมเดลเห็น · tool ที่คุณเลือกแลกกลับเป็นเบอร์จริงได้ เฉพาะ purpose ที่อนุญาต เฉพาะแชตนั้น และก่อนหมดอายุ
-- Node 24 ขึ้นไป · ทดสอบกับ eve **0.80.1** (ยัง beta — รันเทสต์ก่อนเปลี่ยนรุ่น)
+- ใช้ตัวตรวจจากแพ็กเกจ [`@eve-pdpa-extension/core`](../core) ได้แก่ เลขบัตรประชาชน, เบอร์โทร, อีเมล, เลขบัญชี, บัตรเครดิต และ LINE user ID
+- audit event **ไม่มีค่าจริงอยู่ข้างใน**
+- ใช้กับ Node 24 ขึ้นไป ทดสอบกับ eve **0.80.1** (eve ยังเป็น beta ให้รันเทสต์ทุกครั้งก่อนเปลี่ยนรุ่น)
 
 > **เป็นเครื่องมือทางเทคนิค ไม่ใช่ใบรับรองการปฏิบัติตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล**
 
-> **0.1.0 ยังไม่ขึ้น npm** (`"private": true`) · agent ตัวอย่างที่ต่อครบทุกชั้นแยกไปอยู่ใน repo ส่วนตัวแล้ว
+> **0.1.0 ยังไม่ขึ้น npm** (`"private": true`) ส่วน agent ตัวอย่างที่ต่อครบทุกชั้นอยู่ใน repo ส่วนตัวแยกต่างหาก
 
 [English](./README.md)
 
 ---
 
-## 4 ชั้น
+## ทำงานยังไง
 
-| ชั้น | ตัวช่วย | ปกป้องอะไร |
+ข้อมูลรั่วได้หลายจุดใน agent แพ็กเกจนี้จึงมีตัวห่อให้ทุกจุด แต่ละตัวห่อคนละส่วนของ agent
+
+```text
+            ┌─ withPdpaGuard ──── ปิดข้อความขาเข้า ก่อน eve บันทึก
+ลูกค้า ──▶ channel
+            └─ pdpaSlackRenderer / pdpaTelegramEvents ── ปิดคำตอบขาออก
+                   │
+                   ▼
+               pdpaHook ──────────── เก็บ session · ยกเลิกข้อความต้องห้าม · เตือนถ้าลืมห่อ channel
+                   │
+                   ▼
+              guardModel ─────────── ปิด prompt ทั้งก้อนก่อนส่งให้ผู้ให้บริการโมเดล
+                   │
+                   ▼
+         withTokenResolution ─────── ให้ tool ที่อนุญาตได้ค่าจริงหลัง token
+```
+
+| ตัวช่วย | ห่ออะไร | ถ้าไม่ใส่ |
 |---|---|---|
-| Channel | `withPdpaGuard(channel, …)` | ข้อความขาเข้า — ก่อน eve บันทึก ก่อน hook เห็น ก่อนโมเดลอ่าน |
-| Tool | `withTokenResolution(tool, …)` | ให้ tool ตัวเดียวได้ค่าจริงหลัง token ตาม purpose เดียว · ปิดสิ่งที่ tool ส่งกลับ |
-| Model | `guardModel(model, …)` | prompt ทุกครั้งก่อนไปหา provider: ผลจาก tool · connection · memory ที่ดึงกลับมา · ประวัติแชต |
-| คำตอบ Slack | `pdpaSlackRenderer(…)` | คำตอบ: token แสดงเป็น `xxx-xxx-7777` · token ที่ไม่รู้จักหรือของแชตอื่นเป็น `[ข้อมูลที่ปิดไว้]` |
-| คำตอบ Telegram | `pdpaTelegramEvents(…)` | เหมือนกัน สำหรับ Telegram |
+| `withPdpaGuard` | channel ขาเข้า | eve บันทึกค่าจริง และโมเดลเห็นค่าจริง |
+| `pdpaSlackRenderer` / `pdpaTelegramEvents` | คำตอบขาออกบน Slack / Telegram | ลูกค้าเห็น `[tok:…]` ดิบๆ ในคำตอบ |
+| `pdpaHook` | hook ของ agent | tool แลก token ที่ออกบน Slack หรือ Telegram ไม่ได้ เพราะไม่รู้ว่าเป็นแชตไหน (HTTP channel ของ eve ยังใช้ได้) |
+| `guardModel` | โมเดล | ผลจาก tool ที่ไม่ได้ห่อ connection และ memory จะส่งค่าจริงไปหาผู้ให้บริการโมเดล |
+| `withTokenResolution` | tool ทีละตัว | tool ได้ `[tok:…]` แทนเบอร์จริง เลยทำงานไม่ได้ |
 
-และ **`pdpaHook(…)`** ใน `agent/hooks/` — จำเป็นเมื่อใช้ tokenise · เก็บ session id ที่ชั้นอื่นต้องใช้ · ยกเลิก turn ที่ข้อความมีข้อมูลที่ policy สั่ง block (channel ที่ลืมห่อ) · ลบ token ของแชตเมื่อ session จบ
+> **mount เป็น extension อย่างเดียวไม่ได้ปิดข้อมูลเลย** eve เรียก hook *หลัง* บันทึกข้อความไปแล้ว และ hook เปลี่ยนสิ่งที่โมเดลอ่านไม่ได้ การปิดข้อมูลเกิดตรงที่คุณห่อ channel, tool และ model เอง
 
-ขาออกปกป้องได้**เฉพาะ Slack และ Telegram** ใน 0.1 · channel อื่นปิดได้แค่ขาเข้า
+---
 
-## เริ่มใช้
+## เริ่มใช้ใน 5 ขั้น
 
-guard เป็นของคุณ — policy, key, token store และที่เก็บ audit อยู่ใน `createGuard` ของ core ทั้งหมด:
+### 1. สร้าง guard และ policy
+
+ไฟล์นี้เป็นที่เดียวที่ตัดสินว่าข้อมูลแต่ละประเภทจะถูกทำอะไร ทุกขั้นถัดไปจะ import `pdpa` จากไฟล์นี้
 
 ```ts
 // agent/lib/guard.ts
@@ -53,9 +77,24 @@ export const guard = createGuard({
   onAudit: (event) => console.log(JSON.stringify(event)),
 })
 
-// openssl rand -hex 32 — ใช้ key เดียวกันทั้ง deployment
+// สร้างด้วย openssl rand -hex 32 และใช้ key เดียวกันทั้ง deployment
 export const pdpa = { guard, sessionKey: process.env.PDPA_SESSION_KEY ?? '' }
 ```
+
+**action ที่เลือกได้**
+
+| action | โมเดลเห็น | ใช้เมื่อ |
+|---|---|---|
+| `redact` | `[ข้อมูลที่ปิดไว้]` | ไม่มีใครต้องใช้ค่านี้เลย |
+| `mask` | `xxx-xxx-7777` | ลูกค้าต้องดูว่าเป็นเบอร์ไหน แต่ไม่ต้องเห็นทั้งหมด |
+| `tokenise` | `[tok:…]` | มี tool ที่ต้องใช้ค่าจริง เช่นส่ง OTP |
+| `hash` | `[PHONE:nmdfpsvvprsnpfgc]` ค่าเดิมได้ผลเดิมทุกครั้ง | ต้องรู้ว่าเป็นคนเดิมไหม โดยไม่ต้องรู้ค่าจริง (ต้องใส่ `hmacKey` ใน `createGuard`) |
+| `flag` | ค่าจริง (แค่บันทึกใน audit) | ตั้งใจให้ผ่าน แต่อยากรู้ว่าเจอ |
+| `block` | ไม่มีอะไรเลย ข้อความถูกปฏิเสธ | ข้อมูลที่ไม่ควรรับไว้เลย เช่นเลขบัตรเครดิต |
+
+**`allowedPurposes` คืออะไร** ใช้กับ `tokenise` เท่านั้น เป็นรายการ "เหตุผล" ที่อนุญาตให้แลก token กลับเป็นค่าจริงได้ ชื่อตั้งเองได้ทั้งหมด เช่น `'otp_send'` หรือ `'callback'` แล้วไปใส่ชื่อเดียวกันใน tool ที่ขั้น 4 ถ้าชื่อไม่ตรงกัน tool จะโดนปฏิเสธทุกครั้ง
+
+### 2. ห่อ channel
 
 ```ts
 // agent/channels/slack.ts
@@ -65,9 +104,13 @@ import { pdpa } from '../lib/guard.js'
 
 export default withPdpaGuard(slackChannel({ renderers: [pdpaSlackRenderer(pdpa)] }), {
   ...pdpa,
-  channelName: 'slack',   // ชื่อไฟล์นี้ (ไม่มีนามสกุล)
+  channelName: 'slack',   // ต้องตรงกับชื่อไฟล์นี้ (ไม่มีนามสกุล)
 })
 ```
+
+ห่อทุกไฟล์ใน `agent/channels/` ไฟล์ไหนลืมห่อ ข้อความที่ผ่าน channel นั้นจะเข้าไปถึง eve พร้อมค่าจริง ถ้าใช้ Telegram ให้ดูหัวข้อ `pdpaTelegramEvents` ในส่วนอ้างอิง
+
+### 3. ลงทะเบียน hook
 
 ```ts
 // agent/hooks/pdpa.ts
@@ -76,6 +119,10 @@ import { pdpa } from '../lib/guard.js'
 
 export default pdpaHook(pdpa)
 ```
+
+tool มองไม่เห็นว่าข้อความมาจากแชตไหน hook ตัวนี้จะจำไว้ให้ ถ้าใช้ `tokenise` ต้องมี hook นี้เสมอ
+
+### 4. ห่อ tool ที่ต้องใช้ค่าจริง
 
 ```ts
 // agent/tools/otp_send.ts
@@ -92,9 +139,13 @@ export default withTokenResolution(
       return { sent: true, to: input.phone }
     },
   }),
-  { ...pdpa, purpose: 'otp_send' },
+  { ...pdpa, purpose: 'otp_send' },   // ต้องอยู่ใน allowedPurposes ของขั้น 1
 )
 ```
+
+ห่อ tool ที่ต้องใช้ค่าจริง และ tool ที่ดึงข้อมูลส่วนบุคคลมาจากที่อื่น เช่น CRM เพราะ eve เก็บและ stream ผลของ tool ไว้ตามที่ได้มา `guardModel` ปิดให้เฉพาะตอนส่งให้โมเดล tool ที่ไม่ได้ยุ่งกับข้อมูลส่วนบุคคลไม่ต้องห่อ
+
+### 5. ห่อโมเดล
 
 ```ts
 // agent/agent.ts
@@ -109,49 +160,80 @@ export default defineAgent({
 })
 ```
 
-ลูกค้าพิมพ์ `ขอ OTP ที่เบอร์ 091-888-7777` · สิ่งที่ eve บันทึกและโมเดลอ่านคือ `ขอ OTP ที่เบอร์ [tok:pmkjhrpmbrqfnbqc]` · `otp_send` ได้ `0918887777` · ผลจาก tool กลับไปหาโมเดลเป็น `[tok:…]` · คำตอบบน Slack เป็น `ส่ง OTP ไปที่ xxx-xxx-7777 แล้วค่ะ`
+เป็นด่านสุดท้ายก่อนข้อมูลออกนอกระบบ ปิดทุกอย่างที่ขั้นก่อนหน้าไม่ได้ปิดไว้ เช่นผลจาก tool ที่ไม่ได้ห่อ หรือข้อมูลที่ดึงมาจาก connection
 
 ---
 
-## `withPdpaGuard(channel, options)`
+## อ้างอิง
 
-คืน channel ชุดใหม่ที่ทุกข้อความขาเข้าถูกปิดก่อน · route คง method, path, transport เดิม และ field อื่นทั้งหมด — adapter, events, renderers, ข้อมูลตอน build — ส่งต่อตามเดิม
+### `withPdpaGuard(channel, options)`
 
-| ครอบคลุม | อย่างไร |
+คืน channel ชุดใหม่ที่ปิดข้อมูลในทุกข้อความขาเข้าก่อน ส่วน route, adapter, events, renderers และ field อื่นคงไว้ตามเดิม
+
+| ตัวเลือก | ค่า |
 |---|---|
-| `from(address).send()` — Slack, Teams, Telegram, Chat SDK bridge, channel ที่เขียนเอง | ปิดข้อความ `context` และ `title` |
-| `attachSession(id).send()` · `to(channel, target).send()` · `ctx.from().send()` ใน `receive` · WebSocket route | เหมือนกัน |
-| HTTP channel ของ eve: `POST /eve/v1/session` และ `POST /eve/v1/session/:sessionId` | `message` และ `clientContext` ใน JSON body · ข้อความบน route สร้าง session จะถูกส่งเป็นข้อความแรกของ session ที่สร้างขึ้นก่อนหน้านั้นทันที token จึงเป็นของ session นั้น |
-| `respond()` — คำตอบของการอนุมัติและคำถาม | **ไม่ตรวจ** |
+| `guard`, `sessionKey` | จาก `pdpa` ในขั้น 1 |
+| `channelName` | ชื่อไฟล์ของ channel (ต้องใส่ ยกเว้น HTTP channel ของ eve) |
+| `files` | `'pass'` (ค่าตั้งต้น) ปล่อยไฟล์ผ่าน หรือ `'block'` ปฏิเสธข้อความที่มีไฟล์ |
+| `onBlock({ reason, blockedBy })` | เรียกเมื่อข้อความถูก block เช่นใช้ส่งข้อความแจ้งลูกค้า |
+| `language` | ภาษาของข้อความแจ้ง `'th'` (ค่าตั้งต้น) |
+| `policy`, `allowRawTokensInOutput` | ใช้กับ HTTP channel ของ eve (ดูข้างล่าง) |
 
-ตัวเลือก: `guard` · `sessionKey` · `channelName` (ต้องใส่ ยกเว้น HTTP channel ของ eve) · `files` (`'pass'` ค่าตั้งต้น หรือ `'block'`) · `onBlock({ reason, blockedBy })` · `language` (`'th'` ค่าตั้งต้น) · `policy` และ `allowRawTokensInOutput` (ดูข้างล่าง)
+**ตรวจตรงไหนบ้าง**
 
-ข้อความที่ถูก block จะไม่ถูกส่ง: `onBlock` ทำงาน แล้ว send จะ throw `PdpaBlockedError` (channel ของ eve จับไว้และเขียน log) · บน route HTTP ของ eve ตอบ `422 { ok: false, code: "pdpa_blocked", error }` · token store ล่มก็ block เหมือนกัน แต่ใช้ข้อความบอกเหตุผลอีกแบบ
+| ทางเข้า | ตรวจอะไร |
+|---|---|
+| `from(address).send()` ซึ่ง Slack, Teams, Telegram, Chat SDK bridge และ channel ที่เขียนเองใช้ | ข้อความ, `context` และ `title` |
+| `attachSession(id).send()`, `to(channel, target).send()`, `ctx.from().send()` ใน `receive` และ WebSocket route | เหมือนกัน |
+| HTTP channel ของ eve: `POST /eve/v1/session` และ `POST /eve/v1/session/:sessionId` | `message` และ `clientContext` ใน JSON body |
+| `respond()` ที่ใช้ตอบการอนุมัติและคำถาม | **ไม่ตรวจ** |
 
-**token ในคำตอบ** · HTTP channel ของ eve stream คำตอบตามที่โมเดลเขียน `[tok:…]` ที่โมเดลพิมพ์ซ้ำจึงไปถึงผู้เรียก · ห่อ channel นี้ด้วย `policy` ที่มี tokenise จะ throw เว้นแต่ตั้ง `allowRawTokensInOutput: true` — ใช้ในเครื่องเท่านั้น · guard ของ core ไม่เปิดให้อ่าน policy จึงต้องส่ง `policy` มาเพื่อตรวจตอนห่อ · ถ้าไม่ส่ง ข้อความแรกที่จะถูก tokenise บน channel นี้จะถูกปฏิเสธด้วย `500 pdpa_config`
+**เมื่อข้อความถูก block** ข้อความนั้นจะไม่ถูกส่งต่อ `onBlock` จะทำงาน แล้ว send จะ throw `PdpaBlockedError` (channel ของ eve จับไว้และเขียน log) ถ้าเป็น HTTP route ของ eve จะตอบ `422 { ok: false, code: "pdpa_blocked", error }` ถ้า token store ล่มก็ block เหมือนกัน แต่บอกเหตุผลอีกแบบ
 
-## `withTokenResolution(tool, { guard, sessionKey, purpose, fields? })`
+**HTTP channel ของ eve กับ token** channel นี้ stream คำตอบออกไปตามที่โมเดลเขียน ถ้าโมเดลพิมพ์ `[tok:…]` ซ้ำ ผู้เรียกจะเห็น token นั้น ดังนั้นการห่อ channel นี้ด้วย policy ที่มี `tokenise` จะ throw เว้นแต่ตั้ง `allowRawTokensInOutput: true` ซึ่งควรใช้ในเครื่องเท่านั้น
 
-ใน `execute`: token ทุกตัวใน input (หรือเฉพาะ `fields` เช่น `['phone']`) ถูกแลกด้วย `guard.resolve(token, { purpose, sessionId })` · `execute` เดิมทำงานกับค่าจริง · ผลลัพธ์ผ่าน guard ที่ `tool_output` ก่อนคืน — eve stream และเก็บผลของ tool ไว้ จึงต้องปิดตรงนี้ ไม่ใช่แค่ตอนส่งให้โมเดล
+guard ของ core ไม่เปิดให้อ่าน policy จึงต้องส่ง `policy` เข้ามาด้วยเพื่อตรวจตั้งแต่ตอนห่อ ถ้าไม่ส่ง ข้อความแรกที่จะถูก tokenise บน channel นี้จะถูกปฏิเสธด้วย `500 pdpa_config`
 
-ถ้า token ใช้ไม่ได้ — หมดอายุ · เป็นของแชตอื่น · purpose ไม่ได้รับอนุญาต · store ล่ม — `execute` เดิม**ไม่ถูกเรียก** · โมเดลได้ `{ ok: false, reason, ask }` เช่น `{ ok: false, reason: 'expired', ask: 'The value has expired. Ask the customer for it again.' }` · description, schema, approval และ label คงเดิม · tool แบบ generator ยังเป็น generator
+### `withTokenResolution(tool, { guard, sessionKey, purpose, fields? })`
 
-## `guardModel(model, { guard, sessionKey })`
+ตอน tool ถูกเรียก:
+1. แลก token ทุกตัวใน input (หรือเฉพาะ field ที่ระบุใน `fields` เช่น `['phone']`) เป็นค่าจริงด้วย `guard.resolve(token, { purpose, sessionId })`
+2. เรียก `execute` เดิมด้วยค่าจริง
+3. ปิดข้อมูลในผลลัพธ์ (boundary `tool_output`) ก่อนคืน เพราะ eve stream และเก็บผลของ tool ไว้ด้วย ไม่ได้แค่ส่งให้โมเดล
 
-ห่อโมเดลของ AI SDK (หรือ gateway id ที่เป็น string) ด้วย `wrapLanguageModel` · ข้อความทุกส่วนของทุก prompt ผ่าน guard ที่ `prompt` รวมผลจาก tool · ข้อความที่ policy สั่ง block กลายเป็น `[ข้อมูลที่ปิดไว้]`
+ถ้า token ใช้ไม่ได้ `execute` เดิม**จะไม่ถูกเรียก** โมเดลได้คำตอบแบบนี้แทน เพื่อให้ถามลูกค้าใหม่
 
-- **ต้องห่อโมเดลของ subagent และโมเดลสำหรับ compaction แยกด้วย** — แต่ละตัวเรียก provider เอง
-- **ตัวนี้ไม่ได้ปิดสิ่งที่โมเดลตอบ** — เป็นหน้าที่ของ Slack renderer และ Telegram events บน channel นั้น
-- ตั้ง `modelContextWindowTokens` ให้ agent: eve หาขนาด context จาก id ของโมเดล แต่โมเดล gateway ที่ห่อแล้วรายงานตัวเป็น `gateway/<id>`
-- หลัง deploy บน Vercel ให้ตรวจว่าโมเดลที่ห่อแล้วยังยืนยันตัวตนผ่าน OIDC ได้: ส่ง 1 ข้อความ แล้วดูว่าได้คำตอบ และมี `scan` ที่ `boundary: "prompt"`
+| เหตุผล | ตัวอย่าง |
+|---|---|
+| หมดอายุ (เกิน `ttlSec`) | `{ ok: false, reason: 'expired', ask: 'The value has expired. Ask the customer for it again.' }` |
+| เป็น token ของแชตอื่น | `{ ok: false, reason: …, ask: … }` |
+| `purpose` ไม่อยู่ใน `allowedPurposes` | เหมือนกัน |
+| token store ล่ม | เหมือนกัน |
 
-## `pdpaSlackRenderer({ guard, sessionKey })`
+description, schema, approval และ label ของ tool คงเดิม tool แบบ generator ก็ยังเป็น generator
 
-Slack renderer สำหรับ `message.completed`: คำตอบผ่าน guard ที่ `outbound` · token แสดงในรูปที่ปิดบางส่วน · token ที่ไม่รู้จักหรือของแชตอื่นเป็น `[ข้อมูลที่ปิดไว้]` · คำตอบที่ policy สั่ง block ถูกแทนด้วยข้อความแจ้ง · ข้อความที่โมเดลพิมพ์ก่อนเรียก tool ก็ถูกปิดด้วย (Slack แสดงเป็นสถานะของ thread) · คำถาม การอนุมัติ และการ sign-in ใช้ค่าตั้งต้นของ eve
+### `guardModel(model, { guard, sessionKey })`
 
-## `pdpaTelegramEvents({ guard, sessionKey })`
+ห่อโมเดลของ AI SDK (หรือ gateway id ที่เป็น string) ด้วย `wrapLanguageModel` ทุกข้อความในทุก prompt จะผ่าน guard (boundary `prompt`) รวมถึงผลจาก tool ส่วนข้อความที่ policy สั่ง block จะกลายเป็น `[ข้อมูลที่ปิดไว้]`
 
-Telegram channel ของ eve ไม่มี renderer จึงคืน `message.completed` ไว้ใส่ใน `telegramChannel({ events })` · แทนตัวตั้งต้นของ eve และทำแบบเดียวกัน (ส่งคำตอบเป็นข้อความธรรมดา · ไม่ส่งข้อความที่โมเดลพิมพ์ก่อนเรียก tool) หลังคำตอบผ่าน guard ที่ `outbound` · ผลเหมือน Slack renderer · คำถาม การอนุมัติ การ sign-in และ error ใช้ค่าตั้งต้นของ eve
+- **ห่อโมเดลของ subagent และโมเดลที่ใช้ทำ compaction ด้วย** เพราะแต่ละตัวเรียกผู้ให้บริการโมเดลแยกกัน
+- **ไม่ได้ปิดคำตอบของโมเดล** งานนั้นเป็นของ Slack renderer และ Telegram events
+- **ต้องตั้ง `modelContextWindowTokens`** เพราะ eve หาขนาด context จาก id ของโมเดล แต่โมเดลที่ห่อแล้วรายงานตัวเป็น `gateway/<id>`
+- **หลัง deploy บน Vercel** ให้เช็กว่าโมเดลที่ห่อแล้วยังยืนยันตัวตนด้วย OIDC ได้ วิธีเช็กคือส่ง 1 ข้อความ แล้วดูว่าได้คำตอบ และมี audit event `scan` ที่ `boundary: "prompt"`
+
+### `pdpaSlackRenderer({ guard, sessionKey })`
+
+renderer ของ Slack สำหรับ `message.completed` คำตอบจะผ่าน guard (boundary `outbound`) ก่อนส่ง
+
+- token ที่รู้จักแสดงในรูปที่ตั้งไว้ใน `display` เช่น `xxx-xxx-7777`
+- token ที่ไม่รู้จักหรือเป็นของแชตอื่นกลายเป็น `[ข้อมูลที่ปิดไว้]`
+- คำตอบที่ policy สั่ง block ถูกแทนด้วยข้อความแจ้ง
+- ข้อความที่โมเดลพิมพ์ก่อนเรียก tool ก็ถูกปิดด้วย (Slack แสดงข้อความนี้เป็นสถานะของ thread)
+- คำถาม การอนุมัติ และการ sign-in ใช้ค่าตั้งต้นของ eve
+
+### `pdpaTelegramEvents({ guard, sessionKey })`
+
+Telegram channel ของ eve ไม่มี renderer ฟังก์ชันนี้จึงคืน event `message.completed` ไว้ใส่ใน `telegramChannel({ events })` แทน ทำงานแบบเดียวกับตัวตั้งต้นของ eve (ส่งคำตอบเป็นข้อความธรรมดา และไม่ส่งข้อความที่โมเดลพิมพ์ก่อนเรียก tool) แต่ปิดข้อมูลในคำตอบก่อนส่ง ผลที่ได้เหมือน Slack renderer ส่วนคำถาม การอนุมัติ การ sign-in และ error ใช้ค่าตั้งต้นของ eve
 
 ```ts
 export default withPdpaGuard(telegramChannel({ events: pdpaTelegramEvents(pdpa) }), {
@@ -160,48 +242,64 @@ export default withPdpaGuard(telegramChannel({ events: pdpaTelegramEvents(pdpa) 
 })
 ```
 
-## `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
+### `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
 
-ลงทะเบียนใน `agent/hooks/pdpa.ts` · option ถูกตรวจตอนสร้าง hook ถ้าไม่มี guard หรือ `sessionKey` eve จะโหลด hook ไม่ขึ้นตั้งแต่เริ่ม ไม่ต้องรอข้อความแรก · ตอน `message.received` เก็บ pdpa id ของ session (tool มองไม่เห็น address ของ channel) และยกเลิก turn เมื่อข้อความมีข้อมูลที่ policy สั่ง block หรือประเภทที่อยู่ใน `blockOn` · ตอน `session.completed` และ `session.failed` เรียก `guard.endSession` · `reset` ของ eve ไม่ส่ง event ให้ hook — token เหล่านั้นหมดอายุตาม `ttlSec`
+ลงทะเบียนใน `agent/hooks/pdpa.ts` ระบบจะตรวจ option ตั้งแต่ตอนสร้าง hook ถ้าไม่มี guard หรือ `sessionKey` eve จะโหลด hook ไม่ขึ้นตั้งแต่เริ่ม ไม่ต้องรอให้มีข้อความแรกเข้ามา
 
-**channel ที่ลืมห่อ** · channel ที่ห่อแล้วส่งข้อความที่ไม่มีอะไรให้หาอีก ถ้า hook ยังเจอข้อมูลส่วนบุคคลในข้อความที่ eve บันทึก — ยกเว้น `flag` ที่ปล่อยผ่านโดยตั้งใจ — แปลว่าข้อความนั้นมาจาก channel ที่ไม่ได้ห่อ · hook จะเรียก `onUnmasked({ channel, entities })` หรือถ้าไม่ได้ตั้งไว้ จะเตือน 1 ครั้งต่อ channel (`Wrap agent/channels/<channel>.ts with withPdpaGuard`) · ทั้งสองแบบไม่มีค่าข้อมูลจริง · `strict: true` จะยกเลิก turn ด้วย โมเดลจึงไม่ได้อ่าน แต่ eve บันทึกข้อความไปแล้ว
+| event | hook ทำอะไร |
+|---|---|
+| `message.received` | เก็บ pdpa id ของ session ไว้ให้ tool, model และ renderer ใช้ และยกเลิก turn ถ้าข้อความมีข้อมูลที่ policy สั่ง block หรือมีประเภทที่อยู่ใน `blockOn` |
+| `session.completed`, `session.failed` | เรียก `guard.endSession` เพื่อลบ token ของแชตนั้น |
+| `reset` ของ eve | ไม่ส่ง event มาให้ hook token พวกนั้นจะหมดอายุเองตาม `ttlSec` |
 
-default export ของแพ็กเกจ mount hook ตัวเดียวกันเป็น extension — `pdpa({ guard, sessionKey })` ใน `agent/extensions/pdpa.ts` — สำหรับ setup ที่ไม่ใช้ tokenise · ถ้าใช้ tokenise ให้ลงทะเบียน hook ใน `agent/hooks/` เพื่อให้ใช้ session state ร่วมกับ tool ได้
+**channel ที่ลืมห่อ** channel ที่ห่อแล้วจะส่งข้อความที่ปิดข้อมูลแล้วให้ eve ถ้า hook ยังเจอข้อมูลส่วนบุคคลในข้อความที่ eve บันทึก แปลว่าข้อความนั้นมาทาง channel ที่ไม่ได้ห่อ (ข้อมูลที่ตั้งเป็น `flag` ไม่นับ เพราะตั้งใจปล่อยผ่าน) เมื่อเจอ hook จะทำอย่างนี้
 
-## Session id
+- ถ้าตั้ง `onUnmasked` ไว้ จะเรียก `onUnmasked({ channel, entities })`
+- ถ้าไม่ได้ตั้ง จะเตือนใน log ครั้งเดียวต่อ channel: `Wrap agent/channels/<channel>.ts with withPdpaGuard`
+- ถ้าตั้ง `strict: true` จะยกเลิก turn ด้วย โมเดลจึงไม่ได้อ่านข้อความนั้น แต่ eve บันทึกไปแล้ว
 
-core เขียน `sessionId` ลงทุก audit event และใช้แยก token ของแต่ละแชต และเตือนว่าอย่าใช้ id ของแพลตฟอร์ม · ทุกชั้นจึงคำนวณเอง:
+ทั้งการเรียก `onUnmasked` และข้อความเตือน มีแค่ชื่อ channel กับประเภทข้อมูล ไม่มีค่าจริง
+
+**mount เป็น extension** default export ของแพ็กเกจจะ mount hook ตัวเดียวกันเป็น extension: `pdpa({ guard, sessionKey })` ใน `agent/extensions/pdpa.ts` ใช้ได้เฉพาะ setup ที่ไม่ใช้ tokenise ถ้าใช้ tokenise ต้องลงทะเบียน hook ใน `agent/hooks/` เพื่อให้ hook ใช้ session state ร่วมกับ tool ได้
+
+### Session id
+
+core ใช้ `sessionId` แยก token ของแต่ละแชต และเขียนลงทุก audit event core ยังเตือนว่าอย่าใช้ id ของแพลตฟอร์มตรงๆ ทุกชั้นในแพ็กเกจนี้จึงคำนวณ id เองด้วยสูตรเดียวกัน
 
 ```text
 "eve_" + base32(HMAC-SHA256(sessionKey, conversation)).slice(0, 26)
 conversation = "<channelName>:<address>"   หรือ   "session:<eve session id>"  (HTTP channel ของ eve)
 ```
 
-`derivePdpaSessionId(sessionKey, conversation)` export ไว้ให้โค้ดของคุณใช้ เช่น tool ที่เรียก `guard.resolve` เอง
+ถ้าโค้ดของคุณต้องการ id นี้ เช่น tool ที่เรียก `guard.resolve` เอง ให้ใช้ `derivePdpaSessionId(sessionKey, conversation)`
 
-## `guardContent(content, { guard, sessionId, boundary?, files? })`
+### `guardContent(content, { guard, sessionId, boundary?, files? })`
 
-ฟังก์ชันข้างใต้: ปิดข้อมูลใน string หรือ `UserContent` ของ AI SDK แบบ async · คืน `{ blocked: false, content }` หรือ `{ blocked: true, reason, blockedBy }`
+ฟังก์ชันที่ทุกชั้นใช้อยู่ข้างใต้ ปิดข้อมูลใน string หรือ `UserContent` ของ AI SDK แบบ async คืนค่า `{ blocked: false, content }` หรือ `{ blocked: true, reason, blockedBy }`
+
+---
 
 ## ข้อจำกัดที่ควรรู้
 
-- **ขาออกปกป้องได้เฉพาะ Slack และ Telegram** · Teams, Discord, channel ที่เขียนเอง และ HTTP channel ของ eve (รวมหน้าเว็บที่ใช้ `useEveAgent`) ส่งคำตอบตามที่โมเดลเขียน
-- **`respond()` ไม่ถูกตรวจ** — คำตอบแบบมีโครงสร้างของการอนุมัติและคำถาม ซึ่งมีข้อความอิสระได้
+- **ปิดขาออกได้เฉพาะ Slack และ Telegram** Teams, Discord, channel ที่เขียนเอง และ HTTP channel ของ eve (รวมถึงหน้าเว็บที่ใช้ `useEveAgent`) ส่งคำตอบออกไปตามที่โมเดลเขียน
+- **`respond()` ไม่ถูกตรวจ** คำตอบของการอนุมัติและคำถามมีข้อความอิสระอยู่ได้
 - **token ที่ออกระหว่างส่งต่องานด้วย `to()` แลกกลับไม่ได้** ใน session ของ channel ปลายทาง
-- **subagent** มี session state ของตัวเอง: tool ใน subagent แลก token ของ agent แม่ไม่ได้
-- **route สร้าง session ของ eve**: request ที่มีข้อความพร้อม `callback` หรือ `operationId` ถูกปฏิเสธ (`400 pdpa_unsupported`) — ให้สร้าง session ก่อนแล้วค่อยส่งข้อความ
-- **ตรวจทีละ text part** · ไม่ตรวจเนื้อหาไฟล์และชื่อไฟล์ (ใช้ `files: 'block'` เพื่อหยุดข้อความแบบนี้)
-- **ยังไม่ตรวจชื่อและที่อยู่** (core)
-- เลขบัตรประชาชนที่บังเอิญผ่าน checksum ของบัตรเครดิตและอยู่ในช่วงเลขผู้ออกบัตร core จะอ่านเป็นบัตรเครดิต — ถูก block ภายใต้ policy ที่ block บัตร
-- route HTTP ของ eve ถูกจำด้วย method และ path · รันเทสต์ก่อนเปลี่ยนรุ่น eve
+- **subagent มี session state ของตัวเอง** tool ใน subagent แลก token ของ agent หลักไม่ได้
+- **route สร้าง session ของ eve** request ที่มีข้อความพร้อม `callback` หรือ `operationId` จะถูกปฏิเสธ (`400 pdpa_unsupported`) ให้สร้าง session ก่อนแล้วค่อยส่งข้อความ
+- **ตรวจทีละ text part** ไม่ตรวจเนื้อหาไฟล์และชื่อไฟล์ ถ้าไม่อยากรับไฟล์เลยให้ใช้ `files: 'block'`
+- **ยังไม่ตรวจชื่อและที่อยู่** (เป็นข้อจำกัดของ core)
+- **เลขบัตรประชาชนบางเลขถูกอ่านเป็นบัตรเครดิต** ถ้าบังเอิญผ่าน checksum ของบัตรเครดิตและอยู่ในช่วงเลขผู้ออกบัตร ภายใต้ policy ที่ block บัตรเครดิต ข้อความนั้นจะถูก block
+- **HTTP route ของ eve ถูกจำด้วย method และ path** ให้รันเทสต์ทุกครั้งก่อนเปลี่ยนรุ่น eve
 
 ## สิ่งที่ต้องมี
 
-Node 24 ขึ้นไป · eve 0.80.1 (ทดสอบแล้ว) · AI SDK 7 (`ai` เป็น peer เหมือนของ eve)
+- Node 24 ขึ้นไป
+- eve 0.80.1 (รุ่นที่ทดสอบแล้ว)
+- AI SDK 7 (`ai` เป็น peer dependency เหมือนของ eve)
 
 ## แจ้งช่องโหว่
 
-อีเมลไปที่ **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[eve-pdpa-extension security]` · ทำซ้ำด้วยค่าสมมติ ห้ามส่งข้อมูลส่วนบุคคลจริง
+อีเมลไปที่ **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[eve-pdpa-extension security]` ใช้ค่าสมมติในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
 
 ## License
 

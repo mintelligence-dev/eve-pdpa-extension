@@ -1,12 +1,17 @@
 # @eve-pdpa-extension/eve
 
-Protect Thai personal data in an [eve](https://eve.dev) agent at every point it can leak: the customer's message before eve records it, a tool that needs the real value, the prompt before it leaves for the model provider, and the reply on Slack.
+Mask Thai personal data in an [eve](https://eve.dev) agent before it reaches the model, gets recorded, or goes back to the customer.
 
-> **Mounting the extension alone does not mask anything.** eve runs hooks *after* it has recorded a message, and a hook cannot change what the model reads. Masking happens where this package wraps your channels, tools and model — see [The four layers](#the-four-layers). The extension only blocks and audits.
+```text
+Customer writes          ขอ OTP ที่เบอร์ 091-888-7777
+eve records / model reads ขอ OTP ที่เบอร์ [tok:pmkjhrpmbrqfnbqc]
+otp_send tool receives    0918887777                     ← the real value, seen by this tool only
+Slack reply               ส่ง OTP ไปที่ xxx-xxx-7777 แล้วค่ะ
+```
 
-- Built on [`@eve-pdpa-extension/core`](../core): Thai national ID · phone number · email · bank account · credit card · LINE user ID · audit events that **never contain the real value**
-- **Tokenise**: a phone number becomes `[tok:…]` for the model; a tool you choose gets the real number back for one purpose, in that chat only, until it expires
-- Node 24+ · tested with eve **0.80.1** (beta — re-run the tests before moving)
+- Detection comes from [`@eve-pdpa-extension/core`](../core): Thai national ID, phone number, email, bank account, credit card and LINE user ID
+- Audit events **never contain the real value**
+- Node 24+, tested with eve **0.80.1** (eve is in beta: re-run the tests before moving to a new version)
 
 > **This is a technical tool, not a certification of compliance with Thailand's Personal Data Protection Act (PDPA).**
 
@@ -16,23 +21,42 @@ Protect Thai personal data in an [eve](https://eve.dev) agent at every point it 
 
 ---
 
-## The four layers
+## How it works
 
-| Layer | Helper | Protects |
+Personal data can leak at several points in an agent, so this package has a wrapper for each one. Each wraps a different part of the agent.
+
+```text
+              ┌─ withPdpaGuard ──── masks inbound messages, before eve records them
+customer ──▶ channel
+              └─ pdpaSlackRenderer / pdpaTelegramEvents ── masks the reply on its way out
+                     │
+                     ▼
+                 pdpaHook ──────────── stores the session · cancels blocked messages · warns about unwrapped channels
+                     │
+                     ▼
+                guardModel ─────────── masks the whole prompt before it leaves for the model provider
+                     │
+                     ▼
+           withTokenResolution ─────── gives the real value behind a token to the tools you allow
+```
+
+| Helper | Wraps | Without it |
 |---|---|---|
-| Channel | `withPdpaGuard(channel, …)` | Inbound messages — before eve records them, hooks see them, or the model reads them |
-| Tool | `withTokenResolution(tool, …)` | Gives one tool the real values behind tokens, for one purpose; masks what the tool returns |
-| Model | `guardModel(model, …)` | Every prompt on its way to the provider: tool results, connection results, recalled memory, history |
-| Slack reply | `pdpaSlackRenderer(…)` | Replies: tokens shown as `xxx-xxx-7777`, unknown or foreign tokens as `[ข้อมูลที่ปิดไว้]` |
-| Telegram reply | `pdpaTelegramEvents(…)` | The same, for Telegram |
+| `withPdpaGuard` | an inbound channel | eve records the real value and the model reads it |
+| `pdpaSlackRenderer` / `pdpaTelegramEvents` | the reply on Slack / Telegram | the customer sees raw `[tok:…]` in the reply |
+| `pdpaHook` | an agent hook | tools cannot resolve tokens issued on Slack or Telegram, because they cannot tell which chat it is (eve's HTTP channel still works) |
+| `guardModel` | the model | results from unwrapped tools, connections and memory reach the model provider with real values |
+| `withTokenResolution` | one tool at a time | the tool gets `[tok:…]` instead of the real number and cannot do its job |
 
-Plus **`pdpaHook(…)`** in `agent/hooks/`: required for tokenise. It stores the session id the other layers need, cancels a turn whose message the policy blocks (a channel left unwrapped), and deletes a chat's tokens when its session ends.
+> **Mounting the extension alone does not mask anything.** eve runs hooks *after* it has recorded a message, and a hook cannot change what the model reads. Masking happens where you wrap your channels, tools and model.
 
-Outbound is protected on **Slack and Telegram only** in 0.1. Other channels are masked inbound.
+---
 
-## Quick start
+## Quick start in 5 steps
 
-You own the guard — policy, keys, token store and audit sink all live in core's `createGuard`:
+### 1. Create the guard and the policy
+
+This file is the one place that decides what happens to each kind of data. Every step below imports `pdpa` from it.
 
 ```ts
 // agent/lib/guard.ts
@@ -57,6 +81,21 @@ export const guard = createGuard({
 export const pdpa = { guard, sessionKey: process.env.PDPA_SESSION_KEY ?? '' }
 ```
 
+**Actions**
+
+| Action | The model sees | Use it when |
+|---|---|---|
+| `redact` | `[ข้อมูลที่ปิดไว้]` | nobody needs the value |
+| `mask` | `xxx-xxx-7777` | the customer needs to tell which number it is, not see all of it |
+| `tokenise` | `[tok:…]` | a tool needs the real value, e.g. to send an OTP |
+| `hash` | `[PHONE:nmdfpsvvprsnpfgc]`, the same for the same value | you need to recognise the same person without the value (needs `hmacKey` in `createGuard`) |
+| `flag` | the real value (recorded in audit only) | the value passes on purpose, but you want to know it was there |
+| `block` | nothing: the message is refused | data you should never take in, such as card numbers |
+
+**What `allowedPurposes` is.** For `tokenise` only: the list of reasons a token may be exchanged for the real value. You name them, e.g. `'otp_send'` or `'callback'`, then give a tool the same name in step 4. If the names do not match, that tool is refused every time.
+
+### 2. Wrap your channels
+
 ```ts
 // agent/channels/slack.ts
 import { pdpaSlackRenderer, withPdpaGuard } from '@eve-pdpa-extension/eve/guard'
@@ -65,9 +104,13 @@ import { pdpa } from '../lib/guard.js'
 
 export default withPdpaGuard(slackChannel({ renderers: [pdpaSlackRenderer(pdpa)] }), {
   ...pdpa,
-  channelName: 'slack',   // this file's stem
+  channelName: 'slack',   // must match this file's stem
 })
 ```
+
+Wrap every file in `agent/channels/`. A channel you leave unwrapped hands eve the real values. For Telegram, see `pdpaTelegramEvents` in the reference below.
+
+### 3. Register the hook
 
 ```ts
 // agent/hooks/pdpa.ts
@@ -76,6 +119,10 @@ import { pdpa } from '../lib/guard.js'
 
 export default pdpaHook(pdpa)
 ```
+
+Tools cannot see which chat a message came from; this hook remembers it for them. With `tokenise`, it is required.
+
+### 4. Wrap the tools that need real values
 
 ```ts
 // agent/tools/otp_send.ts
@@ -92,9 +139,13 @@ export default withTokenResolution(
       return { sent: true, to: input.phone }
     },
   }),
-  { ...pdpa, purpose: 'otp_send' },
+  { ...pdpa, purpose: 'otp_send' },   // must be in allowedPurposes from step 1
 )
 ```
+
+Wrap the tools that need real values, and the tools that fetch personal data from elsewhere, such as a CRM: eve keeps and streams a tool's result as it is, and `guardModel` masks it only on its way to the model. A tool that never touches personal data needs no wrapper.
+
+### 5. Wrap the model
 
 ```ts
 // agent/agent.ts
@@ -109,49 +160,80 @@ export default defineAgent({
 })
 ```
 
-The customer writes `ขอ OTP ที่เบอร์ 091-888-7777`. eve records and the model reads `ขอ OTP ที่เบอร์ [tok:pmkjhrpmbrqfnbqc]`; `otp_send` receives `0918887777`; its result goes back to the model as `[tok:…]`; the Slack reply reads `ส่ง OTP ไปที่ xxx-xxx-7777 แล้วค่ะ`.
+The last check before data leaves your system: it masks whatever the earlier steps did not, such as an unwrapped tool's result or data from a connection.
 
 ---
 
-## `withPdpaGuard(channel, options)`
+## Reference
 
-Returns a copy of the channel whose every inbound message is masked first. Route methods, paths, transports and every other field — adapter, events, renderers, build metadata — are kept.
+### `withPdpaGuard(channel, options)`
 
-| Covers | How |
+Returns a copy of the channel whose every inbound message is masked first. Routes, adapter, events, renderers and every other field are kept.
+
+| Option | Value |
 |---|---|
-| `from(address).send()` — Slack, Teams, Telegram, the Chat SDK bridge, custom channels | message, `context` and `title` masked |
-| `attachSession(id).send()` · `to(channel, target).send()` · `receive`'s `ctx.from().send()` · WebSocket routes | same |
-| eve's HTTP channel, `POST /eve/v1/session` and `POST /eve/v1/session/:sessionId` | the JSON body's `message` and `clientContext`. A message on the create route is sent as the first follow-up of the session created just before it, so its tokens belong to that session |
-| `respond()` — answers to approvals and questions | **not scanned** |
+| `guard`, `sessionKey` | from `pdpa` in step 1 |
+| `channelName` | the channel file's stem (required except on eve's HTTP channel) |
+| `files` | `'pass'` (default) lets files through; `'block'` refuses messages with files |
+| `onBlock({ reason, blockedBy })` | called when a message is blocked, e.g. to send the customer a notice |
+| `language` | language of the notice, `'th'` (default) |
+| `policy`, `allowRawTokensInOutput` | for eve's HTTP channel (below) |
 
-Options: `guard`, `sessionKey`, `channelName` (required except on eve's HTTP channel), `files` (`'pass'` default, or `'block'`), `onBlock({ reason, blockedBy })`, `language` (`'th'` default), `policy` and `allowRawTokensInOutput` (below).
+**What is checked**
 
-A blocked message is never sent: `onBlock` runs, then the send throws `PdpaBlockedError` (eve's channels catch and log it). On eve's HTTP routes the answer is `422 { ok: false, code: "pdpa_blocked", error }`. A token store that is down blocks too, with its own reason.
+| Way in | Checked |
+|---|---|
+| `from(address).send()`, used by Slack, Teams, Telegram, the Chat SDK bridge and custom channels | the message, `context` and `title` |
+| `attachSession(id).send()`, `to(channel, target).send()`, `receive`'s `ctx.from().send()` and WebSocket routes | the same |
+| eve's HTTP channel: `POST /eve/v1/session` and `POST /eve/v1/session/:sessionId` | `message` and `clientContext` in the JSON body |
+| `respond()`, the answer to an approval or a question | **not checked** |
 
-**Tokens in replies.** eve's HTTP channel streams the model's reply as written, so a `[tok:…]` the model repeats reaches the caller. Wrapping that channel with a tokenising `policy` throws unless `allowRawTokensInOutput: true` — use it for local work only. Core's guard does not expose its policy, so pass `policy` for the check at wrap time; without it, the first message that would be tokenised on that channel is refused with `500 pdpa_config`.
+**When a message is blocked** it is never sent on: `onBlock` runs, then the send throws `PdpaBlockedError` (eve's channels catch and log it). On eve's HTTP routes the answer is `422 { ok: false, code: "pdpa_blocked", error }`. A token store that is down blocks too, with its own reason.
 
-## `withTokenResolution(tool, { guard, sessionKey, purpose, fields? })`
+**eve's HTTP channel and tokens.** This channel streams the model's reply as written, so a `[tok:…]` the model repeats reaches the caller. Wrapping it with a policy that tokenises therefore throws unless `allowRawTokensInOutput: true` — use that for local work only.
 
-Inside `execute`: every token in the input (or in `fields`, e.g. `['phone']`) is exchanged with `guard.resolve(token, { purpose, sessionId })`; the original `execute` runs with the real values; its result goes through the guard at `tool_output` before it is returned — eve streams and keeps a tool's result, so it is masked there, not only for the model.
+Core's guard does not expose its policy, so pass `policy` for the check at wrap time. Without it, the first message that would be tokenised on that channel is refused with `500 pdpa_config`.
 
-If a token cannot be used — expired, another chat's, a purpose the policy does not allow, the store down — the original `execute` is **not called**. The model gets `{ ok: false, reason, ask }`, e.g. `{ ok: false, reason: 'expired', ask: 'The value has expired. Ask the customer for it again.' }`. Description, schemas, approval and label are kept; generator tools stay generators.
+### `withTokenResolution(tool, { guard, sessionKey, purpose, fields? })`
 
-## `guardModel(model, { guard, sessionKey })`
+When the tool is called:
+1. every token in the input (or in `fields` only, e.g. `['phone']`) is exchanged for the real value with `guard.resolve(token, { purpose, sessionId })`
+2. the original `execute` runs with the real values
+3. its result is masked (boundary `tool_output`) before it is returned, because eve streams and keeps a tool's result, not only hands it to the model
 
-Wraps an AI SDK model (or a gateway id string) with `wrapLanguageModel`; every text of every prompt goes through the guard at `prompt`, tool results included. A text the policy blocks becomes `[ข้อมูลที่ปิดไว้]`.
+If a token cannot be used, the original `execute` is **not called**. The model gets an answer like this instead, so it can ask the customer again:
 
-- **Wrap subagents' models and a separate compaction model too** — each is its own call to a provider
-- **The model's output is not masked here** — that is the job of the Slack renderer and the Telegram events, on those channels
-- Set `modelContextWindowTokens` on the agent: eve looks the window up by model id, and a wrapped gateway model reports `gateway/<id>`
-- After deploying on Vercel, check that the wrapped gateway model still authenticates with OIDC: send one message and look for a reply and a `scan` at `boundary: "prompt"`
+| Reason | Example |
+|---|---|
+| expired (past `ttlSec`) | `{ ok: false, reason: 'expired', ask: 'The value has expired. Ask the customer for it again.' }` |
+| another chat's token | `{ ok: false, reason: …, ask: … }` |
+| `purpose` not in `allowedPurposes` | the same |
+| the token store is down | the same |
 
-## `pdpaSlackRenderer({ guard, sessionKey })`
+Description, schemas, approval and label are kept; generator tools stay generators.
 
-A Slack renderer for `message.completed`: the reply goes through the guard at `outbound`. Tokens become their display form, foreign or unknown tokens `[ข้อมูลที่ปิดไว้]`, and a reply the policy blocks is replaced by a notice. The narration before a tool call is rewritten too (Slack shows it as the thread status). Questions, approvals and sign-ins keep eve's default.
+### `guardModel(model, { guard, sessionKey })`
 
-## `pdpaTelegramEvents({ guard, sessionKey })`
+Wraps an AI SDK model (or a gateway id string) with `wrapLanguageModel`. Every text of every prompt goes through the guard (boundary `prompt`), tool results included. A text the policy blocks becomes `[ข้อมูลที่ปิดไว้]`.
 
-eve's Telegram channel has no renderers, so this returns a `message.completed` entry for `telegramChannel({ events })`. It replaces eve's built-in one and does what it does — posts the finished reply as plain text, posts nothing for the narration before a tool call — after the reply has gone through the guard at `outbound`, with the same results as the Slack renderer. Questions, approvals, sign-ins and errors keep eve's default.
+- **Wrap subagents' models and a separate compaction model too**: each one calls the model provider on its own
+- **The model's reply is not masked here**: that is the job of the Slack renderer and the Telegram events
+- **Set `modelContextWindowTokens`**: eve looks the window up by model id, and a wrapped gateway model reports `gateway/<id>`
+- **After deploying on Vercel**, check that the wrapped model still authenticates with OIDC: send one message and look for a reply and an audit `scan` at `boundary: "prompt"`
+
+### `pdpaSlackRenderer({ guard, sessionKey })`
+
+A Slack renderer for `message.completed`. The reply goes through the guard (boundary `outbound`) before it is posted.
+
+- known tokens are shown in their `display` form, e.g. `xxx-xxx-7777`
+- unknown tokens, or another chat's, become `[ข้อมูลที่ปิดไว้]`
+- a reply the policy blocks is replaced by a notice
+- the narration before a tool call is rewritten too (Slack shows it as the thread status)
+- questions, approvals and sign-ins keep eve's default
+
+### `pdpaTelegramEvents({ guard, sessionKey })`
+
+eve's Telegram channel has no renderers, so this returns a `message.completed` entry for `telegramChannel({ events })`. It does what eve's built-in one does (posts the finished reply as plain text, posts nothing for the narration before a tool call), but masks the reply first, with the same results as the Slack renderer. Questions, approvals, sign-ins and errors keep eve's default.
 
 ```ts
 export default withPdpaGuard(telegramChannel({ events: pdpaTelegramEvents(pdpa) }), {
@@ -160,44 +242,60 @@ export default withPdpaGuard(telegramChannel({ events: pdpaTelegramEvents(pdpa) 
 })
 ```
 
-## `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
+### `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
 
-Register it in `agent/hooks/pdpa.ts`. Its options are checked when it is created, so a missing guard or `sessionKey` stops eve from loading the hook rather than surfacing on the first message. On `message.received` it stores the session's pdpa id (tools cannot see the channel address), and cancels the turn when the message holds data the policy blocks, or a type in `blockOn`. On `session.completed` and `session.failed` it calls `guard.endSession`. eve's `reset` reaches no hook: those tokens expire with `ttlSec`.
+Register it in `agent/hooks/pdpa.ts`. Its options are checked when it is created, so a missing guard or `sessionKey` stops eve from loading the hook rather than surfacing on the first message.
 
-**A channel you forgot to wrap.** A wrapped channel hands eve text with nothing left to find, so when the hook still finds personal data in a recorded message — anything but `flag`, which passes on purpose — that message came through a channel nobody wrapped. The hook then calls `onUnmasked({ channel, entities })`, or without it warns once per channel (`Wrap agent/channels/<channel>.ts with withPdpaGuard`). Neither carries a value. `strict: true` cancels the turn as well, so the model never reads it — though eve has recorded it by then.
+| Event | What the hook does |
+|---|---|
+| `message.received` | stores the session's pdpa id for tools, the model and renderers, and cancels the turn when the message holds data the policy blocks, or a type in `blockOn` |
+| `session.completed`, `session.failed` | calls `guard.endSession`, which deletes that chat's tokens |
+| eve's `reset` | reaches no hook: those tokens expire with `ttlSec` |
 
-The package's default export mounts the same hook as an extension — `pdpa({ guard, sessionKey })` in `agent/extensions/pdpa.ts` — for setups without tokenise. With tokenise, register the hook in `agent/hooks/` so it shares session state with your tools.
+**A channel you forgot to wrap.** A wrapped channel hands eve text that is already masked. When the hook still finds personal data in a recorded message, that message came through a channel nobody wrapped (types set to `flag` do not count: they pass on purpose). The hook then:
 
-## Session ids
+- calls `onUnmasked({ channel, entities })` if you set it
+- otherwise warns once per channel in the log: `Wrap agent/channels/<channel>.ts with withPdpaGuard`
+- with `strict: true`, also cancels the turn, so the model never reads it — though eve has recorded it by then
 
-Core writes `sessionId` to every audit event and keeps tokens apart by it, and warns against platform ids there. So every layer derives it:
+Neither the call nor the warning carries a value: only the channel name and the data types.
+
+**Mounting as an extension.** The package's default export mounts the same hook as an extension: `pdpa({ guard, sessionKey })` in `agent/extensions/pdpa.ts`. Use it only for setups without tokenise. With tokenise, register the hook in `agent/hooks/` so it shares session state with your tools.
+
+### Session ids
+
+Core keeps tokens apart by `sessionId` and writes it to every audit event, and warns against platform ids there. So every layer of this package derives the id the same way:
 
 ```text
 "eve_" + base32(HMAC-SHA256(sessionKey, conversation)).slice(0, 26)
 conversation = "<channelName>:<address>"   or   "session:<eve session id>"  (eve's HTTP channel)
 ```
 
-`derivePdpaSessionId(sessionKey, conversation)` is exported for your own code — a tool that calls `guard.resolve` itself, say.
+If your own code needs it, a tool that calls `guard.resolve` itself say, use `derivePdpaSessionId(sessionKey, conversation)`.
 
-## `guardContent(content, { guard, sessionId, boundary?, files? })`
+### `guardContent(content, { guard, sessionId, boundary?, files? })`
 
-The function underneath: masks a string or an AI SDK `UserContent` array, async. Returns `{ blocked: false, content }` or `{ blocked: true, reason, blockedBy }`.
+The function every layer uses underneath: masks a string or an AI SDK `UserContent` array, async. Returns `{ blocked: false, content }` or `{ blocked: true, reason, blockedBy }`.
+
+---
 
 ## Known limitations
 
 - **Outbound only on Slack and Telegram.** Teams, Discord, custom channels and eve's HTTP channel (and so `useEveAgent` web UIs) send the model's reply as written
-- **`respond()` passes unscanned** — structured answers to approvals and questions, which can carry free text
+- **`respond()` passes unchecked**: answers to approvals and questions can carry free text
 - **Tokens issued on a `to()` hand-off cannot be resolved** in the receiving channel's session
-- **Subagents** have their own session state: a tool in a subagent cannot resolve the parent's tokens
-- **eve's HTTP create route**: a create request with a message and `callback` or `operationId` is refused (`400 pdpa_unsupported`) — create the session, then send
-- **Each text part is scanned on its own**; file contents and file names are not scanned (`files: 'block'` stops such messages)
-- **Names and addresses** are not detected yet (core)
-- A Thai national ID that also passes the card checksum in an issuer's range is read by core as a credit card — blocked under a policy that blocks cards
-- eve's HTTP routes are recognised by method and path; re-run the tests before moving eve
+- **Subagents have their own session state**: a tool in a subagent cannot resolve the parent's tokens
+- **eve's HTTP create route**: a create request with a message and `callback` or `operationId` is refused (`400 pdpa_unsupported`); create the session, then send
+- **Each text part is checked on its own**; file contents and file names are not checked (`files: 'block'` stops such messages)
+- **Names and addresses are not detected yet** (a core limitation)
+- **Some Thai national IDs read as credit cards**: one that also passes the card checksum in an issuer's range is blocked under a policy that blocks cards
+- **eve's HTTP routes are recognised by method and path**: re-run the tests before moving to a new eve
 
 ## Requirements
 
-Node 24+ · eve 0.80.1 (tested) · AI SDK 7 (`ai`, a peer, as for eve)
+- Node 24+
+- eve 0.80.1 (tested)
+- AI SDK 7 (`ai`, a peer dependency, as for eve)
 
 ## Reporting a vulnerability
 
