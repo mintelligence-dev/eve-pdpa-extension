@@ -51,3 +51,10 @@ export function storeReason(language: Language): string {
     ? 'This message could not be protected right now, so it was not passed on. Please try again in a moment.'
     : 'ระบบปิดข้อมูลส่วนตัวไม่สำเร็จชั่วคราว ข้อความนี้จึงไม่ได้ถูกส่งต่อ กรุณาลองใหม่อีกครั้ง'
 }
+
+/** The model's reply held data the policy blocks: the person sees this instead. */
+export function outboundBlockedReason(language: Language): string {
+  return language === 'en'
+    ? 'This reply held information that cannot be shared here, so it was not sent.'
+    : 'คำตอบนี้มีข้อมูลที่ส่งในแชตไม่ได้ จึงไม่ได้ส่งออกไป'
+}
