@@ -4,6 +4,8 @@ gateway ที่ deploy จริง · คั่นระหว่างแอ
 
 ใช้ `@eve-pdpa-extension/core` และ `@eve-pdpa-extension/http` **จาก repo นี้** (`workspace:*`) · 0.1 ไม่ปล่อย `http` ขึ้น npm
 
+**จะ deploy ของตัวเอง ใช้ปุ่ม Deploy to Vercel ใน [eve-pdpa-gateway](https://github.com/kurachatsarakarn/eve-pdpa-gateway)** — repo แยกที่มีแค่ gateway (D29) · โฟลเดอร์นี้ยังเป็นที่เดียวที่แก้โค้ด · แก้แล้ว commit แล้วซิงก์ไปด้วย `node scripts/sync-gateway-template.mjs ../eve-pdpa-gateway` (จาก root ของ repo นี้) → commit และ push ใน repo นั้น
+
 **ระบบที่จะเรียกใช้ gateway อ่าน [`API.md`](./API.md)** — endpoint · ช่อง · สูตรลายเซ็น พร้อมตัวอย่าง curl / Python / Node · spec เต็มอยู่ที่ [`public/openapi.json`](./public/openapi.json) · Postman collection ที่เซ็นให้เองอยู่ที่ [`postman/`](./postman) · README นี้เป็นเรื่องการ deploy
 
 ```
