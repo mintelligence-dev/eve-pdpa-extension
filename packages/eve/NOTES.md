@@ -74,3 +74,29 @@ every item here before moving the pin.
 | hook "scan mode" | core has no scan-only call; the hook runs `processSync` and reads `outcome` | `tokenise` is refused (below), so a scan has no side effects |
 | `CoreOptions` | `policy`, `hmacKey`, `detectors`, `onError` | `tokenise` needs a token store, a session id that is not personal data, and a way for tools to resolve tokens — all out of scope for 0.1.0, so a policy that tokenises is rejected with a clear error instead of producing tokens nobody can resolve |
 | `withPdpaGuard` throws `PdpaBlockedError` | same for `from`/`attachSession`/`to`/`receive`; the two eve HTTP message routes answer `422 {"ok":false,"code":"pdpa_blocked","error":<reason>}` | a route handler must return a `Response`; eve turns a thrown error into a generic 500 |
+
+---
+
+# Run 2 recon — tokenise, tools, model, Slack renderer (eve 0.80.1, 20 Oct 2026)
+
+Checked against the installed docs and by running a probe agent under `eve dev`.
+
+| Question | Answer | How it was checked |
+|---|---|---|
+| What does a tool's `execute(input, ctx)` see? | `ctx` keys: `session`, `getSandbox`, `abortSignal`, `callId`, `toolName`, `messages`, `getToken`, `requireAuth`. **No channel, no continuation address** | probe tool, `tools/definition.d.ts` (`ToolContext = SessionContext & …`) |
+| What does a hook see of the channel? | `ctx.channel = { kind, continuationToken? }`. `continuationToken` is **namespaced**: `"<channel file stem>:<address>"`, e.g. `zzprobe:T-123:abc` for `from("T-123:abc")` on `agent/channels/zzprobe.ts`. `kind` is `"http"` for every channel tried, so it does not name the channel. Sessions created through eve's HTTP channel have **no** `continuationToken` | probe hook on `*` |
+| Can a hook hand a value to a tool in the same session? | Yes: a `defineState` handle (`eve/context`) declared in a shared module, written by an agent hook, is read by an agent tool in the same turn | probe |
+| Slack renderers | `defineSlackRenderer({ events: { "message.completed"(event, channel, ctx, next) } })` from `eve/channels/slack`; `next()` or `next({ ...event, message })`; `channel.continuation.token` is the channel-local address; `ctx` is the session context, so `defineState` works there too | `channels/slack.mdx` *Customize rendering*, `ChannelContinuationOps` |
+| Session-end events | `session.completed` and `session.failed` reach hooks. **`reset` emits nothing a hook sees** — no `session.completed`, no `session.failed` | probe: `from(addr).reset()` then the `*` hook |
+| Model instance | `defineAgent({ model })` takes a gateway id string or an AI SDK `LanguageModel` (`agent-config.md`); `wrapLanguageModel` from `ai` 7 | docs + run 1 (`mockModel` is a `MockLanguageModelV4`) |
+| Default tools | `defineAgent({ defaultTools: false })` removes the optional defaults (bash, file tools, web fetch/search…); `disableTool()` in `agent/tools/<name>.ts` removes one | `concepts/built-in-tools.md` |
+| Core `Guard` exposes its policy? | No — `processSync`, `process`, `resolve`, `resolveSync`, `endSession`, `stats` only | core `types.ts` |
+
+## Session id mechanism (spec 2.2)
+
+`pdpaSessionId = "eve_" + base32(HMAC-SHA256(sessionKey, conversation)).slice(0, 26)`, where `conversation` is
+
+- `"<channel>:<address>"` for a message that arrives through `from(address)` — exactly the hook's `ctx.channel.continuationToken`, so the channel wrapper needs the channel's file stem as an option (`channel: "slack"`);
+- `"session:<eve session id>"` for a session with no continuation address — eve's HTTP channel. The follow-up route carries the id in its URL; the create route is split in two (create the session empty, then send the masked message as its follow-up) so the id exists before the message is masked.
+
+Inside the session the id is carried by **`defineState`**: the hook computes it on the first `message.received` and stores it; the tool wrapper, the model middleware and the Slack renderer read it. Tools cannot see the address, so this is the fallback the spec allows, using state rather than channel metadata (metadata is not visible to tool `execute`).
