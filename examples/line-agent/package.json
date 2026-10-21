@@ -15,8 +15,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@chat-adapter/state-memory": "4.42.0",
     "@eve-pdpa-extension/eve": "workspace:*",
     "ai": "7.0.143",
+    "chat": "4.42.0",
+    "chat-adapter-line": "0.1.6",
     "eve": "0.80.1"
   },
   "devDependencies": {

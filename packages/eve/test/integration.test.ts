@@ -7,7 +7,9 @@
 // when eve cannot start here, every test skips and says why. The server is
 // always stopped in afterAll.
 import { type ChildProcess, spawn } from 'node:child_process'
+import { createHmac, randomBytes } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { createServer as createHttpServer, type Server } from 'node:http'
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -73,6 +75,89 @@ let base = ''
 let log = ''
 let dir = ''
 
+// ---- LINE, offline -----------------------------------------------------------
+// The example's LINE channel runs with made-up credentials, and its calls to
+// api.line.me are sent to this stub instead (PDPA_EXAMPLE_LINE_API_BASE), so
+// nothing leaves the machine and the test can read what the bot would post.
+
+const LINE_SECRET = 'synthetic-line-channel-secret-0123'
+const LINE_BOT = `U${'b'.repeat(32)}`
+// A new synthetic user each run: eve dev keeps sessions in .eve/ between runs
+// and leaves an earlier server's conversations dormant, so a fixed user would
+// address a conversation the new server refuses to resume.
+const LINE_USER = `U${randomBytes(16).toString('hex')}`
+let lineApi: Server | undefined
+const lineCalls: { method: string; path: string; body: string }[] = []
+
+async function startLineApi(): Promise<string> {
+  lineApi = createHttpServer((req, res) => {
+    let body = ''
+    req.on('data', (chunk) => {
+      body += chunk
+    })
+    req.on('end', () => {
+      lineCalls.push({ method: req.method ?? '', path: req.url ?? '', body })
+      res.setHeader('content-type', 'application/json')
+      if (req.url === '/v2/bot/info') {
+        res.end(JSON.stringify({ userId: LINE_BOT, basicId: '@synthetic', displayName: 'bot' }))
+      } else if (req.url?.startsWith('/v2/bot/message/')) {
+        res.end(JSON.stringify({ sentMessages: [{ id: '1', quoteToken: 'q1' }] }))
+      } else {
+        res.end('{}')
+      }
+    })
+  })
+  const api = lineApi
+  await new Promise<void>((resolve) => api.listen(0, '127.0.0.1', resolve))
+  const address = api.address()
+  return `http://127.0.0.1:${typeof address === 'object' && address ? address.port : 0}`
+}
+
+let lineEvent = 0
+/** A LINE webhook for one 1:1 text message, signed as LINE signs it. */
+async function lineMessage(text: string): Promise<Response> {
+  lineEvent++
+  const body = JSON.stringify({
+    destination: LINE_BOT,
+    events: [
+      {
+        type: 'message',
+        mode: 'active',
+        timestamp: Date.now(),
+        source: { type: 'user', userId: LINE_USER },
+        webhookEventId: `01SYNTHETIC${String(lineEvent).padStart(15, '0')}`,
+        deliveryContext: { isRedelivery: false },
+        replyToken: `synthetic-reply-token-${lineEvent}`,
+        message: { id: String(1000 + lineEvent), type: 'text', quoteToken: `q${lineEvent}`, text },
+      },
+    ],
+  })
+  const signature = createHmac('sha256', LINE_SECRET).update(body).digest('base64')
+  return fetch(`${base}/eve/v1/line`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-line-signature': signature },
+    body,
+  })
+}
+
+/** Text the bot sent to LINE (reply or push) after the `since`-th recorded call. */
+function linePosts(since: number): string[] {
+  return lineCalls
+    .slice(since)
+    .filter((c) => c.path === '/v2/bot/message/reply' || c.path === '/v2/bot/message/push')
+    .flatMap((c) => (JSON.parse(c.body).messages ?? []).map((m: { text?: string }) => m.text ?? ''))
+}
+
+async function until<T>(what: string, check: () => T | undefined | false): Promise<T> {
+  const deadline = Date.now() + TURN_MS
+  for (;;) {
+    const value = check()
+    if (value) return value
+    if (Date.now() > deadline) throw new Error(`timed out waiting for ${what}`)
+    await sleep(200)
+  }
+}
+
 /** Lines the recording model wrote: one JSON array of prompt messages per model call. */
 function prompts(): { role: string; text: string }[][] {
   const file = join(dir, 'prompts.jsonl')
@@ -119,6 +204,7 @@ async function post(path: string, body?: unknown): Promise<Response> {
 beforeAll(async () => {
   if (skip !== null) return
   dir = mkdtempSync(join(tmpdir(), 'pdpa-eve-'))
+  const lineBase = await startLineApi()
   const port = await freePort()
   base = `http://127.0.0.1:${port}`
   server = spawn(
@@ -141,6 +227,9 @@ beforeAll(async () => {
         PDPA_EXAMPLE_MOCK_MODEL: '1',
         PDPA_EXAMPLE_RECORD_FILE: join(dir, 'prompts.jsonl'),
         PDPA_EXAMPLE_AUDIT_FILE: join(dir, 'audit.jsonl'),
+        LINE_CHANNEL_ACCESS_TOKEN: 'synthetic-line-access-token',
+        LINE_CHANNEL_SECRET: LINE_SECRET,
+        PDPA_EXAMPLE_LINE_API_BASE: lineBase,
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     },
@@ -172,6 +261,7 @@ afterAll(async () => {
     await Promise.race([exited, sleep(10_000)])
     if (server.exitCode === null) server.kill('SIGKILL')
   }
+  await new Promise((resolve) => (lineApi ? lineApi.close(resolve) : resolve(undefined)))
   if (dir) rmSync(dir, { recursive: true, force: true })
 }, 20_000)
 
@@ -230,7 +320,57 @@ describe('eve runtime — the model reads masked text only', () => {
     await sleep(1_000)
     expect(prompts().length).toBe(before)
   }, 60_000)
+})
 
+describe('eve runtime — LINE through the Chat SDK bridge', () => {
+  it('masks a 1:1 LINE message before the model, and the reply carries no original', async (ctx) => {
+    if (skip !== null) ctx.skip()
+    const before = prompts().length
+    const calls = lineCalls.length
+    const res = await lineMessage(`สวัสดีค่ะ เลขบัตร ${dashed(ID)} เบอร์ ${PHONE}`)
+    expect(res.status).toBe(200)
+
+    const prompt = await until('the model call', () => prompts()[before])
+    expect(JSON.stringify(prompt)).toContain('เลขบัตร [เลขบัตรประชาชน] เบอร์ xxx-xxx-7777')
+    expect(leaks(JSON.stringify(prompt))).toEqual([])
+
+    const posted = await until(
+      'the reply to LINE',
+      () => linePosts(calls).length > 0 && linePosts(calls),
+    )
+    expect(posted.join('\n')).toContain('[เลขบัตรประชาชน]')
+    expect(leaks(JSON.stringify(lineCalls))).toEqual([])
+  }, 60_000)
+
+  it('answers a blocked LINE message with the reason, and the model is never called', async (ctx) => {
+    if (skip !== null) ctx.skip()
+    const before = prompts().length
+    const calls = lineCalls.length
+    expect((await lineMessage(`บัตร ${CARD} ค่ะ`)).status).toBe(200)
+
+    const posted = await until(
+      'the notice to LINE',
+      () => linePosts(calls).length > 0 && linePosts(calls),
+    )
+    expect(posted).toEqual([expect.stringContaining('เลขบัตรเครดิต')])
+    await sleep(1_000)
+    expect(prompts().length).toBe(before)
+    expect(leaks(JSON.stringify(lineCalls))).toEqual([])
+  }, 60_000)
+
+  it('refuses a webhook with a wrong signature', async (ctx) => {
+    if (skip !== null) ctx.skip()
+    const res = await fetch(`${base}/eve/v1/line`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-line-signature': 'bm9wZQ==' },
+      body: JSON.stringify({ destination: LINE_BOT, events: [] }),
+    })
+    expect(res.status).toBe(401)
+  }, 60_000)
+})
+
+// Last, so it reads the audit of every test above.
+describe('eve runtime — audit and logs', () => {
   it('keeps every original out of audit and the server log', async (ctx) => {
     if (skip !== null) ctx.skip()
     const audit = readFileSync(join(dir, 'audit.jsonl'), 'utf8')
@@ -240,8 +380,8 @@ describe('eve runtime — the model reads masked text only', () => {
         .filter(Boolean)
         .map((line) => JSON.parse(line).source),
     )
-    // The channel wrapper and the extension's hook both scanned.
-    expect([...sources].sort()).toEqual(['channel', 'hook'])
+    // The HTTP channel wrapper, the LINE send wrapper and the extension's hook all scanned.
+    expect([...sources].sort()).toEqual(['channel', 'chat-sdk', 'hook'])
     expect(leaks(audit)).toEqual([])
     expect(leaks(log)).toEqual([])
   }, 60_000)
