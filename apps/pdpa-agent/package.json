@@ -12,7 +12,8 @@
     "dev:mock": "PDPA_TEMPLATE_MOCK_MODEL=1 eve dev --no-default-extensions",
     "build": "eve build",
     "start": "eve start",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --root ../.. apps/pdpa-agent/test"
   },
   "dependencies": {
     "@eve-pdpa-extension/core": "workspace:^",

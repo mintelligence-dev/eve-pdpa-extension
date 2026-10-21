@@ -1,68 +1,109 @@
-# examples/line-agent
+# apps/pdpa-agent
 
-A small Thai customer-service [eve](https://eve.dev) agent whose channels mask personal data with [`@eve-pdpa-extension/eve`](../../packages/eve) before eve records a message or the model reads it.
+A Thai customer-service [eve](https://eve.dev) agent with every layer of [`@eve-pdpa-extension/eve`](../../packages/eve) wired in: customers' personal data is masked before eve records it, phone numbers become tokens the model can pass to a tool, the tool alone sees the real number, and Slack replies show it masked. It is the reference setup to copy — private, not published, deployed by you.
 
-| File | What it does |
-|---|---|
-| `agent/channels/eve.ts` | eve's HTTP channel — what `curl`, the client SDK and `eve dev` use — wrapped with `withPdpaGuard` |
-| `agent/channels/line.ts` | LINE through the Chat SDK bridge and the community adapter [`chat-adapter-line`](https://www.npmjs.com/package/chat-adapter-line), with `guardChatSdk`. A blocked message is answered with the reason. Switched off without LINE credentials |
-| `agent/extensions/pdpa.ts` | The package's extension: cancels a turn whose message the policy blocks, in case a channel was left unwrapped |
-| `agent/lib/pdpa.ts` | Options shared by all three: `DEFAULT_POLICY` and an audit sink writing NDJSON |
-| `agent/lib/recording-model.ts` | eve's `mockModel`, recording every prompt it is sent — used when `PDPA_EXAMPLE_MOCK_MODEL=1` |
-| `agent/lib/offline-line.ts` | Test-only: sends the LINE adapter's API calls to a local stub when `PDPA_EXAMPLE_LINE_API_BASE` is set |
+> **Not legal advice, and not a certificate of compliance with Thailand's PDPA.** It is a technical starting point.
 
-Needs **Node 24**. It is a workspace package: install from the repository root.
+[ภาษาไทย](./README.th.md)
 
-## Run it locally, no API key
+## Quick start — local, no API key
+
+Needs **Node 24**. From the repository root:
 
 ```bash
-corepack pnpm install                       # at the repository root
-cd examples/line-agent
-corepack pnpm dev:mock                      # = PDPA_EXAMPLE_MOCK_MODEL=1 eve dev --no-default-extensions
+corepack pnpm install
+corepack pnpm build                 # the agent imports packages/eve and packages/http as built
+cd apps/pdpa-agent
+corepack pnpm dev:mock              # eve dev with the scripted mock model, on http://127.0.0.1:2000
 ```
 
-`eve dev` opens its terminal UI on http://127.0.0.1:2000. In another terminal, send a message with made-up personal data:
+Ask for an OTP with a made-up number:
 
 ```bash
 curl -s -X POST http://127.0.0.1:2000/eve/v1/session \
   -H 'content-type: application/json' \
-  -d '{"message":"เลขบัตร 2-3570-37506-24-2 โทร 091-888-7777 เมล somchai@example.com"}'
+  -d '{"message":"ขอ OTP ที่เบอร์ 091-888-7777 ค่ะ"}'
 # {"ok":true,"sessionId":"wrun_…","status":"accepted"}
+
+curl -s "http://127.0.0.1:2000/eve/v1/session/<sessionId>/stream?follow=false"
 ```
 
-Read what eve recorded and what the mock model answered (it repeats what it read):
+In the stream, watch the token being resolved:
 
-```bash
-curl -s "http://127.0.0.1:2000/eve/v1/session/<sessionId>/stream?follow=false" | grep message
-# "message.received" … "เลขบัตร [เลขบัตรประชาชน] โทร xxx-xxx-7777 เมล [อีเมล]"
-# "message.completed" … "(โมเดลทดสอบ) ข้อความที่โมเดลได้รับ: เลขบัตร [เลขบัตรประชาชน] โทร xxx-xxx-7777 เมล [อีเมล]"
-```
+| Event | What it shows |
+|---|---|
+| `message.received` | `ขอ OTP ที่เบอร์ [tok:…] ค่ะ` — eve recorded a token, never the number |
+| `actions.requested` | the model calls `otp_send` with `{ "phone": "[tok:…]" }` |
+| `action.result` | `{ "sent": true, "to": "[tok:…]" }` — the tool had the real number; its result is masked again |
+| `message.completed` | the reply. **On this HTTP channel it holds the raw token** — see *The 4 layers* |
 
-A message with a credit card number never reaches eve:
+Audit goes to stdout as NDJSON: `scan` events at `inbound`, `prompt` and `tool_output`, and one `token.resolve` with `outcome: "allowed"`, `purpose: "otp_send"` — all under one derived session id, none holding the number.
 
-```bash
-curl -s -X POST http://127.0.0.1:2000/eve/v1/session \
-  -H 'content-type: application/json' -d '{"message":"บัตร 4111 1111 1111 1111 ค่ะ"}'
-# {"ok":false,"code":"pdpa_blocked","error":"ข้อความนี้ไม่ได้ถูกส่งต่อ เพราะมีเลขบัตรเครดิต กรุณาส่งใหม่โดยไม่ใส่ข้อมูลนี้"}
-```
+A card number is refused before eve sees it: `curl … -d '{"message":"บัตร 4111 1111 1111 1111"}'` answers `422`.
 
-Audit events go to stdout as NDJSON, one per line; set `PDPA_EXAMPLE_AUDIT_FILE` to write them to a file instead.
+## The 4 layers
 
-## With a real model
+| Layer | File | Protects |
+|---|---|---|
+| **Channel** | `agent/channels/eve.ts`, `agent/channels/slack.ts` — `withPdpaGuard` | Inbound messages, before eve records them, any hook sees them, or the model reads them. Tokenises phones, redacts IDs, hashes emails, blocks cards |
+| **Tool** | `agent/tools/otp_send.ts` — `withTokenResolution` | Exchanges a token for the real number for `otp_send` only, in this chat only, until it expires; masks what the tool returns |
+| **Model** | `agent/agent.ts` — `guardModel` | Every prompt on its way to the provider: tool results, history, anything the other layers missed |
+| **Slack reply** | `agent/channels/slack.ts` — `pdpaSlackRenderer` | Replies: a token becomes `xxx-xxx-7777`, another chat's token `[ข้อมูลที่ปิดไว้]` |
 
-Drop `PDPA_EXAMPLE_MOCK_MODEL` and run `corepack pnpm dev`. `agent/agent.ts` names an AI Gateway model; give it `AI_GATEWAY_API_KEY` in `.env.local`, or sign in from the `eve dev` terminal UI with `/login`. See eve's docs: *Agent Configuration* (`node_modules/eve/docs/agent-config.md`).
+Plus `agent/hooks/pdpa.ts` (`pdpaHook`): stores the session id tools need, cancels a turn whose message the policy blocks, deletes a chat's tokens when its session ends. It never masks — eve has recorded the message before a hook runs.
 
-## With LINE
+**eve's HTTP channel cannot rewrite replies**, so the model's `[tok:…]` reaches whoever calls it. `channels/eve.ts` passes `allowRawTokensInOutput: true` for local use only (eve dev, the terminal UI, tests). Customers reach the agent through Slack.
 
-Copy `.env.example` to `.env.local` and set `LINE_CHANNEL_ACCESS_TOKEN` and `LINE_CHANNEL_SECRET`. The webhook is `POST /eve/v1/line`. LINE needs a public https URL, so locally run a tunnel. Step by step: [MANUAL_TEST.md](./MANUAL_TEST.md).
+`defaultTools: false` in `agent/agent.ts` removes eve's shell, file and web tools: a customer-service agent needs none, and each is another way for a value to leave.
 
-The automated test — `packages/eve/test/integration.test.ts` — runs this LINE path offline: it signs a webhook the way LINE does and stubs LINE's API on 127.0.0.1.
+## What is not included
 
-## Deploy it yourself later
+- Outbound protection on any channel but Slack — Teams, Telegram, Discord and custom channels are masked inbound only
+- Streaming web UI replies (`useEveAgent`): eve's HTTP channel streams the reply as written
+- Names and addresses: core does not detect them yet
+- LINE
+
+## Architecture boundary
+
+- **The template stores no real value.** Real values live only in the token store, and only until `ttlSec` (300 s) or the end of the session
+- **Upstash holds real phone numbers** until they expire. Keep it private to this project, and do not enable persistence you do not need
+- `PDPA_HMAC_KEY` and `PDPA_SESSION_KEY` are production secrets. Whoever holds the HMAC key can reverse every email hash by trying addresses; the session key ties audit records to conversations
+- Audit holds positions, types and the derived session id — keep it apart from message logs anyway
+
+## Observability
+
+The channels keep eve's default audience — an anonymous HTTP caller is `unknown`, Slack decides per conversation — and eve then records **metadata only** in preview and production traces. Do not set `audience: "public"` on these channels. Inbound text is masked before any trace sees it; this is defence in depth for tool arguments, tool results and model output. If you add a trace destination (`agent/instrumentation/*.ts`), give it a `tracePolicy` with `recordInputs: false` and `recordOutputs: false` unless it truly needs content — eve docs: `node_modules/eve/docs/guides/instrumentation/instrumentation.mdx`, *Control inputs and outputs*.
+
+## Deploy it yourself
 
 Nothing here deploys. When you do:
 
-- Replace `placeholderAuth()` in `agent/channels/eve.ts` with real auth — it turns away all production traffic on purpose. eve docs: *Auth & route protection*
-- Replace `createMemoryState()` in `agent/channels/line.ts` with a durable Chat SDK state adapter (Redis, Upstash…)
-- Send audit to a real store instead of stdout, kept apart from message logs
-- Follow eve's deployment guide: `node_modules/eve/docs/guides/deployment/overview.md` (or https://eve.dev/docs)
+1. **Upstash**: create a Redis database (Vercel Marketplace → Upstash, or upstash.com). Its env vars go into the project; either `UPSTASH_REDIS_REST_*` or `KV_REST_API_*`
+2. **Secrets**: `openssl rand -hex 32` twice → `PDPA_HMAC_KEY`, `PDPA_SESSION_KEY`
+3. **Slack app**: create it at api.slack.com/apps, set `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET`, point Event Subscriptions at `https://<your-domain>/eve/v1/slack` — eve's docs: `node_modules/eve/docs/channels/slack.mdx`
+4. **Vercel project** from this repository:
+   - Root Directory: `apps/pdpa-agent`
+   - Keep *Include files outside the root directory in the Build Step* on: the agent uses `packages/eve`, `packages/http` and `packages/core` from this monorepo
+   - Build Command: `corepack pnpm --dir ../.. build && eve build` — the packages' `dist/` is not in git, so they are built first
+   - Function region: `sin1` (Singapore) is closest to Thai users — the same choice as `apps/webhook`
+   - Environment variables: everything in `.env.example` except the `PDPA_TEMPLATE_*` test switches. `AI_GATEWAY_API_KEY` is not needed on Vercel: the AI Gateway uses the project's OIDC token
+5. **Replace `placeholderAuth()`** in `agent/channels/eve.ts` with your own auth — it turns all production traffic away on purpose — or remove the HTTP channel
+6. **Deploy** with `eve deploy` (eve docs: `node_modules/eve/docs/guides/deployment/vercel.mdx`)
+7. **Check `guardModel` after the first deploy**: send one message and confirm a `scan` event with `boundary: "prompt"` in audit, and a reply from the real model — that proves the wrapped gateway model authenticates with OIDC
+
+<!--
+TODO "Deploy with Vercel" button: Vercel's deploy button has no root-directory
+parameter (vercel.com/docs/deploy-button/source, checked 20 Oct 2026). A
+subdirectory in repository-url clones only that folder, and this agent cannot
+build without the workspace packages beside it. Add the button once
+@eve-pdpa-extension/eve and /http are on npm and the template can depend on
+published versions.
+-->
+
+## Tests
+
+```bash
+corepack pnpm --filter ./apps/pdpa-agent test
+```
+
+`test/e2e.test.ts` runs the agent under `eve dev` with the mock model and checks the OTP flow, a follow-up, a blocked card, and that no original value or secret reaches the prompt, history, audit or server log. `test/store.test.ts` checks the startup rules: no in-memory store and no missing secret in production.
