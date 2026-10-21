@@ -1,0 +1,18 @@
+{
+  "name": "@eve-pdpa-extension/consumer-eve",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@eve-pdpa-extension/eve": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "ai": "7.0.143",
+    "eve": "0.80.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}
