@@ -24,10 +24,11 @@ Protect Thai personal data in an [eve](https://eve.dev) agent at every point it 
 | Tool | `withTokenResolution(tool, …)` | Gives one tool the real values behind tokens, for one purpose; masks what the tool returns |
 | Model | `guardModel(model, …)` | Every prompt on its way to the provider: tool results, connection results, recalled memory, history |
 | Slack reply | `pdpaSlackRenderer(…)` | Replies: tokens shown as `xxx-xxx-7777`, unknown or foreign tokens as `[ข้อมูลที่ปิดไว้]` |
+| Telegram reply | `pdpaTelegramEvents(…)` | The same, for Telegram |
 
 Plus **`pdpaHook(…)`** in `agent/hooks/`: required for tokenise. It stores the session id the other layers need, cancels a turn whose message the policy blocks (a channel left unwrapped), and deletes a chat's tokens when its session ends.
 
-Outbound is protected on **Slack only** in 0.1. Other channels are masked inbound.
+Outbound is protected on **Slack and Telegram only** in 0.1. Other channels are masked inbound.
 
 ## Quick start
 
@@ -140,13 +141,24 @@ If a token cannot be used — expired, another chat's, a purpose the policy does
 Wraps an AI SDK model (or a gateway id string) with `wrapLanguageModel`; every text of every prompt goes through the guard at `prompt`, tool results included. A text the policy blocks becomes `[ข้อมูลที่ปิดไว้]`.
 
 - **Wrap subagents' models and a separate compaction model too** — each is its own call to a provider
-- **The model's output is not masked here** — that is the Slack renderer's job, on Slack
+- **The model's output is not masked here** — that is the job of the Slack renderer and the Telegram events, on those channels
 - Set `modelContextWindowTokens` on the agent: eve looks the window up by model id, and a wrapped gateway model reports `gateway/<id>`
 - After deploying on Vercel, check that the wrapped gateway model still authenticates with OIDC: send one message and look for a reply and a `scan` at `boundary: "prompt"`
 
 ## `pdpaSlackRenderer({ guard, sessionKey })`
 
 A Slack renderer for `message.completed`: the reply goes through the guard at `outbound`. Tokens become their display form, foreign or unknown tokens `[ข้อมูลที่ปิดไว้]`, and a reply the policy blocks is replaced by a notice. The narration before a tool call is rewritten too (Slack shows it as the thread status). Questions, approvals and sign-ins keep eve's default.
+
+## `pdpaTelegramEvents({ guard, sessionKey })`
+
+eve's Telegram channel has no renderers, so this returns a `message.completed` entry for `telegramChannel({ events })`. It replaces eve's built-in one and does what it does — posts the finished reply as plain text, posts nothing for the narration before a tool call — after the reply has gone through the guard at `outbound`, with the same results as the Slack renderer. Questions, approvals, sign-ins and errors keep eve's default.
+
+```ts
+export default withPdpaGuard(telegramChannel({ events: pdpaTelegramEvents(pdpa) }), {
+  ...pdpa,
+  channelName: 'telegram',
+})
+```
 
 ## `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
 
@@ -173,7 +185,7 @@ The function underneath: masks a string or an AI SDK `UserContent` array, async.
 
 ## Known limitations
 
-- **Outbound only on Slack.** Teams, Telegram, Discord, custom channels and eve's HTTP channel (and so `useEveAgent` web UIs) send the model's reply as written
+- **Outbound only on Slack and Telegram.** Teams, Discord, custom channels and eve's HTTP channel (and so `useEveAgent` web UIs) send the model's reply as written
 - **`respond()` passes unscanned** — structured answers to approvals and questions, which can carry free text
 - **Tokens issued on a `to()` hand-off cannot be resolved** in the receiving channel's session
 - **Subagents** have their own session state: a tool in a subagent cannot resolve the parent's tokens

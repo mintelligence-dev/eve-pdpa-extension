@@ -24,10 +24,11 @@
 | Tool | `withTokenResolution(tool, …)` | ให้ tool ตัวเดียวได้ค่าจริงหลัง token ตาม purpose เดียว · ปิดสิ่งที่ tool ส่งกลับ |
 | Model | `guardModel(model, …)` | prompt ทุกครั้งก่อนไปหา provider: ผลจาก tool · connection · memory ที่ดึงกลับมา · ประวัติแชต |
 | คำตอบ Slack | `pdpaSlackRenderer(…)` | คำตอบ: token แสดงเป็น `xxx-xxx-7777` · token ที่ไม่รู้จักหรือของแชตอื่นเป็น `[ข้อมูลที่ปิดไว้]` |
+| คำตอบ Telegram | `pdpaTelegramEvents(…)` | เหมือนกัน สำหรับ Telegram |
 
 และ **`pdpaHook(…)`** ใน `agent/hooks/` — จำเป็นเมื่อใช้ tokenise · เก็บ session id ที่ชั้นอื่นต้องใช้ · ยกเลิก turn ที่ข้อความมีข้อมูลที่ policy สั่ง block (channel ที่ลืมห่อ) · ลบ token ของแชตเมื่อ session จบ
 
-ขาออกปกป้องได้**เฉพาะ Slack** ใน 0.1 · channel อื่นปิดได้แค่ขาเข้า
+ขาออกปกป้องได้**เฉพาะ Slack และ Telegram** ใน 0.1 · channel อื่นปิดได้แค่ขาเข้า
 
 ## เริ่มใช้
 
@@ -140,13 +141,24 @@ export default defineAgent({
 ห่อโมเดลของ AI SDK (หรือ gateway id ที่เป็น string) ด้วย `wrapLanguageModel` · ข้อความทุกส่วนของทุก prompt ผ่าน guard ที่ `prompt` รวมผลจาก tool · ข้อความที่ policy สั่ง block กลายเป็น `[ข้อมูลที่ปิดไว้]`
 
 - **ต้องห่อโมเดลของ subagent และโมเดลสำหรับ compaction แยกด้วย** — แต่ละตัวเรียก provider เอง
-- **ตัวนี้ไม่ได้ปิดสิ่งที่โมเดลตอบ** — เป็นหน้าที่ของ Slack renderer บน Slack
+- **ตัวนี้ไม่ได้ปิดสิ่งที่โมเดลตอบ** — เป็นหน้าที่ของ Slack renderer และ Telegram events บน channel นั้น
 - ตั้ง `modelContextWindowTokens` ให้ agent: eve หาขนาด context จาก id ของโมเดล แต่โมเดล gateway ที่ห่อแล้วรายงานตัวเป็น `gateway/<id>`
 - หลัง deploy บน Vercel ให้ตรวจว่าโมเดลที่ห่อแล้วยังยืนยันตัวตนผ่าน OIDC ได้: ส่ง 1 ข้อความ แล้วดูว่าได้คำตอบ และมี `scan` ที่ `boundary: "prompt"`
 
 ## `pdpaSlackRenderer({ guard, sessionKey })`
 
 Slack renderer สำหรับ `message.completed`: คำตอบผ่าน guard ที่ `outbound` · token แสดงในรูปที่ปิดบางส่วน · token ที่ไม่รู้จักหรือของแชตอื่นเป็น `[ข้อมูลที่ปิดไว้]` · คำตอบที่ policy สั่ง block ถูกแทนด้วยข้อความแจ้ง · ข้อความที่โมเดลพิมพ์ก่อนเรียก tool ก็ถูกปิดด้วย (Slack แสดงเป็นสถานะของ thread) · คำถาม การอนุมัติ และการ sign-in ใช้ค่าตั้งต้นของ eve
+
+## `pdpaTelegramEvents({ guard, sessionKey })`
+
+Telegram channel ของ eve ไม่มี renderer จึงคืน `message.completed` ไว้ใส่ใน `telegramChannel({ events })` · แทนตัวตั้งต้นของ eve และทำแบบเดียวกัน (ส่งคำตอบเป็นข้อความธรรมดา · ไม่ส่งข้อความที่โมเดลพิมพ์ก่อนเรียก tool) หลังคำตอบผ่าน guard ที่ `outbound` · ผลเหมือน Slack renderer · คำถาม การอนุมัติ การ sign-in และ error ใช้ค่าตั้งต้นของ eve
+
+```ts
+export default withPdpaGuard(telegramChannel({ events: pdpaTelegramEvents(pdpa) }), {
+  ...pdpa,
+  channelName: 'telegram',
+})
+```
 
 ## `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
 
@@ -173,7 +185,7 @@ conversation = "<channelName>:<address>"   หรือ   "session:<eve session 
 
 ## ข้อจำกัดที่ควรรู้
 
-- **ขาออกปกป้องได้เฉพาะ Slack** · Teams, Telegram, Discord, channel ที่เขียนเอง และ HTTP channel ของ eve (รวมหน้าเว็บที่ใช้ `useEveAgent`) ส่งคำตอบตามที่โมเดลเขียน
+- **ขาออกปกป้องได้เฉพาะ Slack และ Telegram** · Teams, Discord, channel ที่เขียนเอง และ HTTP channel ของ eve (รวมหน้าเว็บที่ใช้ `useEveAgent`) ส่งคำตอบตามที่โมเดลเขียน
 - **`respond()` ไม่ถูกตรวจ** — คำตอบแบบมีโครงสร้างของการอนุมัติและคำถาม ซึ่งมีข้อความอิสระได้
 - **token ที่ออกระหว่างส่งต่องานด้วย `to()` แลกกลับไม่ได้** ใน session ของ channel ปลายทาง
 - **subagent** มี session state ของตัวเอง: tool ใน subagent แลก token ของ agent แม่ไม่ได้
