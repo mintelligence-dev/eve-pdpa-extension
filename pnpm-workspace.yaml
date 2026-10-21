@@ -1,6 +1,7 @@
 packages:
   - 'packages/*'
   - 'internal/*'
+  - 'examples/line-agent'
 
 # Refuse dependency versions published less than 24h ago.
 # Cheap supply-chain quarantine for a library sold on supply-chain hygiene.

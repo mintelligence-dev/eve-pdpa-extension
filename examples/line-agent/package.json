@@ -1,0 +1,26 @@
+{
+  "name": "@eve-pdpa-extension/example-line-agent",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A Thai customer-service eve agent whose channels mask personal data before eve or the model sees it.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "eve dev",
+    "dev:mock": "PDPA_EXAMPLE_MOCK_MODEL=1 eve dev --no-default-extensions",
+    "build": "eve build",
+    "start": "eve start",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@eve-pdpa-extension/eve": "workspace:*",
+    "ai": "7.0.143",
+    "eve": "0.80.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3"
+  }
+}

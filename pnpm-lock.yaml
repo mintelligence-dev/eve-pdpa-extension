@@ -218,6 +218,25 @@ importers:
         specifier: 5.0.1
         version: 5.0.1(@types/node@24.10.1)(@vitest/coverage-v8@5.0.1)(vite@8.3.0(@types/node@24.10.1)(yaml@2.9.1))
 
+  examples/line-agent:
+    dependencies:
+      '@eve-pdpa-extension/eve':
+        specifier: workspace:*
+        version: link:../../packages/eve
+      ai:
+        specifier: 7.0.143
+        version: 7.0.143(zod@4.6.7)
+      eve:
+        specifier: 0.80.1
+        version: 0.80.1(ai@7.0.143(zod@4.6.7))
+    devDependencies:
+      '@types/node':
+        specifier: 24.10.1
+        version: 24.10.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   internal/consumer-bundler:
     dependencies:
       '@eve-pdpa-extension/core':
