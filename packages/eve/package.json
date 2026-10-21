@@ -48,8 +48,7 @@
   "files": [
     "dist",
     "LICENSE",
-    "NOTICE",
-    "CHANGELOG.md"
+    "NOTICE"
   ],
   "engines": {
     "node": ">=24"
