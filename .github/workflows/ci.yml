@@ -50,6 +50,15 @@ jobs:
             packages/cli/dist
             packages/cli/smoke
           retention-days: 3
+      # package.json for "type": "module", as for core. D24.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: http-dist
+          path: |
+            packages/http/package.json
+            packages/http/dist
+            packages/http/smoke
+          retention-days: 3
 
   quality:
     runs-on: ubuntu-latest
@@ -75,6 +84,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - uses: actions/download-artifact@v4
         with: { name: core-dist, path: packages/core }
+      - uses: actions/download-artifact@v4
+        with: { name: http-dist, path: packages/http }
       - run: pnpm gate:deps
       - run: pnpm gate:builtins
       - run: pnpm gate:ner
@@ -128,6 +139,28 @@ jobs:
           ln -s ../../../core packages/cli/node_modules/@eve-pdpa-extension/core
       - run: node packages/cli/smoke/run.mjs
 
+  # D24: http claims every Node from 20 (its engines) and web standards only.
+  # The shipped dist, no install, core linked beside it as pnpm would.
+  smoke-node-http:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20', '22', '24', '26']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with: { name: core-dist, path: packages/core }
+      - uses: actions/download-artifact@v4
+        with: { name: http-dist, path: packages/http }
+      - uses: actions/setup-node@v6
+        with: { node-version: '${{ matrix.node }}' }
+      - run: |
+          mkdir -p packages/http/node_modules/@eve-pdpa-extension
+          ln -s ../../../core packages/http/node_modules/@eve-pdpa-extension/core
+      - run: node packages/http/smoke/run.mjs
+
   smoke-deno:
     needs: build
     runs-on: ubuntu-latest
@@ -158,8 +191,11 @@ jobs:
         with: { node-version: '24' }
       - uses: actions/download-artifact@v4
         with: { name: core-dist, path: packages/core }
+      - uses: actions/download-artifact@v4
+        with: { name: http-dist, path: packages/http }
       - run: npm i --no-save miniflare@4.20260730.0
       - run: node scripts/smoke-workerd.mjs
+      - run: node scripts/smoke-workerd.mjs http
 
   smoke-browser:
     needs: build
