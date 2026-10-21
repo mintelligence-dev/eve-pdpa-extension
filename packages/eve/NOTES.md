@@ -100,3 +100,13 @@ Checked against the installed docs and by running a probe agent under `eve dev`.
 - `"session:<eve session id>"` for a session with no continuation address — eve's HTTP channel. The follow-up route carries the id in its URL; the create route is split in two (create the session empty, then send the masked message as its follow-up) so the id exists before the message is masked.
 
 Inside the session the id is carried by **`defineState`**: the hook computes it on the first `message.received` and stores it; the tool wrapper, the model middleware and the Slack renderer read it. Tools cannot see the address, so this is the fallback the spec allows, using state rather than channel metadata (metadata is not visible to tool `execute`).
+
+## Extension and hook pattern (spec 2.6)
+
+eve binds an extension's config when the agent loads the mount and keeps the validated value in memory (`defineExtension` in `public/definitions/extension.js`); it is never serialised. So the mount can take the live guard: `pdpa({ guard, sessionKey, files?, blockOn?, language? })`, validated by a hand-written Standard Schema.
+
+The template still registers the hook as **`agent/hooks/pdpa.ts` with `pdpaHook({ guard, sessionKey })`** from `./guard`, not through the mount. The session id travels from the hook to tools in `defineState`, and the probe showed that an agent hook and an agent tool share it; state declared for an extension mount is scoped to the mount path (`extensions.md`), which was not verified to reach agent tools. The mount stays for setups without tokenise, where it only blocks and audits.
+
+## Hooks cannot mask (spec 2.8)
+
+`test/canary.test.ts` runs `test/fixtures/canary-agent`, whose hook mutates `event.data`, replaces its parts and returns a changed copy on `message.received`. eve 0.80.1's mock model still receives the original message. If that test fails, eve has started letting hooks change input.

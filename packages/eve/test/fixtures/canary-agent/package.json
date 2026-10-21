@@ -1,0 +1,8 @@
+{
+  "name": "canary-agent",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "eve": "0.80.1"
+  }
+}
