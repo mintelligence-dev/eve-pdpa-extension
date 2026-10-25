@@ -151,7 +151,7 @@ def verify(raw: bytes, headers, scope: str, secret: str) -> bool:
 
 | ช่อง | บังคับ | กติกา |
 |---|---|---|
-| `policy` | | ชื่อชุดกฎ (≤ 64) · ไม่ส่ง = `default` · deployment นี้มี `default` (ไม่ tokenise) และ `otp` (เบอร์เป็น token แลกได้เฉพาะ `otp_send`) |
+| `policy` | | ชื่อชุดกฎ (≤ 64) · ไม่ส่ง = `default` · deployment นี้มี `default` (ไม่ tokenise) · `otp` (เบอร์เป็น token แลกได้เฉพาะ `otp_send`) มีเฉพาะเมื่อเปิด OTP (`PDPA_RESOLVE_SECRET` + Upstash) · ไม่เปิดแล้วส่ง `otp` = 400 `field: "policy"` |
 | `sessionId` | ✅ | id ห้องแชทของระบบคุณ (≤ 256) · gateway **รับตามที่ส่งมาและเขียนลง audit กับ Upstash ตามนั้น** · อย่าใช้ LINE userId หรือเบอร์ — ถ้าใช้ ข้อมูลส่วนบุคคลจะไปอยู่ใน log · ผู้ส่งรับผิดชอบค่านี้ |
 | `ref` | | id ข้อความของระบบคุณ (≤ 256) · รับตามที่ส่งมาเหมือน `sessionId` |
 | `text` | ✅ | ข้อความ |
