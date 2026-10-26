@@ -80,7 +80,7 @@ describe('no original value or secret leaves the package', () => {
         seen.push(info)
         throw new Error('notice failed')
       }
-      const { args, calls } = fakeArgs()
+      const { args, calls, respond } = fakeArgs()
       const channel = withPdpaGuard(
         {
           routes: [
@@ -103,7 +103,31 @@ describe('no original value or secret leaves the package', () => {
         },
         { guard, sessionKey: SESSION_KEY, channelName: 'custom', onBlock },
       )
-      const http = withPdpaGuard(eveLike().channel, {
+      // The same text typed as the answer to a question, with a denial note.
+      const answers = withPdpaGuard(
+        {
+          routes: [
+            {
+              method: 'POST' as const,
+              path: '/a',
+              handler: async (request: Request, a: typeof args) => {
+                const { message } = (await request.json()) as { message: string }
+                await a.from('C1').respond(
+                  [
+                    { requestId: 'r1', text: message },
+                    { requestId: 'r2', optionId: 'cancel', text: message },
+                  ] as never,
+                  { auth: null, context: [message] },
+                )
+                return new Response('ok')
+              },
+            },
+          ],
+        },
+        { guard, sessionKey: SESSION_KEY, channelName: 'custom', onBlock },
+      )
+      const eve = eveLike()
+      const http = withPdpaGuard(eve.channel, {
         guard,
         sessionKey: SESSION_KEY,
         onBlock,
@@ -131,6 +155,19 @@ describe('no original value or secret leaves the package', () => {
         })
         await keep(seen, () => channel.receive?.({ message }, { from: args.from } as never))
         await keep(seen, () =>
+          (answers.routes[0]?.handler as never as Function)(post({ message }, '/a'), args),
+        )
+        await keep(seen, async () => {
+          const res: Response = await (http.routes[1]?.handler as never as Function)(
+            post(
+              { inputResponses: [{ requestId: 'r1', text: message }], clientContext: message },
+              '/eve/v1/session/wrun_1',
+            ),
+            { ...fakeArgs().args, params: { sessionId: 'wrun_1' } },
+          )
+          return [res.status, await res.text()]
+        })
+        await keep(seen, () =>
           hook(
             { type: 'message.received', data: { message, sequence: 1, turnId: 't' } },
             { cancel: () => {}, channel: {}, session: { id: 'wrun_1' } },
@@ -139,7 +176,9 @@ describe('no original value or secret leaves the package', () => {
       }
 
       expect(seen.length).toBeGreaterThan(20)
-      expectNoLeak([seen, calls, audit], SECRETS)
+      // What reached eve: sends, answers, and the bodies its HTTP routes were given.
+      expect(respond).toHaveBeenCalled()
+      expectNoLeak([seen, calls, respond.mock.calls, eve.seen, audit], SECRETS)
       expectNoLeak(
         consoles.flatMap((spy) => spy.mock.calls),
         SECRETS,

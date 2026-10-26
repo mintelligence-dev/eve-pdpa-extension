@@ -149,7 +149,7 @@ describe('withPdpaGuard — the other operations', () => {
     expect(calls).toEqual([{ via: 'to', message: 'เมล [อีเมล]', options: { auth: null } }])
   })
 
-  it('passes respond() and the other operations through untouched', async () => {
+  it('passes a respond() of ids only, and the other operations, through untouched', async () => {
     const { args, respond, cancel } = fakeArgs()
     const responses = [{ requestId: 'req_1', optionId: 'approve' }]
     const { opts } = options()
@@ -164,6 +164,63 @@ describe('withPdpaGuard — the other operations', () => {
     )(post({ message: 'x' }), args)
     expect(respond.mock.calls[0]?.[0]).toBe(responses)
     expect(cancel).toHaveBeenCalledOnce()
+  })
+
+  it('masks the free text of respond() and its context; ids pass as they are', async () => {
+    const { args, respond } = fakeArgs()
+    const { t, opts } = options()
+    const responses = [
+      { requestId: 'req_1', optionId: 'approve' },
+      { requestId: 'req_2', text: `โทรกลับที่ ${PHONE}` },
+      { requestId: 'req_3', optionId: 'cancel', text: `ส่งไปที่ ${EMAIL} แทน` },
+    ]
+    const before = structuredClone(responses)
+    await handlerOf(
+      withPdpaGuard(
+        channelUsing((a) =>
+          a.from('C1:1800.1').respond(responses, { auth: null, context: [`เลขบัตร ${dashed(ID)}`] }),
+        ),
+        opts,
+      ),
+    )(post({ message: 'x' }), args)
+    expect(respond.mock.calls).toEqual([
+      [
+        [
+          { requestId: 'req_1', optionId: 'approve' },
+          { requestId: 'req_2', text: 'โทรกลับที่ xxx-xxx-7777' },
+          { requestId: 'req_3', optionId: 'cancel', text: 'ส่งไปที่ [อีเมล] แทน' },
+        ],
+        { auth: null, context: ['เลขบัตร [เลขบัตรประชาชน]'] },
+      ],
+    ])
+    expect(responses).toEqual(before)
+    const expected = await derivePdpaSessionId(SESSION_KEY, 'fake:C1:1800.1')
+    expect(t.audit.filter((e) => e.type === 'scan').every((e) => e.sessionId === expected)).toBe(
+      true,
+    )
+    expectNoLeak([respond.mock.calls, t.audit], [ID, PHONE, EMAIL])
+  })
+
+  it('stops a blocked answer: respond() never called, onBlock once, PdpaBlockedError', async () => {
+    const { args, respond } = fakeArgs()
+    const onBlock = vi.fn()
+    const { opts } = options({ onBlock })
+    const answered = handlerOf(
+      withPdpaGuard(
+        channelUsing((a) =>
+          a
+            .attachSession('wrun_1')
+            .respond([{ requestId: 'req_1', optionId: 'cancel', text: `ใช้บัตร ${CARD}` }], {
+              auth: null,
+            }),
+        ),
+        opts,
+      ),
+    )(post({ message: 'x' }), args)
+    await expect(answered).rejects.toBeInstanceOf(PdpaBlockedError)
+    expect(respond).not.toHaveBeenCalled()
+    expect(onBlock).toHaveBeenCalledOnce()
+    await answered.catch((error: unknown) => expectNoLeak([error, onBlock.mock.calls], [CARD]))
   })
 
   it('keeps every other route argument, eve internals included', async () => {
@@ -326,6 +383,63 @@ describe('withPdpaGuard — eve HTTP message routes', () => {
     expect(t.audit.at(-1)).toMatchObject({
       sessionId: await derivePdpaSessionId(SESSION_KEY, 'session:wrun_T7'),
     })
+  })
+
+  it('masks the free text of inputResponses on a follow-up, and refuses a blocked one', async () => {
+    const { channel, seen } = eveLike()
+    const { args } = fakeArgs()
+    args.params = { sessionId: 'wrun_T7' }
+    const onBlock = vi.fn()
+    const { t, opts } = options({ channelName: undefined, onBlock })
+    const follow = handlerOf(withPdpaGuard(channel, opts), 1)
+    await follow(
+      post(
+        {
+          inputResponses: [
+            { requestId: 'req_1', optionId: 'approve' },
+            { requestId: 'req_2', text: `เบอร์ ${PHONE}` },
+          ],
+          clientContext: EMAIL,
+        },
+        '/eve/v1/session/wrun_T7',
+      ),
+      args,
+    )
+    expect(seen[0]?.body).toEqual({
+      inputResponses: [
+        { requestId: 'req_1', optionId: 'approve' },
+        { requestId: 'req_2', text: 'เบอร์ xxx-xxx-7777' },
+      ],
+      clientContext: '[อีเมล]',
+    })
+    expect(t.audit.at(-1)).toMatchObject({
+      sessionId: await derivePdpaSessionId(SESSION_KEY, 'session:wrun_T7'),
+    })
+
+    const res = await follow(
+      post(
+        { inputResponses: [{ requestId: 'req_3', text: `บัตร ${CARD}` }] },
+        '/eve/v1/session/wrun_T7',
+      ),
+      args,
+    )
+    expect(res.status).toBe(422)
+    const body = await res.json()
+    expect(body).toMatchObject({ ok: false, code: 'pdpa_blocked' })
+    expect(seen).toHaveLength(1)
+    expect(onBlock).toHaveBeenCalledOnce()
+    expectNoLeak([seen, body, t.audit], [PHONE, EMAIL, CARD])
+  })
+
+  it('hands eve the very same follow-up when the answers carry ids only', async () => {
+    const { channel, seen } = eveLike()
+    const { args } = fakeArgs()
+    args.params = { sessionId: 'wrun_T7' }
+    const { t, opts } = options({ channelName: undefined })
+    const ids = { inputResponses: [{ requestId: 'req_1', optionId: 'approve' }] }
+    await handlerOf(withPdpaGuard(channel, opts), 1)(post(ids, '/eve/v1/session/wrun_T7'), args)
+    expect(seen[0]?.body).toEqual(ids)
+    expect(t.audit.filter((e) => e.type === 'scan')).toEqual([])
   })
 
   it('answers 422 to a blocked message and retires the session it had just created', async () => {
