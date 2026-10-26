@@ -4,8 +4,9 @@
  *
  * Built-in channels (Slack, Teams, Telegram, the Chat SDK bridge) and custom
  * ones pass each inbound message to `from(address).send()`, a fixed session's
- * `send()`, or `to(channel, target).send()`. The wrapper replaces those three
- * on the arguments every route handler receives, and on the context of the
+ * `send()`, or `to(channel, target).send()`, and each answer to an approval or
+ * a question to `respond()` on the same handles. The wrapper replaces both on
+ * the arguments every route handler receives, and on the context of the
  * channel's `receive` hook, which handles hand-offs from other channels.
  *
  * eve's own HTTP channel is the exception: `POST /eve/v1/session` creates a
@@ -74,6 +75,7 @@ type Scan = (input: Delivery, conversation: string) => Promise<DeliveryResult>
 
 interface Sendable {
   send(message: UserContent, options: any): Promise<unknown>
+  respond?(responses: any, options: any): Promise<unknown>
 }
 
 const TOKENS_IN_OUTPUT =
@@ -112,6 +114,43 @@ async function notify(onBlock: EveGuardOptions['onBlock'], out: DeliveryResult):
   }
 }
 
+/**
+ * The free text of a list of input responses — `{ requestId, optionId?, text? }`,
+ * eve 0.80.1 — with where each sits. A pressed button carries only ids: nothing
+ * to scan. eve validates the shape; what is not a response is left to it.
+ */
+function answerTexts(responses: unknown): { at: number; text: string }[] {
+  if (!Array.isArray(responses)) return []
+  const out: { at: number; text: string }[] = []
+  responses.forEach((r, at) => {
+    const text = typeof r === 'object' && r !== null ? (r as { text?: unknown }).text : undefined
+    if (typeof text === 'string' && text.length > 0) out.push({ at, text })
+  })
+  return out
+}
+
+/** The responses scanned as text parts, in order. */
+const answerParts = (texts: { text: string }[]): UserContent =>
+  texts.map(({ text }) => ({ type: 'text' as const, text }))
+
+/** A copy of `responses` with each free text swapped for its masked part. */
+function withAnswers(
+  responses: readonly unknown[],
+  texts: { at: number; text: string }[],
+  masked: UserContent,
+): unknown[] {
+  const parts = masked as { text?: string }[]
+  const copy = [...responses]
+  texts.forEach(({ at }, i) => {
+    copy[at] = { ...(responses[at] as object), text: parts[i]?.text ?? '' }
+  })
+  return copy
+}
+
+function blockedError(out: Extract<DeliveryResult, { blocked: true }>, failure: unknown) {
+  return new PdpaBlockedError(out.reason, failure === undefined ? undefined : { cause: failure })
+}
+
 function guardSend<H extends Sendable>(
   handle: H,
   scan: Scan,
@@ -126,15 +165,29 @@ function guardSend<H extends Sendable>(
         { message, context: field(options, 'context'), title: field(options, 'title') },
         conversation,
       )
-      if (out.blocked) {
-        const failure = await notify(onBlock, out)
-        throw new PdpaBlockedError(
-          out.reason,
-          failure === undefined ? undefined : { cause: failure },
-        )
-      }
+      if (out.blocked) throw blockedError(out, await notify(onBlock, out))
       return handle.send(out.message, withMasked(options, out))
     },
+    // An answer typed into a question, or a note left with a denial, is free
+    // text eve records and the model reads. A blocked one is never sent: the
+    // request stays open, so the person can answer again.
+    ...(typeof handle.respond === 'function'
+      ? {
+          respond: async (responses: unknown, options: unknown) => {
+            const texts = answerTexts(responses)
+            const context = field(options, 'context')
+            if (texts.length === 0 && context === undefined) {
+              return handle.respond?.(responses, options)
+            }
+            const out = await scan({ message: answerParts(texts), context }, conversation)
+            if (out.blocked) throw blockedError(out, await notify(onBlock, out))
+            return handle.respond?.(
+              withAnswers(responses as unknown[], texts, out.message),
+              withMasked(options, out),
+            )
+          },
+        }
+      : {}),
   }
 }
 
@@ -190,7 +243,10 @@ interface HttpGuard {
 
 let warnedTokens = false
 
-/** Reads `message` and `clientContext`, masks them for eve session `sessionId`, and says what to send. */
+/**
+ * Reads `message` — or, in its place, the free text of `inputResponses` — and
+ * `clientContext`, masks them for eve session `sessionId`, and says what to send.
+ */
 async function maskBody(
   fields: Record<string, unknown>,
   sessionId: string,
@@ -206,11 +262,16 @@ async function maskBody(
   }
   const contextStrings: string[] = []
   stringsIn(fields.clientContext, contextStrings)
+  // eve takes one of `message` and `inputResponses`, and refuses a body with both.
+  const answers = message === undefined ? answerTexts(fields.inputResponses) : []
 
   let out: DeliveryResult
   try {
     out = await http.scan(
-      { message: (message ?? []) as UserContent, context: contextStrings },
+      {
+        message: (message ?? answerParts(answers)) as UserContent,
+        context: contextStrings,
+      },
       sessionConversation(sessionId),
     )
   } catch (error) {
@@ -239,6 +300,9 @@ async function maskBody(
   let i = 0
   const body: Record<string, unknown> = { ...fields }
   if (message !== undefined) body.message = out.message
+  if (answers.length > 0) {
+    body.inputResponses = withAnswers(fields.inputResponses as unknown[], answers, out.message)
+  }
   if (fields.clientContext !== undefined) {
     body.clientContext = replaceStrings(fields.clientContext, () => masked[i++] ?? '')
   }
@@ -341,7 +405,12 @@ function guardedCreate(
 function guardedFollowUp(followUp: Handler, http: HttpGuard): Handler {
   return async (request, args) => {
     const fields = await readObject(request)
-    if (fields === null || (fields.message === undefined && fields.clientContext === undefined)) {
+    if (
+      fields === null ||
+      (fields.message === undefined &&
+        fields.clientContext === undefined &&
+        answerTexts(fields.inputResponses).length === 0)
+    ) {
       return followUp(request, args)
     }
     const sessionId =
@@ -367,7 +436,8 @@ function guardedFollowUp(followUp: Handler, http: HttpGuard): Handler {
  * `PdpaBlockedError` (eve's built-in channels catch and log it). On eve's HTTP
  * routes the request is answered `422 { ok: false, code: "pdpa_blocked" }`.
  *
- * `respond()` — answers to approval and question prompts — passes unscanned.
+ * `respond()` — answers to approval and question prompts — is guarded the same
+ * way: the free `text` of each response and its `context`. Ids pass as they are.
  */
 export function withPdpaGuard<C extends GuardableChannel>(
   channel: C,

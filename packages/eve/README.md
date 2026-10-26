@@ -196,10 +196,10 @@ Returns a copy of the channel whose every inbound message is masked first. Route
 |---|---|
 | `from(address).send()`, used by Slack, Teams, Telegram, the Chat SDK bridge and custom channels | the message, `context` and `title` |
 | `attachSession(id).send()`, `to(channel, target).send()`, `receive`'s `ctx.from().send()` and WebSocket routes | the same |
-| eve's HTTP channel: `POST /eve/v1/session` and `POST /eve/v1/session/:sessionId` | `message` and `clientContext` in the JSON body |
-| `respond()`, the answer to an approval or a question | **not checked** |
+| `respond()` on the same handles: the answer to an approval or a question | the typed answer or denial note (`text`) and `context`; a pressed button (`requestId`, `optionId`) passes as it is |
+| eve's HTTP channel: `POST /eve/v1/session` and `POST /eve/v1/session/:sessionId` | `message`, `inputResponses[].text` and `clientContext` in the JSON body |
 
-**When a message is blocked** it is never sent on: `onBlock` runs, then the send throws `PdpaBlockedError` (eve's channels catch and log it). On eve's HTTP routes the answer is `422 { ok: false, code: "pdpa_blocked", error }`. A token store that is down blocks too, with its own reason.
+**When a message is blocked** it is never sent on: `onBlock` runs, then the send throws `PdpaBlockedError` (eve's channels catch and log it). A blocked answer works the same way, and its request stays open, so the person can answer again. On eve's HTTP routes the answer is `422 { ok: false, code: "pdpa_blocked", error }`. A token store that is down blocks too, with its own reason.
 
 **eve's HTTP channel and tokens.** This channel streams the model's reply as written, so a `[tok:…]` the model repeats reaches the caller. Wrapping it with a policy that tokenises therefore throws unless `allowRawTokensInOutput: true` — use that for local work only.
 
@@ -301,7 +301,7 @@ The function every layer uses underneath: masks a string or an AI SDK `UserConte
 ## Known limitations
 
 - **Outbound only on Slack and Telegram.** Teams, Discord, custom channels and eve's HTTP channel (and so `useEveAgent` web UIs) send the model's reply as written
-- **`respond()` passes unchecked**: answers to approvals and questions can carry free text
+- **The unwrapped-channel warning sees messages only**: `pdpaHook` gets no event for an answer to a question or an approval, so an answer through a channel nobody wrapped is not reported
 - **Tokens issued on a `to()` hand-off cannot be resolved** in the receiving channel's session
 - **Subagents have their own session state**: a tool in a subagent cannot resolve the parent's tokens
 - **eve's HTTP create route**: a create request with a message and `callback` or `operationId` is refused (`400 pdpa_unsupported`); create the session, then send

@@ -196,10 +196,10 @@ export default defineAgent({
 |---|---|
 | `from(address).send()` ซึ่ง Slack, Teams, Telegram, Chat SDK bridge และ channel ที่เขียนเองใช้ | ข้อความ, `context` และ `title` |
 | `attachSession(id).send()`, `to(channel, target).send()`, `ctx.from().send()` ใน `receive` และ WebSocket route | เหมือนกัน |
-| HTTP channel ของ eve: `POST /eve/v1/session` และ `POST /eve/v1/session/:sessionId` | `message` และ `clientContext` ใน JSON body |
-| `respond()` ที่ใช้ตอบการอนุมัติและคำถาม | **ไม่ตรวจ** |
+| `respond()` ของ handle เดียวกัน ที่ใช้ตอบการอนุมัติและคำถาม | คำตอบที่พิมพ์เองหรือหมายเหตุตอนกด cancel (`text`) และ `context` ส่วนการกดปุ่ม (`requestId`, `optionId`) ส่งผ่านตามเดิม |
+| HTTP channel ของ eve: `POST /eve/v1/session` และ `POST /eve/v1/session/:sessionId` | `message`, `inputResponses[].text` และ `clientContext` ใน JSON body |
 
-**เมื่อข้อความถูก block** ข้อความนั้นจะไม่ถูกส่งต่อ `onBlock` จะทำงาน แล้ว send จะ throw `PdpaBlockedError` (channel ของ eve จับไว้และเขียน log) ถ้าเป็น HTTP route ของ eve จะตอบ `422 { ok: false, code: "pdpa_blocked", error }` ถ้า token store ล่มก็ block เหมือนกัน แต่บอกเหตุผลอีกแบบ
+**เมื่อข้อความถูก block** ข้อความนั้นจะไม่ถูกส่งต่อ `onBlock` จะทำงาน แล้ว send จะ throw `PdpaBlockedError` (channel ของ eve จับไว้และเขียน log) ถ้าเป็น HTTP route ของ eve จะตอบ `422 { ok: false, code: "pdpa_blocked", error }` ถ้า token store ล่มก็ block เหมือนกัน แต่บอกเหตุผลอีกแบบ คำตอบของคำถามหรือการอนุมัติที่ถูก block ก็ทำแบบเดียวกัน และคำขอนั้นยังรอคำตอบอยู่ ผู้ใช้ตอบใหม่ได้
 
 **HTTP channel ของ eve กับ token** channel นี้ stream คำตอบออกไปตามที่โมเดลเขียน ถ้าโมเดลพิมพ์ `[tok:…]` ซ้ำ ผู้เรียกจะเห็น token นั้น ดังนั้นการห่อ channel นี้ด้วย policy ที่มี `tokenise` จะ throw เว้นแต่ตั้ง `allowRawTokensInOutput: true` ซึ่งควรใช้ในเครื่องเท่านั้น
 
@@ -301,7 +301,7 @@ conversation = "<channelName>:<address>"   หรือ   "session:<eve session 
 ## ข้อจำกัดที่ควรรู้
 
 - **ปิดขาออกได้เฉพาะ Slack และ Telegram** Teams, Discord, channel ที่เขียนเอง และ HTTP channel ของ eve (รวมถึงหน้าเว็บที่ใช้ `useEveAgent`) ส่งคำตอบออกไปตามที่โมเดลเขียน
-- **`respond()` ไม่ถูกตรวจ** คำตอบของการอนุมัติและคำถามมีข้อความอิสระอยู่ได้
+- **การเตือน channel ที่ลืมห่อเห็นแค่ข้อความ** `pdpaHook` ไม่ได้รับ event ของคำตอบคำถามหรือการอนุมัติ คำตอบที่มาทาง channel ที่ไม่ได้ห่อจึงไม่ถูกเตือน
 - **token ที่ออกระหว่างส่งต่องานด้วย `to()` แลกกลับไม่ได้** ใน session ของ channel ปลายทาง
 - **subagent มี session state ของตัวเอง** tool ใน subagent แลก token ของ agent หลักไม่ได้
 - **route สร้าง session ของ eve** request ที่มีข้อความพร้อม `callback` หรือ `operationId` จะถูกปฏิเสธ (`400 pdpa_unsupported`) ให้สร้าง session ก่อนแล้วค่อยส่งข้อความ
