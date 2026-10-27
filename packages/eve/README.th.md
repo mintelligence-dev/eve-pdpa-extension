@@ -6,7 +6,7 @@
 ลูกค้าพิมพ์          ขอ OTP ที่เบอร์ 091-888-7777
 eve บันทึก / โมเดลอ่าน  ขอ OTP ที่เบอร์ [tok:pmkjhrpmbrqfnbqc]
 tool otp_send ได้     0918887777                     ← ค่าจริง เห็นแค่ใน tool นี้
-คำตอบบน Slack       ส่ง OTP ไปที่ xxx-xxx-7777 แล้วค่ะ
+คำตอบที่ลูกค้าเห็น   ส่ง OTP ไปที่ xxx-xxx-7777 แล้วค่ะ
 ```
 
 - ใช้ตัวตรวจจากแพ็กเกจ [`@eve-pdpa-extension/core`](../core) ได้แก่ เลขบัตรประชาชน, เบอร์โทร, อีเมล, เลขบัญชี, บัตรเครดิต และ LINE user ID
@@ -26,9 +26,8 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
 ข้อมูลรั่วได้หลายจุดใน agent แพ็กเกจนี้จึงมีตัวห่อให้ทุกจุด แต่ละตัวห่อคนละส่วนของ agent
 
 ```text
-            ┌─ withPdpaGuard ──── ปิดข้อความขาเข้า ก่อน eve บันทึก
-ลูกค้า ──▶ channel
-            └─ pdpaSlackRenderer / pdpaTelegramEvents ── ปิดคำตอบขาออก
+ลูกค้า ◀──▶ channel ── withPdpaGuard ── ปิดข้อความขาเข้าก่อน eve บันทึก
+                                       และปิดคำตอบกับคำถามขาออก
                    │
                    ▼
                pdpaHook ──────────── เก็บ session · ยกเลิกข้อความต้องห้าม · เตือนถ้าลืมห่อ channel
@@ -43,9 +42,8 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
 
 | ตัวช่วย | ห่ออะไร | ถ้าไม่ใส่ |
 |---|---|---|
-| `withPdpaGuard` | channel ขาเข้า | eve บันทึกค่าจริง และโมเดลเห็นค่าจริง |
-| `pdpaSlackRenderer` / `pdpaTelegramEvents` | คำตอบขาออกบน Slack / Telegram | ลูกค้าเห็น `[tok:…]` ดิบๆ ในคำตอบ |
-| `pdpaHook` | hook ของ agent | tool แลก token ที่ออกบน Slack หรือ Telegram ไม่ได้ เพราะไม่รู้ว่าเป็นแชตไหน (HTTP channel ของ eve ยังใช้ได้) |
+| `withPdpaGuard` | channel ทั้งสองทาง | ขาเข้า: eve บันทึกค่าจริง และโมเดลเห็นค่าจริง · ขาออก: ลูกค้าเห็น `[tok:…]` ดิบๆ ในคำตอบ |
+| `pdpaHook` | hook ของ agent | tool แลก token ที่ออกบน channel ที่มี address (Slack, Telegram, …) ไม่ได้ เพราะไม่รู้ว่าเป็นแชตไหน (HTTP channel ของ eve ยังใช้ได้) |
 | `guardModel` | โมเดล | ผลจาก tool ที่ไม่ได้ห่อ connection และ memory จะส่งค่าจริงไปหาผู้ให้บริการโมเดล |
 | `withTokenResolution` | tool ที่ต้องใช้ค่าจริง | tool ได้ `[tok:…]` แทนเบอร์จริง เลยทำงานไม่ได้ |
 | `withOutputGuard` | tool ที่ดึงข้อมูลส่วนบุคคลมาเอง เช่น CRM | eve บันทึกและ stream ผลของ tool พร้อมค่าจริง |
@@ -100,17 +98,17 @@ export const pdpa = { guard, sessionKey: process.env.PDPA_SESSION_KEY ?? '' }
 
 ```ts
 // agent/channels/slack.ts
-import { pdpaSlackRenderer, withPdpaGuard } from '@eve-pdpa-extension/eve/guard'
+import { withPdpaGuard } from '@eve-pdpa-extension/eve/guard'
 import { slackChannel } from 'eve/channels/slack'
 import { pdpa } from '../lib/guard.js'
 
-export default withPdpaGuard(slackChannel({ renderers: [pdpaSlackRenderer(pdpa)] }), {
+export default withPdpaGuard(slackChannel(), {
   ...pdpa,
   channelName: 'slack',   // ต้องตรงกับชื่อไฟล์นี้ (ไม่มีนามสกุล)
 })
 ```
 
-ห่อทุกไฟล์ใน `agent/channels/` ไฟล์ไหนลืมห่อ ข้อความที่ผ่าน channel นั้นจะเข้าไปถึง eve พร้อมค่าจริง ถ้าใช้ Telegram ให้ดูหัวข้อ `pdpaTelegramEvents` ในส่วนอ้างอิง
+ห่อทุกไฟล์ใน `agent/channels/` ไม่ว่าจะเป็น Slack, Telegram, Teams, Discord หรือ channel ที่เขียนเอง เขียนแบบเดียวกันทุกตัวและปิดทั้งสองทาง ไฟล์ไหนลืมห่อ ข้อความที่ผ่าน channel นั้นจะเข้าไปถึง eve พร้อมค่าจริง และ token ที่โมเดลเขียนจะถูกโพสต์ออกไปตามที่เขียน
 
 ### 3. ลงทะเบียน hook
 
@@ -179,7 +177,7 @@ export default defineAgent({
 
 ### `withPdpaGuard(channel, options)`
 
-คืน channel ชุดใหม่ที่ปิดข้อมูลในทุกข้อความขาเข้าก่อน ส่วน route, adapter, events, renderers และ field อื่นคงไว้ตามเดิม
+คืน channel ชุดใหม่ที่ปิดข้อมูลในทุกข้อความขาเข้าก่อน และปิดคำตอบก่อน channel โพสต์ (ดูข้างล่าง) ส่วน route, events, renderers และ field อื่นคงไว้ตามเดิม
 
 | ตัวเลือก | ค่า |
 |---|---|
@@ -188,6 +186,7 @@ export default defineAgent({
 | `files` | `'pass'` (ค่าตั้งต้น) ปล่อยไฟล์ผ่าน หรือ `'block'` ปฏิเสธข้อความที่มีไฟล์ |
 | `onBlock({ reason, blockedBy })` | เรียกเมื่อข้อความถูก block เช่นใช้ส่งข้อความแจ้งลูกค้า |
 | `language` | ภาษาของข้อความแจ้ง `'th'` (ค่าตั้งต้น) |
+| `outbound` | `true` (ค่าตั้งต้น) ปิดสิ่งที่ channel โพสต์ · `false` ปล่อย handler ของ channel ไว้ตามเดิม |
 | `policy`, `allowRawTokensInOutput` | ใช้กับ HTTP channel ของ eve (ดูข้างล่าง) |
 
 **ตรวจตรงไหนบ้าง**
@@ -200,6 +199,20 @@ export default defineAgent({
 | HTTP channel ของ eve: `POST /eve/v1/session` และ `POST /eve/v1/session/:sessionId` | `message`, `inputResponses[].text` และ `clientContext` ใน JSON body |
 
 **เมื่อข้อความถูก block** ข้อความนั้นจะไม่ถูกส่งต่อ `onBlock` จะทำงาน แล้ว send จะ throw `PdpaBlockedError` (channel ของ eve จับไว้และเขียน log) ถ้าเป็น HTTP route ของ eve จะตอบ `422 { ok: false, code: "pdpa_blocked", error }` ถ้า token store ล่มก็ block เหมือนกัน แต่บอกเหตุผลอีกแบบ คำตอบของคำถามหรือการอนุมัติที่ถูก block ก็ทำแบบเดียวกัน และคำขอนั้นยังรอคำตอบอยู่ ผู้ใช้ตอบใหม่ได้
+
+**ปิดอะไรบ้างตอนขาออก** channel ของ eve โพสต์ข้อความจาก handler ซึ่งมีหนึ่งตัวต่อหนึ่งชนิด event `withPdpaGuard` จะปิดข้อความใน event (boundary `outbound`) ของทุก handler ที่ channel มี แล้วเรียก handler เดิมของ channel ด้วยข้อความที่ปิดแล้ว channel จึงโพสต์เหมือนตอนไม่มี guard ทุกอย่าง
+
+| event | ปิดอะไร |
+|---|---|
+| `message.completed` | คำตอบ และข้อความที่โมเดลพิมพ์ก่อนเรียก tool (Slack แสดงเป็นสถานะของ thread) |
+| `input.requested` | คำถาม ตัวเลือก และ input ของ tool ที่รออนุมัติ |
+| `input.resolved` | คำตอบที่พิมพ์เองซึ่งแสดงกลับบนการ์ด |
+| `actions.requested`, `action.partial`, `action.result` | label ที่ tool แสดงตอนทำงาน (ถ้า label สร้างจาก input ของ tool จะโชว์ token) |
+| `reasoning.completed` | ความคิดของโมเดลที่จบแล้ว |
+
+token ที่รู้จักแสดงในรูปที่ตั้งไว้ใน `display` เช่น `xxx-xxx-7777` · token ที่ไม่รู้จักหรือเป็นของแชตอื่นกลายเป็น `[ข้อมูลที่ปิดไว้]` · ข้อความที่ policy สั่ง block ถูกแทนด้วยข้อความแจ้ง (ตาม `language`) · ถ้า guard ตอบไม่ได้ เช่น token store ล่ม จะไม่โพสต์อะไรเลย ส่วนที่ eve เก็บและ stream ไม่เปลี่ยน ประวัติของ session ยังมี token อยู่
+
+handler เหล่านี้อยู่ใน `adapter` ของ channel ซึ่ง eve ไม่ได้เขียนไว้ในเอกสาร (0.80.1) เทสต์ของแพ็กเกจรันมันบน eve จริง ถ้า eve รุ่นไหนเปลี่ยนโครงนี้ เทสต์จะล้ม
 
 **HTTP channel ของ eve กับ token** channel นี้ stream คำตอบออกไปตามที่โมเดลเขียน ถ้าโมเดลพิมพ์ `[tok:…]` ซ้ำ ผู้เรียกจะเห็น token นั้น ดังนั้นการห่อ channel นี้ด้วย policy ที่มี `tokenise` จะ throw เว้นแต่ตั้ง `allowRawTokensInOutput: true` ซึ่งควรใช้ในเครื่องเท่านั้น
 
@@ -236,30 +249,9 @@ description, schema, approval และ label ของ tool คงเดิม 
 ห่อโมเดลของ AI SDK (หรือ gateway id ที่เป็น string) ด้วย `wrapLanguageModel` ทุกข้อความในทุก prompt จะผ่าน guard (boundary `prompt`) รวมถึงผลจาก tool ส่วนข้อความที่ policy สั่ง block จะกลายเป็น `[ข้อมูลที่ปิดไว้]`
 
 - **ห่อโมเดลของ subagent และโมเดลที่ใช้ทำ compaction ด้วย** เพราะแต่ละตัวเรียกผู้ให้บริการโมเดลแยกกัน
-- **ไม่ได้ปิดคำตอบของโมเดล** งานนั้นเป็นของ Slack renderer และ Telegram events
+- **ไม่ได้ปิดคำตอบของโมเดล** งานนั้นเป็นของ `withPdpaGuard` ที่ channel
 - **ต้องตั้ง `modelContextWindowTokens`** เพราะ eve หาขนาด context จาก id ของโมเดล แต่โมเดลที่ห่อแล้วรายงานตัวเป็น `gateway/<id>`
 - **หลัง deploy บน Vercel** ให้เช็กว่าโมเดลที่ห่อแล้วยังยืนยันตัวตนด้วย OIDC ได้ วิธีเช็กคือส่ง 1 ข้อความ แล้วดูว่าได้คำตอบ และมี audit event `scan` ที่ `boundary: "prompt"`
-
-### `pdpaSlackRenderer({ guard, sessionKey })`
-
-renderer ของ Slack สำหรับ `message.completed` คำตอบจะผ่าน guard (boundary `outbound`) ก่อนส่ง
-
-- token ที่รู้จักแสดงในรูปที่ตั้งไว้ใน `display` เช่น `xxx-xxx-7777`
-- token ที่ไม่รู้จักหรือเป็นของแชตอื่นกลายเป็น `[ข้อมูลที่ปิดไว้]`
-- คำตอบที่ policy สั่ง block ถูกแทนด้วยข้อความแจ้ง
-- ข้อความที่โมเดลพิมพ์ก่อนเรียก tool ก็ถูกปิดด้วย (Slack แสดงข้อความนี้เป็นสถานะของ thread)
-- คำถาม การอนุมัติ และการ sign-in ใช้ค่าตั้งต้นของ eve
-
-### `pdpaTelegramEvents({ guard, sessionKey })`
-
-Telegram channel ของ eve ไม่มี renderer ฟังก์ชันนี้จึงคืน event `message.completed` ไว้ใส่ใน `telegramChannel({ events })` แทน ทำงานแบบเดียวกับตัวตั้งต้นของ eve (ส่งคำตอบเป็นข้อความธรรมดา และไม่ส่งข้อความที่โมเดลพิมพ์ก่อนเรียก tool) แต่ปิดข้อมูลในคำตอบก่อนส่ง ผลที่ได้เหมือน Slack renderer ส่วนคำถาม การอนุมัติ การ sign-in และ error ใช้ค่าตั้งต้นของ eve
-
-```ts
-export default withPdpaGuard(telegramChannel({ events: pdpaTelegramEvents(pdpa) }), {
-  ...pdpa,
-  channelName: 'telegram',
-})
-```
 
 ### `pdpaHook({ guard, sessionKey, files?, blockOn?, onUnmasked?, strict? })`
 
@@ -267,7 +259,7 @@ export default withPdpaGuard(telegramChannel({ events: pdpaTelegramEvents(pdpa) 
 
 | event | hook ทำอะไร |
 |---|---|
-| `message.received` | เก็บ pdpa id ของ session ไว้ให้ tool, model และ renderer ใช้ และยกเลิก turn ถ้าข้อความมีข้อมูลที่ policy สั่ง block หรือมีประเภทที่อยู่ใน `blockOn` |
+| `message.received` | เก็บ pdpa id ของ session ไว้ให้ tool, model และ channel ใช้ และยกเลิก turn ถ้าข้อความมีข้อมูลที่ policy สั่ง block หรือมีประเภทที่อยู่ใน `blockOn` |
 | `session.completed`, `session.failed` | เรียก `guard.endSession` เพื่อลบ token ของแชตนั้น |
 | `reset` ของ eve | ไม่ส่ง event มาให้ hook token พวกนั้นจะหมดอายุเองตาม `ttlSec` |
 
@@ -300,7 +292,8 @@ conversation = "<channelName>:<address>"   หรือ   "session:<eve session 
 
 ## ข้อจำกัดที่ควรรู้
 
-- **ปิดขาออกได้เฉพาะ Slack และ Telegram** Teams, Discord, channel ที่เขียนเอง และ HTTP channel ของ eve (รวมถึงหน้าเว็บที่ใช้ `useEveAgent`) ส่งคำตอบออกไปตามที่โมเดลเขียน
+- **HTTP channel ของ eve ไม่ถูกปิดตอนขาออก** channel นี้ stream ทุก event ตามที่โมเดลเขียน หน้าเว็บที่ใช้ `useEveAgent` และ client อื่นของ `/eve/v1/session/:id/stream` จึงเห็น token ตามที่เขียน ส่วน channel อื่น ทั้งของ eve และที่เขียนเอง ถูกปิดตรงที่โพสต์
+- **ชิ้นข้อความที่ stream ไม่ถูกปิด** Slack ใช้ `message.appended` แค่นับตัวอักษร ไม่ได้โพสต์ แต่ `reasoning.appended` อาจแสดงความคิดของโมเดลบางส่วนเป็นสถานะของ thread จนกว่าความคิดที่จบแล้ว (ปิดแล้ว) จะมาแทน token ในนั้นเป็นแค่ token ไม่ใช่ค่าจริง
 - **การเตือน channel ที่ลืมห่อเห็นแค่ข้อความ** `pdpaHook` ไม่ได้รับ event ของคำตอบคำถามหรือการอนุมัติ คำตอบที่มาทาง channel ที่ไม่ได้ห่อจึงไม่ถูกเตือน
 - **token ที่ออกระหว่างส่งต่องานด้วย `to()` แลกกลับไม่ได้** ใน session ของ channel ปลายทาง
 - **subagent มี session state ของตัวเอง** tool ใน subagent แลก token ของ agent หลักไม่ได้

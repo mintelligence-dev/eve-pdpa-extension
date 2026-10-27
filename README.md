@@ -12,7 +12,7 @@
 |---|---|---|
 | [`@eve-pdpa-extension/core`](packages/core) | ไลบรารีที่แอปเรียกทุกข้อความ · ตรวจ 6 ประเภท · ปิด 6 แบบตาม policy · audit ที่ไม่มีค่าจริง · zero dependency · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser | [ไทย](packages/core/README.th.md) · [English](packages/core/README.md) |
 | [`@eve-pdpa-extension/cli`](packages/cli) | ตรวจไฟล์แชทเก่าโดยไม่ต้องเขียนโค้ด · JSONL · CSV · ไฟล์ export จาก LINE OA · `policy validate` | [ไทย](packages/cli/README.th.md) · [English](packages/cli/README.md) |
-| [`@eve-pdpa-extension/eve`](packages/eve) | ปิดข้อมูลใน agent ที่สร้างด้วย [eve](https://eve.dev) ครบ 4 ชั้น: ข้อความขาเข้าก่อน eve บันทึก · tool ที่แลก token เป็นค่าจริงตาม purpose และ tool ที่ดึงข้อมูลมาเอง · prompt ก่อนถึงโมเดล · คำตอบขาออกบน Slack และ Telegram · hook ยกเลิก turn ที่ต้อง block และเตือนเมื่อเจอ channel ที่ลืมห่อ · Node 24+ · ทดสอบกับ eve 0.80.1 · ยังไม่ขึ้น npm | [ไทย](packages/eve/README.th.md) · [English](packages/eve/README.md) |
+| [`@eve-pdpa-extension/eve`](packages/eve) | ปิดข้อมูลใน agent ที่สร้างด้วย [eve](https://eve.dev) ครบ 4 ชั้น: ข้อความขาเข้าก่อน eve บันทึก · tool ที่แลก token เป็นค่าจริงตาม purpose และ tool ที่ดึงข้อมูลมาเอง · prompt ก่อนถึงโมเดล · คำตอบและคำถามขาออกของทุก channel (ยกเว้น HTTP channel ของ eve) · hook ยกเลิก turn ที่ต้อง block และเตือนเมื่อเจอ channel ที่ลืมห่อ · Node 24+ · ทดสอบกับ eve 0.80.1 · ยังไม่ขึ้น npm | [ไทย](packages/eve/README.th.md) · [English](packages/eve/README.md) |
 
 วิธีใช้ ตัวอย่าง ข้อควรรู้ และข้อจำกัด อยู่ใน README ของแต่ละแพ็กเกจ ซึ่งเป็นหน้าเดียวกับที่ขึ้นบน npm · ไฟล์นี้ไม่เขียนซ้ำ จะได้ไม่มีสองที่ที่ต้องแก้ให้ตรงกัน
 
@@ -23,7 +23,7 @@
 ```
 packages/core/       @eve-pdpa-extension/core   zero deps · ทุก runtime · งบขนาด 150 KB
 packages/cli/        @eve-pdpa-extension/cli    Node เท่านั้น
-packages/eve/        @eve-pdpa-extension/eve    adapter สำหรับ eve: channel · tool · model · Slack / Telegram ขาออก · hook · Node 24+ · ยังเป็น private
+packages/eve/        @eve-pdpa-extension/eve    adapter สำหรับ eve: channel · tool · model · ขาออกทุก channel · hook · Node 24+ · ยังเป็น private
 packages/{policy,ner,ner-model-th,mcp}/   มีแต่ README · ยังไม่เริ่ม (หลัง 0.1)
 
 examples/            ไฟล์ policy ตัวอย่าง
