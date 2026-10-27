@@ -20,7 +20,6 @@ const {
   guardContent,
   guardModel,
   pdpaHook,
-  pdpaSlackRenderer,
   withOutputGuard,
   withPdpaGuard,
   withTokenResolution,
@@ -255,20 +254,48 @@ describe('no original value or secret leaves the package', () => {
         }).then((r) => r.text),
       )
       seen.push(prompts)
-      const next = vi.fn(async () => {})
-      await (pdpaSlackRenderer(opts).events?.['message.completed'] as Function)(
+      // What a channel posts: the reply, a question with choices, a tool label.
+      const posted: unknown[] = []
+      const post = (data: unknown) => void posted.push(data)
+      const outbound = withPdpaGuard(
         {
-          message: `${text} / ${message}`,
-          finishReason: 'stop',
-          sequence: 1,
-          stepIndex: 0,
-          turnId: 't',
+          routes: [],
+          adapter: {
+            'message.completed': post,
+            'input.requested': post,
+            'input.resolved': post,
+            'actions.requested': post,
+          },
         },
-        {},
-        { session: { id: 'wrun_9' } },
-        next,
+        { ...opts, channelName: 'slack' },
       )
-      seen.push(next.mock.calls)
+      const at = { session: { id: 'wrun_9' } }
+      const call = (type: string, data: object) =>
+        keep(seen, () =>
+          (outbound.adapter as Record<string, Function>)[type]?.(
+            { sequence: 1, stepIndex: 0, turnId: 't', ...data },
+            at,
+          ),
+        )
+      await call('message.completed', { message: `${text} / ${message}`, finishReason: 'stop' })
+      await call('input.requested', {
+        requests: [
+          {
+            requestId: 'r',
+            kind: 'question',
+            prompt: message,
+            options: [{ id: 'a', label: message, description: message }],
+            action: { callId: 'c', kind: 'tool-call', toolName: 't', input: { note: message } },
+          },
+        ],
+      })
+      await call('input.resolved', {
+        resolutions: [
+          { requestId: 'r', outcome: 'answered', response: { requestId: 'r', text: message } },
+        ],
+      })
+      await call('actions.requested', { actions: [], presentation: { c: { label: message } } })
+      seen.push(posted)
     }
 
     expect(seen.length).toBeGreaterThan(10)

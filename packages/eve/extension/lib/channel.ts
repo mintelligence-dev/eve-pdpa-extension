@@ -1,6 +1,7 @@
 /**
  * withPdpaGuard: wraps an eve channel so every message it hands to eve is
- * masked first — before eve records it, before a hook sees it, before the model.
+ * masked first — before eve records it, before a hook sees it, before the model
+ * — and every reply it posts is masked on the way out (outbound.ts).
  *
  * Built-in channels (Slack, Teams, Telegram, the Chat SDK bridge) and custom
  * ones pass each inbound message to `from(address).send()`, a fixed session's
@@ -33,6 +34,7 @@ import {
   scanDelivery,
 } from './content.js'
 import { PdpaBlockedError } from './errors.js'
+import { guardAdapter } from './outbound.js'
 import type { Language } from './reason.js'
 import {
   addressConversation,
@@ -62,11 +64,19 @@ export interface WithPdpaGuardOptions extends EveGuardOptions {
    * `eve dev`, the terminal UI, tests.
    */
   readonly allowRawTokensInOutput?: boolean
+  /**
+   * Mask what the channel posts — replies, questions, approvals — as well as
+   * what it receives. Default `true`. `false` leaves the channel's own handlers
+   * as they are, for a channel whose replies are masked some other way.
+   */
+  readonly outbound?: boolean
 }
 
 /** The parts of an eve channel value the wrapper touches. Everything else is copied as is. */
 export interface GuardableChannel {
   readonly routes: readonly RouteDefinition<any>[]
+  /** What the channel posts from: one handler per event type. Not in eve's documentation (0.80.1). */
+  readonly adapter?: object
   readonly receive?: ((input: any, ctx: ChannelReceiveContext<any>) => Promise<Session>) | undefined
 }
 
@@ -82,7 +92,7 @@ const TOKENS_IN_OUTPUT =
   "withPdpaGuard: this policy tokenises, and eve's HTTP channel streams the model's reply as written — " +
   'a token the model repeats, such as [tok:…], would be shown to the person as is. ' +
   'Pass allowRawTokensInOutput: true only for local use (eve dev, the terminal UI, tests), ' +
-  'or reach people through a channel whose replies are rewritten (Slack with pdpaSlackRenderer).'
+  'or reach people through a channel that posts its replies (Slack, Telegram, Teams, ...), which this wrapper masks.'
 
 export function policyTokenises(policy: CompiledPolicy | undefined): boolean {
   return Object.values(policy?.entities ?? {}).some((rule) => rule?.action === 'tokenise')
@@ -509,9 +519,13 @@ export function withPdpaGuard<C extends GuardableChannel>(
   })
 
   const receive = channel.receive
+  const adapter = channel.adapter
   return {
     ...channel,
     routes: wrapped,
+    ...(adapter === undefined || options.outbound === false
+      ? {}
+      : { adapter: guardAdapter(adapter, { guard, sessionKey, language }) }),
     ...(receive === undefined
       ? {}
       : {

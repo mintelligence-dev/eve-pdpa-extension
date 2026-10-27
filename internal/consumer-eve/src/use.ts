@@ -12,7 +12,6 @@ import {
   guardModel,
   PdpaBlockedError,
   pdpaHook,
-  pdpaSlackRenderer,
   withPdpaGuard,
   withTokenResolution,
 } from '@eve-pdpa-extension/eve/guard'
@@ -45,10 +44,10 @@ export const mounted: ReturnType<typeof pdpa> = pdpa({ guard, sessionKey: option
 export const hook = pdpaHook(options)
 
 // agent/channels/*.ts — the wrapped value has the type of the channel it wraps.
-export const slack: ReturnType<typeof slackChannel> = withPdpaGuard(
-  slackChannel({ renderers: [pdpaSlackRenderer(options)] }),
-  { ...options, channelName: 'slack' },
-)
+export const slack: ReturnType<typeof slackChannel> = withPdpaGuard(slackChannel(), {
+  ...options,
+  channelName: 'slack',
+})
 
 // agent/tools/otp_send.ts
 export const otpSend = withTokenResolution(
