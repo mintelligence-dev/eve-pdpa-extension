@@ -79,6 +79,15 @@ const CONFIDENCE_ISSUER_KNOWN = 0.98
  * there were.
  */
 const CONFIDENCE_LUHN_ONLY = 0.6
+/**
+ * A run written after a key that names a time (`ts:`, `timestamp=`). Shape
+ * only, as the national id detector scores it: far below Luhn alone, because a
+ * policy that lowers the card threshold to 0.6 to take in Luhn-only runs still
+ * must not read a time as a card. Slack's `message_ts: 1761500013.000100` is
+ * sixteen digits with a dot in them, and one in ten passes Luhn: with the
+ * threshold at 0.6 it blocked the whole message (Slack, 27 Oct).
+ */
+const CONFIDENCE_TIME_KEY = 0.2
 
 function belongsToRun(ch: string): boolean {
   return isAsciiDigit(ch)
@@ -103,13 +112,12 @@ const REFERENCE_CUE_WORDS = ['ref']
 const CARD_CUES = ['บัตร', 'card', 'visa', 'master', 'credit', 'debit', 'เครดิต', 'เดบิต']
 
 /**
- * True when the sentence says the run is a reference, or a key says it is a
- * time. The reference cue must name this run: no other digit stands between
- * the two. In "อ้างอิง 1006 4012 8888 8888 1881" the word belongs to 1006, and
- * the Visa after it is still a card.
+ * True when the sentence says the run is a reference. The reference cue must
+ * name this run: no other digit stands between the two. In "อ้างอิง 1006 4012
+ * 8888 8888 1881" the word belongs to 1006, and the Visa after it is still a
+ * card.
  */
 function asReference(text: string, start: number, end: number): boolean {
-  if (keyedAsTime(text, start)) return true
   if (containsAny(contextWindow(text, start, end), CARD_CUES)) return false
   const window = ownWindow(text, start, end)
   return containsAny(window, REFERENCE_CUES) || containsWord(window, REFERENCE_CUE_WORDS)
@@ -244,11 +252,13 @@ export const creditCardDetector: Detector = {
         // After the choice, not before: the sentence says what the run is, not
         // which of its digits make the card.
         const { start, end, confidence } = r.candidate
-        found.push(
-          confidence === CONFIDENCE_ISSUER_KNOWN && asReference(input.text, start, end)
-            ? { ...r.candidate, confidence: CONFIDENCE_LUHN_ONLY }
-            : r.candidate,
-        )
+        if (keyedAsTime(input.text, start)) {
+          found.push({ ...r.candidate, confidence: CONFIDENCE_TIME_KEY })
+        } else if (confidence === CONFIDENCE_ISSUER_KNOWN && asReference(input.text, start, end)) {
+          found.push({ ...r.candidate, confidence: CONFIDENCE_LUHN_ONLY })
+        } else {
+          found.push(r.candidate)
+        }
       }
     }
 

@@ -97,3 +97,24 @@ describe('a message that was not blocked', () => {
     expect(r).not.toHaveProperty('blockedBy')
   })
 })
+
+// Slack, 27 Oct: eve wraps every Slack message in a block that holds
+// `message_ts: 1761500013.000100`. That ts passes Luhn, and with the card
+// threshold at 0.6 (the way to protect unknown issuers) it blocked "สวัสดีค่ะ".
+describe('a message wrapped with its Slack timestamps', () => {
+  const wrap = (ts: string, text: string) =>
+    `<slack_message>\nsender_type: user\nthread_ts: ${ts}\nmessage_ts: ${ts}\n<content>\n${text}\n</content>\n</slack_message>`
+
+  it('is not blocked because a timestamp passes Luhn', () => {
+    const { guard } = guardWith({ CREDIT_CARD: { action: 'block', minConfidence: 0.6 } })
+    const r = guard.processSync(wrap('1761500013.000100', 'สวัสดีค่ะ'))
+    expect(r.outcome).toBe('processed')
+    expect(r.findings).toEqual([])
+  })
+
+  it('is still blocked for a card written in it, and for a Luhn-only run under another key', () => {
+    const { guard } = guardWith({ CREDIT_CARD: { action: 'block', minConfidence: 0.6 } })
+    expect(guard.processSync(wrap('1761500013.000100', `บัตร ${CARD}`)).outcome).toBe('blocked')
+    expect(guard.processSync('order_no: 1761500013.000100').outcome).toBe('blocked')
+  })
+})

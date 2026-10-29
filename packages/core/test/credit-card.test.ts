@@ -231,8 +231,56 @@ describe('a transfer reference', () => {
   it('keeps the card when the cue belongs to the number beside it', () => {
     expect(detect(`อ้างอิง 12345 ${VISA}`)[0]?.confidence).toBe(0.98)
   })
+})
 
-  it('scores a reading under a key that names a time as Luhn alone', () => {
-    expect(detect(`"created_at":${VISA}`)[0]?.confidence).toBe(0.6)
+// Slack, 27 Oct: eve puts `message_ts: 1761500013.000100` in every Slack message
+// it hands the guard. Sixteen digits with a dot: one in ten passes Luhn, and a
+// policy that takes in Luhn-only runs (minConfidence 0.6, as the eve README's
+// example does) blocked the whole message.
+describe('a key that names a time', () => {
+  /** A Slack ts, seconds and microseconds, that passes Luhn: the one that was blocked. */
+  const TS = '1761500013.000100'
+  const confidence = (text: string) => detect(text)[0]?.confidence
+
+  it('has a ts that passes Luhn, so the test means something', () => {
+    expect(isValidLuhn(TS.replace('.', ''))).toBe(true)
+  })
+
+  it('scores the run as shape only, below Luhn alone and below an issuer reading', () => {
+    for (const text of [
+      `message_ts: ${TS}`,
+      `thread_ts: ${TS}`,
+      `ts=${TS}`,
+      `{"timestamp":"${TS}"}`,
+      `"created_at":${VISA}`,
+      `sent_time: ${NO_ISSUER}`,
+    ]) {
+      expect(confidence(text)).toBe(0.2)
+    }
+  })
+
+  it('reads the Slack block eve builds, both ts lines, and not the message inside it', () => {
+    const block = [
+      '<slack_message>',
+      'sender_type: user',
+      'channel_id: C01XYZ',
+      `thread_ts: ${TS}`,
+      `message_ts: ${TS}`,
+      '<content>',
+      `บัตร ${VISA} ค่ะ`,
+      '</content>',
+      '</slack_message>',
+    ].join('\n')
+    const found = detect(block)
+    expect(found.map((c) => [block.slice(c.start, c.end), c.confidence])).toEqual([
+      [TS, 0.2],
+      [TS, 0.2],
+      [VISA, 0.98],
+    ])
+  })
+
+  it('still reads a Luhn-only run under any other key', () => {
+    expect(confidence(`order_no: ${TS}`)).toBe(0.6)
+    expect(confidence(`${TS}`)).toBe(0.6)
   })
 })
