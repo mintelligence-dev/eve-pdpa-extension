@@ -1,7 +1,6 @@
 {
   "name": "@eve-pdpa-extension/eve",
   "version": "0.1.0",
-  "private": true,
   "description": "Mask Thai personal data in eve agent channels before eve records a message or a model reads it.",
   "keywords": [
     "pdpa",
@@ -48,7 +47,8 @@
   "files": [
     "dist",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=24"

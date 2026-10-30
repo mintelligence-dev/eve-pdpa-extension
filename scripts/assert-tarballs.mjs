@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 
-export const PACKAGES = ['core', 'cli', 'http']
+export const PACKAGES = ['core', 'cli', 'eve', 'http']
 
 const EVERY_PACKAGE = [
   'package.json',
@@ -30,6 +30,7 @@ const EVERY_PACKAGE = [
 const ALSO = {
   core: ['schema/policy.schema.json', 'schema/audit-event.schema.json'],
   cli: [],
+  eve: [],
   http: [],
 }
 

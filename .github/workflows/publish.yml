@@ -1,4 +1,5 @@
-# Stages core and cli on npm when a v* tag is pushed. Nothing becomes
+# Stages packages on npm when a tag is pushed: v<version> stages core and cli
+# (they share one version), eve-v<version> stages eve. Nothing becomes
 # installable until an owner approves each version on npmjs.com → Staged
 # Packages, which asks for 2FA: a leaked token or a wrong tag cannot ship a
 # release on its own.
@@ -15,7 +16,7 @@ name: publish
 
 on:
   push:
-    tags: ['v*']
+    tags: ['v*', 'eve-v*']
   workflow_dispatch: {}
 
 permissions:
@@ -39,14 +40,22 @@ jobs:
       - run: npm install -g npm@11.21.0
       - name: Versions and tag agree
         run: |
-          version=$(node -p "require('./packages/core/package.json').version")
-          cli=$(node -p "require('./packages/cli/package.json').version")
-          [ "$cli" = "$version" ] || { echo "core is $version but cli is $cli"; exit 1; }
+          version() { node -p "require('./packages/$1/package.json').version"; }
+          core=$(version core)
+          cli=$(version cli)
+          eve=$(version eve)
+          [ "$cli" = "$core" ] || { echo "core is $core but cli is $cli"; exit 1; }
           if [ "$GITHUB_EVENT_NAME" = push ]; then
-            [ "$GITHUB_REF_NAME" = "v$version" ] || { echo "tag is $GITHUB_REF_NAME but the packages are $version"; exit 1; }
+            case "$GITHUB_REF_NAME" in
+              eve-v*) want="eve-v$eve"; packages="eve" ;;
+              *) want="v$core"; packages="core cli" ;;
+            esac
+            [ "$GITHUB_REF_NAME" = "$want" ] || { echo "tag is $GITHUB_REF_NAME but the packages call for $want"; exit 1; }
             git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "$GITHUB_REF_NAME is not on main"; exit 1; }
+          else
+            packages="core cli eve"
           fi
-          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "PACKAGES=$packages" >> "$GITHUB_ENV"
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
@@ -55,16 +64,17 @@ jobs:
       - name: Pack
         run: |
           mkdir out
-          for p in core cli; do (cd "packages/$p" && pnpm pack --pack-destination ../../out); done
+          for p in core cli eve; do (cd "packages/$p" && pnpm pack --pack-destination ../../out); done
           ls -l out
       - name: Stage on npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          case "$VERSION" in *-*) tag=next ;; *) tag=latest ;; esac
           dry=""
           [ "$GITHUB_EVENT_NAME" = push ] || dry="--dry-run"
-          # core first: cli depends on it.
-          for p in core cli; do
-            npm stage publish "./out/eve-pdpa-extension-$p-$VERSION.tgz" --tag "$tag" --access public $dry
+          # core first: cli and eve depend on it.
+          for p in $PACKAGES; do
+            version=$(node -p "require('./packages/$p/package.json').version")
+            case "$version" in *-*) tag=next ;; *) tag=latest ;; esac
+            npm stage publish "./out/eve-pdpa-extension-$p-$version.tgz" --tag "$tag" --access public $dry
           done
