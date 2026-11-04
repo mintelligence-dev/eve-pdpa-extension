@@ -30,7 +30,7 @@ const EVERY_PACKAGE = [
 const ALSO = {
   core: ['schema/policy.schema.json', 'schema/audit-event.schema.json'],
   cli: [],
-  eve: [],
+  eve: ['bin/eve-pdpa-check.mjs', 'r/registry.json', 'r/pdpa.json'],
   http: [],
 }
 
@@ -62,6 +62,20 @@ function check(tarballs) {
     }
     if (listed.some((p) => p.startsWith('src/') || p.startsWith('test/'))) {
       problems.push(`${name}: src/ or test/ is in the tarball`)
+    }
+    if (listed.some((p) => /(^|\/)(fixtures\/|\.env)/.test(p))) {
+      problems.push(`${name}: a fixture or an .env file is in the tarball`)
+    }
+    // eve carries a copy of http's token store; it must never import http itself,
+    // which is not on npm.
+    if (name === 'eve') {
+      const dist = execFileSync('tar', ['-xzOf', tarballs[name], '--include', 'package/dist/*'], {
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024,
+      })
+      if (dist.includes('@eve-pdpa-extension/http')) {
+        problems.push('eve: dist/ names @eve-pdpa-extension/http, which is not published')
+      }
     }
     const manifest = JSON.parse(
       execFileSync('tar', ['-xzOf', tarballs[name], 'package/package.json'], { encoding: 'utf8' }),

@@ -1,6 +1,6 @@
 {
   "name": "@eve-pdpa-extension/eve",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Mask Thai personal data in eve agent channels before eve records a message or a model reads it.",
   "keywords": [
     "pdpa",
