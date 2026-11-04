@@ -29,6 +29,9 @@
       "dist": "./dist/extension"
     }
   },
+  "bin": {
+    "eve-pdpa-check": "./bin/eve-pdpa-check.mjs"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -46,6 +49,7 @@
   },
   "files": [
     "dist",
+    "bin",
     "LICENSE",
     "NOTICE",
     "CHANGELOG.md"
