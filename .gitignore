@@ -24,6 +24,8 @@ bench/out/
 
 # The eve package's registry, built from packages/eve/registry by scripts/build-eve-registry.mjs
 packages/eve/r/
+# Copies of packages/eve/test/fixtures/easy-agent that easy-agent.test.ts runs and removes
+packages/eve/test/fixtures/.tmp-*/
 
 # Copied from the root by scripts/copy-legal.mjs on pack
 packages/*/LICENSE
