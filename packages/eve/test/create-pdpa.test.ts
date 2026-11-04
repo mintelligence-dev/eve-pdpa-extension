@@ -281,10 +281,21 @@ describe('withPdpaGuard — eve adapters it cannot mask (U-ADP-1, U-ADP-2)', () 
   const opts = { guard: null as never, sessionKey: SESSION_KEY, channelName: 'chat' }
   const pdpa = () => createPdpa({ policy: TOKENISE, env: KEYS, ...quiet })
 
+  // The event handlers of eve 1.0.0-rc.1's Telegram channel, as installed from npm.
+  const RC1_TELEGRAM = [
+    'session.ended',
+    'turn.started',
+    'turn.settled',
+    'content.completed',
+    'call.requested',
+    'interaction.opened',
+    'interaction.settled',
+  ]
+
   it('throws, with a code and the eve version, for an adapter shaped like eve 1.0.0-rc.1', () => {
     const rc1 = {
       routes: [route],
-      adapter: { kind: 'chat', 'interaction.opened': () => {}, 'interaction.settled': () => {} },
+      adapter: { kind: 'chat', ...Object.fromEntries(RC1_TELEGRAM.map((k) => [k, () => {}])) },
     }
     for (const wrap of [
       () => withPdpaGuard(rc1, { ...opts, guard: pdpa().guard }),
@@ -314,6 +325,18 @@ describe('withPdpaGuard — eve adapters it cannot mask (U-ADP-1, U-ADP-2)', () 
     expect(
       thrown(() => pdpa().channel(eveChannel({ auth: [] }), { allowRawTokensInOutput: true })),
     ).toBeNull()
+  })
+
+  it('does not throw for 0.80.x events that post no text, or an unused name beside a masked one', () => {
+    const { guard } = pdpa()
+    for (const adapter of [
+      { 'turn.started': () => {}, 'turn.failed': () => {} },
+      { 'message.completed': () => {}, 'content.completed': () => {} },
+    ]) {
+      expect(
+        thrown(() => withPdpaGuard({ routes: [route], adapter }, { ...opts, guard })),
+      ).toBeNull()
+    }
   })
 
   it('outbound: false skips the check, as it skips the masking', () => {

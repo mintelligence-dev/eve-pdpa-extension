@@ -125,26 +125,44 @@ const REWRITES: Readonly<Record<string, Rewrite>> = {
 }
 
 /**
- * Every event an adapter of eve 0.80.x handles, built-in channels included
- * (read from telegramChannel, slackChannel and defineChannel, 0.80.1).
+ * Every event type of eve 0.80.1's session stream (dist/src/protocol/message.js).
+ * eve 1.0 renamed most of them — `content.completed` for `message.completed`,
+ * `interaction.opened` for `input.requested`, …
  */
 const EVENTS_080: ReadonlySet<string> = new Set([
-  ...Object.keys(REWRITES),
-  'approval.candidate',
-  'approval.settled',
+  'session.started',
+  'session.waiting',
+  'session.completed',
+  'session.failed',
   'turn.started',
   'turn.waiting',
-  'turn.failed',
   'turn.completed',
+  'turn.failed',
   'turn.cancelled',
-  'message.appended',
-  'reasoning.appended',
   'step.started',
-  'task.started',
-  'task.settled',
-  'session.failed',
+  'step.completed',
+  'step.failed',
+  'message.received',
+  'message.appended',
+  'message.completed',
+  'reasoning.appended',
+  'reasoning.completed',
+  'result.completed',
+  'actions.requested',
+  'action.partial',
+  'action.result',
+  'approval.candidate',
+  'approval.settled',
+  'input.requested',
+  'input.resolved',
   'authorization.required',
   'authorization.completed',
+  'task.started',
+  'task.settled',
+  'agent.started',
+  'context.cleared',
+  'compaction.requested',
+  'compaction.completed',
 ])
 
 function eveVersion(): string {
@@ -156,19 +174,23 @@ function eveVersion(): string {
 }
 
 /**
- * Refuses an adapter that posts through events eve 0.80.x does not have —
- * eve 1.0.0-rc.1 posts from `interaction.opened` and `interaction.settled`.
- * Its replies would go out unmasked, and nothing would say so. An adapter
- * with no event handler at all posts nothing, and passes.
+ * Refuses an adapter from another eve: one that handles none of the events
+ * this package masks, and some event eve 0.80.x does not have. eve
+ * 1.0.0-rc.1's Telegram channel posts its replies from `content.completed`
+ * and `interaction.opened`; wrapped as it is, they would go out unmasked and
+ * nothing would say so. An adapter with no event handler posts nothing, and
+ * one with only 0.80.x events posts no text: both pass.
  */
 export function checkAdapter(adapter: object): void {
   const handlers = Object.entries(adapter)
     .filter(([k, v]) => k.includes('.') && typeof v === 'function')
     .map(([k]) => k)
-  if (handlers.length === 0 || handlers.some((k) => EVENTS_080.has(k))) return
+  if (handlers.some((k) => k in REWRITES)) return
+  const unknown = handlers.filter((k) => !EVENTS_080.has(k))
+  if (unknown.length === 0) return
   throw new PdpaConfigError(
     'ERR_PDPA_EVE_ADAPTER',
-    `withPdpaGuard: this channel posts through events this package cannot mask (${handlers.join(', ')}), so its replies would leave unmasked. Found eve ${eveVersion()}; @eve-pdpa-extension/eve supports eve 0.80.x.`,
+    `withPdpaGuard: this channel posts through events this package cannot mask (${unknown.join(', ')}), so its replies would leave unmasked. Found eve ${eveVersion()}; @eve-pdpa-extension/eve supports eve 0.80.x.`,
   )
 }
 
