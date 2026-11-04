@@ -10,7 +10,7 @@
 // Also used by scripts/check-readme.mjs, which installs these tarballs.
 
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readdirSync } from 'node:fs'
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -68,11 +68,19 @@ function check(tarballs) {
     }
     // eve carries a copy of http's token store; it must never import http itself,
     // which is not on npm.
+    // Unpacked and read with Node: GNU tar (CI) and bsdtar (macOS) share no
+    // option for extracting a subtree to stdout.
     if (name === 'eve') {
-      const dist = execFileSync('tar', ['-xzOf', tarballs[name], '--include', 'package/dist/*'], {
-        encoding: 'utf8',
-        maxBuffer: 64 * 1024 * 1024,
+      const dir = mkdtempSync(join(tmpdir(), 'pdpa-eve-dist-'))
+      execFileSync('tar', ['-xzf', tarballs[name], '-C', dir])
+      const dist = readdirSync(join(dir, 'package', 'dist'), {
+        recursive: true,
+        withFileTypes: true,
       })
+        .filter((f) => f.isFile())
+        .map((f) => readFileSync(join(f.parentPath, f.name), 'utf8'))
+        .join('\n')
+      rmSync(dir, { recursive: true, force: true })
       if (dist.includes('@eve-pdpa-extension/http')) {
         problems.push('eve: dist/ names @eve-pdpa-extension/http, which is not published')
       }
