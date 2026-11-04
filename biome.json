@@ -8,7 +8,8 @@
       "!**/.size",
       "!**/node_modules",
       "!**/coverage",
-      "!bench/user/cli-checks/fixtures"
+      "!bench/user/cli-checks/fixtures",
+      "!packages/eve/registry/pdpa"
     ]
   },
   "formatter": {
