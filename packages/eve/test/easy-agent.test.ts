@@ -139,8 +139,9 @@ describe.skipIf(skip !== null)('an agent set up with createPdpa only', () => {
     const { status, body } = await say(`ตัดบัตร ${CARD} ได้เลยค่ะ`)
     expect(status).toBe(422)
     expect(body.blocked).toBeTruthy()
-    expect(audit()).toContainEqual(
-      expect.objectContaining({ type: 'scan', boundary: 'inbound', outcome: 'blocked' }),
+    // The runtime writes the audit line to its stdout; eve dev relays it a little later.
+    await until('the blocked audit line', () =>
+      audit().some((e) => e.type === 'scan' && e.boundary === 'inbound' && e.outcome === 'blocked'),
     )
     // Give a turn the time it would take, then check nothing ran.
     await new Promise((resolve) => setTimeout(resolve, 1500))
