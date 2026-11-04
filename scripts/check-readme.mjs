@@ -19,7 +19,14 @@
 // Node 18 comes from `npx node@18.18.0`, downloaded once into npx's cache.
 
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -238,6 +245,111 @@ for (const readme of ['packages/cli/README.md', 'packages/cli/README.th.md']) {
     }
   }
 }
+
+// ---- eve -------------------------------------------------------------------
+
+// Two agent projects laid out as `eve init` 0.80.1 lays one out, against the
+// packed eve package: one installed the new way — the registry item from the
+// tarball's r/pdpa.json, then every `// agent/…` block of the install section,
+// agent.ts from the pdpa-install block — and one set up by hand from the blocks
+// of that section. Both must typecheck. The pdpa-install block is also what
+// the template's acceptance test runs, so it must be the same in both READMEs.
+
+const EVE_TSCONFIG = {
+  compilerOptions: {
+    target: 'ES2022',
+    module: 'esnext',
+    moduleResolution: 'bundler',
+    types: ['node', 'eve/workflow-modules'],
+    strict: true,
+    esModuleInterop: true,
+    skipLibCheck: true,
+    noEmit: true,
+  },
+  include: ['agent/**/*.ts'],
+}
+const eveModules = join(ROOT, 'packages/eve/node_modules')
+for (const name of ['eve', 'ai']) {
+  symlinkSync(realpathSync(join(eveModules, name)), join(modules, name))
+}
+const eveItem = JSON.parse(
+  readFileSync(join(modules, '@eve-pdpa-extension/eve/r/pdpa.json'), 'utf8'),
+)
+const eveVersion = JSON.parse(
+  readFileSync(join(modules, '@eve-pdpa-extension/eve/package.json'), 'utf8'),
+).version
+
+function eveProject(name, files) {
+  const dir = join(app, name)
+  for (const [path, content] of Object.entries(files)) {
+    mkdirSync(join(dir, path, '..'), { recursive: true })
+    writeFileSync(join(dir, path), content)
+  }
+  writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify(EVE_TSCONFIG))
+  writeFileSync(join(dir, 'package.json'), '{ "type": "module" }\n')
+  const r = spawnSync(TSC, ['-p', 'tsconfig.json'], { cwd: dir, encoding: 'utf8' })
+  return r.status === 0 ? '' : r.stdout.trim().split('\n').slice(0, 3).join(' | ')
+}
+
+/** `// agent/…` blocks between two headings, as { path: code }. */
+function agentBlocks(text, from, to) {
+  const start = text.search(from)
+  const end = text.search(to)
+  const files = {}
+  for (const [, code] of text.slice(start, end).matchAll(/```ts\n([\s\S]*?)```/g)) {
+    const path = /^\/\/ (agent\/\S+\.ts)\n/.exec(code)?.[1]
+    if (path !== undefined) files[path] = code
+  }
+  return files
+}
+
+const installs = {}
+for (const [lang, readme, install, byHand, reference] of [
+  [
+    'en',
+    'packages/eve/README.md',
+    /^## Install in 3 steps$/m,
+    /^## Set it up by hand$/m,
+    /^## Reference$/m,
+  ],
+  ['th', 'packages/eve/README.th.md', /^## ติดตั้งใน 3 ขั้น$/m, /^## ตั้งเองทีละขั้น$/m, /^## อ้างอิง$/m],
+]) {
+  const text = readFileSync(join(ROOT, readme), 'utf8')
+  const marked = [...text.matchAll(/<!-- pdpa-install -->\n([\s\S]*?)<!-- \/pdpa-install -->/g)]
+  ok(`${readme}: one pdpa-install block`, marked.length === 1, `found ${marked.length}`)
+  const block = marked[0]?.[1] ?? ''
+  const bash = /```bash\n([\s\S]*?)```/.exec(block)?.[1] ?? ''
+  const agent = /```ts title="agent\/agent\.ts"\n([\s\S]*?)```/.exec(block)?.[1] ?? ''
+  const adds = bash.split('\n').filter((l) => l.startsWith('eve add '))
+  installs[readme] = { adds, agent }
+  ok(`${readme}: the block has eve add and agent/agent.ts`, adds.length > 0 && agent !== '')
+  // An RC is packed as 0.1.1-rc.N while the README names the release, 0.1.1.
+  const named = adds.map((l) => /@eve-pdpa-extension\/eve@([^/\s]+)\/r\/pdpa\.json/.exec(l)?.[1])
+  ok(
+    `${readme}: eve add names this version`,
+    named.length > 0 && named.every((v) => v === eveVersion.replace(/-.*$/, '')),
+    `README ${named.join(', ')} · package ${eveVersion}`,
+  )
+  ok(
+    `${readme}: eve add replaces eve init's eve.ts (--overwrite)`,
+    adds.every((l) => l.includes('--overwrite')),
+  )
+
+  const item = Object.fromEntries(eveItem.files.map((f) => [f.target, f.content]))
+  const installed = eveProject(`eve-install-${lang}`, {
+    ...item,
+    ...agentBlocks(text, install, byHand),
+    'agent/agent.ts': agent,
+  })
+  ok(`${readme}: the install section typechecks on the registry item`, installed === '', installed)
+  const manual = eveProject(`eve-hand-${lang}`, agentBlocks(text, byHand, reference))
+  ok(`${readme}: the set-it-up-by-hand section typechecks`, manual === '', manual)
+}
+const [en, th] = Object.values(installs)
+ok(
+  'packages/eve: the pdpa-install block is the same in both READMEs',
+  JSON.stringify(en) === JSON.stringify(th),
+)
 
 // ---- report ----------------------------------------------------------------
 

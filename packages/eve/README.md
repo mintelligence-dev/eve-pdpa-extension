@@ -15,8 +15,6 @@ Reply the customer sees   ส่ง OTP ไปที่ xxx-xxx-7777 แล้�
 
 > **This is a technical tool, not a certification of compliance with Thailand's Personal Data Protection Act (PDPA).**
 
-> **0.1.0 is not on npm yet** (`"private": true`). A full working agent that uses every layer is kept in a separate private repository.
-
 [ภาษาไทย](./README.th.md)
 
 ---
@@ -52,7 +50,97 @@ customer ◀──▶ channel ── withPdpaGuard ── masks messages going i
 
 ---
 
-## Quick start in 5 steps
+## Install in 3 steps
+
+From an agent made with `eve init`: add the item, edit `agent/agent.ts`, set two keys.
+
+<!-- pdpa-install -->
+```bash
+eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.1.1/r/pdpa.json --overwrite
+# Then fill in the two keys eve add put in .env.local, one `openssl rand -hex 32` each:
+# PDPA_HMAC_KEY=...
+# PDPA_SESSION_KEY=...
+```
+
+```ts title="agent/agent.ts"
+import { defineAgent } from "eve";
+import { pdpa } from "./lib/pdpa.js";
+
+export default defineAgent({
+  model: pdpa.model("openai/gpt-6-luna-fast"),
+  modelContextWindowTokens: 1_050_000,
+  reasoning: "high",
+  defaultTools: false,
+});
+```
+<!-- /pdpa-install -->
+
+**1. `eve add` writes four files** and adds `@eve-pdpa-extension/eve` to `package.json`:
+
+| File | What it is |
+|---|---|
+| `policies/pdpa-policy.json` | what happens to each kind of data: phones become tokens for `otp_send`, ID numbers are hidden, card numbers stop the message, … Edit it to fit |
+| `agent/lib/pdpa.ts` | `createPdpa({ policy })`: the guard, its keys and its token store, read from the environment |
+| `agent/hooks/pdpa.ts` | `export default pdpa.hook`: ties each chat to its tokens |
+| `agent/channels/eve.ts` | eve's HTTP channel, wrapped. **`--overwrite` replaces the one `eve init` wrote** — and any of these four you have edited. Without it, eve add skips the file silently and the channel stays unwrapped |
+
+**2. In `agent/agent.ts`**, four lines: import `pdpa`, wrap the model you already had in `pdpa.model(…)`, set `modelContextWindowTokens` (a wrapped model hides its id from eve's model catalog: use your model's context window), and turn off eve's default tools (bash, files, web fetch), which can send what the model reads to places no wrapper watches.
+
+**3. The keys** are any two secrets of 32 bytes or more. Without them `eve dev` runs on development keys and says so once; production refuses to start.
+
+**Check it.** `eve-pdpa-check` reads the project and says what is missing, by name, never a value:
+
+```bash
+npx eve-pdpa-check                # channels, model, hook, eve version
+npx eve-pdpa-check --production   # also both keys and a shared token store
+```
+
+If jsDelivr is down, the same file is at `https://unpkg.com/@eve-pdpa-extension/eve@0.1.1/r/pdpa.json`.
+
+### Deploy on Vercel
+
+1. Add **Upstash for Redis** to the project from the Vercel Marketplace. It sets `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` yourself). Tokens are stored there, so every function instance can resolve them; keys start with `pdpa-eve:`.
+2. Set `PDPA_HMAC_KEY` and `PDPA_SESSION_KEY` for Production — new values, not the ones in `.env.local`.
+
+When `VERCEL_ENV` is `production` and a key or the store is missing, `createPdpa` throws as the agent loads, naming the variable. Anywhere else it falls back to development keys and a memory store, which only one machine can see.
+
+### A tool that needs the real value
+
+```ts
+// agent/tools/otp_send.ts
+import { defineTool } from "eve/tools";
+import { pdpa } from "../lib/pdpa.js";
+
+export default pdpa.tool(
+  defineTool({
+    description: "Send an OTP by SMS. Pass the phone number as written in the chat.",
+    inputSchema: { type: "object", properties: { phone: { type: "string" } }, required: ["phone"] },
+    async execute(input: { phone: string }) {
+      // input.phone is the real number here, and only here.
+      return { sent: true, to: input.phone };
+    },
+  }),
+  "otp_send", // must be in the policy's allowedPurposes for PHONE
+);
+```
+
+### Other channels
+
+Wrap every file in `agent/channels/` the same way, with its file stem:
+
+```ts
+// agent/channels/telegram.ts
+import { telegramChannel } from "eve/channels/telegram";
+import { pdpa } from "../lib/pdpa.js";
+
+export default pdpa.channel(telegramChannel(), "telegram");
+```
+
+---
+
+## Set it up by hand
+
+What `createPdpa` does for you, one wrapper at a time. It still works, and `pdpa.channel`, `pdpa.model`, `pdpa.tool` and `pdpa.hook` call exactly these.
 
 ### 1. Create the guard and the policy
 
@@ -149,7 +237,21 @@ A tool that fetches personal data from elsewhere, such as a CRM or a database: w
 
 ```ts
 // agent/tools/crm_lookup.ts
-export default withOutputGuard(crmLookupTool, pdpa)
+import { withOutputGuard } from '@eve-pdpa-extension/eve/guard'
+import { defineTool } from 'eve/tools'
+import { pdpa } from '../lib/guard.js'
+
+export default withOutputGuard(
+  defineTool({
+    description: 'Look up a customer by their customer number.',
+    inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+    async execute(input: { id: string }) {
+      // customer data from elsewhere: whatever it returns is masked before eve keeps it
+      return { id: input.id, phone: '091-888-7777' }
+    },
+  }),
+  pdpa,
+)
 ```
 
 Both are needed because eve keeps and streams a tool's result as it is; `guardModel` masks it only on its way to the model. A tool that never touches personal data needs no wrapper.
@@ -174,6 +276,53 @@ The last check before data leaves your system: it masks whatever the earlier ste
 ---
 
 ## Reference
+
+### `createPdpa(options)`
+
+```ts
+import { createPdpa } from '@eve-pdpa-extension/eve/guard'
+```
+
+| Option | Default |
+|---|---|
+| `policy` | required: the policy JSON, imported (`with { type: 'json' }`), or a `definePolicy` result |
+| `hmacKey`, `sessionKey` | env `PDPA_HMAC_KEY`, `PDPA_SESSION_KEY`; outside production a development value |
+| `tokenStore` | Upstash from env `UPSTASH_REDIS_REST_*` or `KV_REST_API_*`; outside production one memory store per process |
+| `upstash.prefix` | `'pdpa-eve:'`, in front of every key it writes |
+| `onAudit` | one NDJSON line per event on stdout. An event never holds a value |
+| `production` | `process.env.VERCEL_ENV === 'production'` (`NODE_ENV` is not read: build tools set it) |
+| `env` | `process.env`; pass your own to read nothing else |
+
+It returns `{ guard, sessionKey, policy, channel, model, tool, hook }`:
+
+| | Same as |
+|---|---|
+| `pdpa.channel(channel, name, options?)` | `withPdpaGuard(channel, { guard, sessionKey, policy, channelName: name, ...options })`. Leave out `name` for eve's HTTP channel only |
+| `pdpa.model(model)` | `guardModel(model, { guard, sessionKey })` |
+| `pdpa.tool(tool, purpose)` | `withTokenResolution(tool, { guard, sessionKey, purpose })` |
+| `pdpa.hook` | `pdpaHook({ guard, sessionKey })` |
+
+**Errors** are a `PdpaConfigError`, thrown while the agent loads. The message names what to set, never a value:
+
+| `code` | When |
+|---|---|
+| `ERR_PDPA_EVE_HMAC_KEY`, `ERR_PDPA_EVE_SESSION_KEY` | production without the key, or a key shorter than 32 bytes anywhere |
+| `ERR_PDPA_EVE_STORE` | production without a token store, or only half of a URL and token pair set |
+| `ERR_PDPA_EVE_PURPOSE` | `pdpa.tool` with a purpose no entity in the policy allows |
+| `ERR_PDPA_EVE_ADAPTER` | a channel from an eve this package cannot mask (below) |
+
+### `eve-pdpa-check [--production] [--cwd <dir>]`
+
+| Check | Fails when |
+|---|---|
+| channels | a file in `agent/channels/` is not wrapped with `pdpa.channel(` or `withPdpaGuard(` |
+| model | `agent/agent.ts` has no `pdpa.model(` or `guardModel(` |
+| hook | no file in `agent/hooks/` default-exports `pdpa.hook` or `pdpaHook(…)` |
+| eve | the installed eve is not 0.80.x |
+| keys, store | with `--production`: a key, or a shared token store, is not set (in the environment or a `.env` file) |
+| defaultTools | a warning only, when `agent/agent.ts` does not set `defaultTools: false` |
+
+Exit 0 passes, 1 found a problem, 2 the command was used wrong.
 
 ### `withPdpaGuard(channel, options)`
 
@@ -212,7 +361,7 @@ Returns a copy of the channel whose every inbound message is masked first, and w
 
 A known token is shown in its `display` form, e.g. `xxx-xxx-7777`; an unknown one, or another chat's, becomes `[ข้อมูลที่ปิดไว้]`; text the policy blocks is replaced by a notice (in `language`). If the guard cannot answer, such as when the token store is down, nothing is posted. What eve keeps and streams is not changed: a session's history still holds the token.
 
-The handlers are on the channel's `adapter`, which eve does not document (0.80.1). The package's tests run it under the real eve runtime, so a release of eve that changes it fails there.
+The handlers are on the channel's `adapter`, which eve does not document (0.80.1). The package's tests run it under the real eve runtime, so a release of eve that changes it fails there. A channel whose adapter posts only through events eve 0.80.x does not have — eve 1.0.0-rc.1's `interaction.opened` and `interaction.settled` — throws `ERR_PDPA_EVE_ADAPTER` when it is wrapped, rather than post replies unmasked.
 
 **eve's HTTP channel and tokens.** This channel streams the model's reply as written, so a `[tok:…]` the model repeats reaches the caller. Wrapping it with a policy that tokenises therefore throws unless `allowRawTokensInOutput: true` — use that for local work only.
 

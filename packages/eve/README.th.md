@@ -15,8 +15,6 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
 
 > **เป็นเครื่องมือทางเทคนิค ไม่ใช่ใบรับรองการปฏิบัติตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล**
 
-> **0.1.0 ยังไม่ขึ้น npm** (`"private": true`) ส่วน agent ตัวอย่างที่ต่อครบทุกชั้นอยู่ใน repo ส่วนตัวแยกต่างหาก
-
 [English](./README.md)
 
 ---
@@ -52,7 +50,97 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
 
 ---
 
-## เริ่มใช้ใน 5 ขั้น
+## ติดตั้งใน 3 ขั้น
+
+เริ่มจาก agent ที่สร้างด้วย `eve init`: เพิ่ม item · แก้ `agent/agent.ts` · ตั้ง key 2 ตัว
+
+<!-- pdpa-install -->
+```bash
+eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.1.1/r/pdpa.json --overwrite
+# แล้วใส่ค่า key 2 ตัวที่ eve add เขียนชื่อไว้ใน .env.local ตัวละ `openssl rand -hex 32`:
+# PDPA_HMAC_KEY=...
+# PDPA_SESSION_KEY=...
+```
+
+```ts title="agent/agent.ts"
+import { defineAgent } from "eve";
+import { pdpa } from "./lib/pdpa.js";
+
+export default defineAgent({
+  model: pdpa.model("openai/gpt-6-luna-fast"),
+  modelContextWindowTokens: 1_050_000,
+  reasoning: "high",
+  defaultTools: false,
+});
+```
+<!-- /pdpa-install -->
+
+**1. `eve add` เขียนไฟล์ 4 ไฟล์** และเพิ่ม `@eve-pdpa-extension/eve` ลงใน `package.json`
+
+| ไฟล์ | คืออะไร |
+|---|---|
+| `policies/pdpa-policy.json` | ข้อมูลแต่ละประเภทจะถูกทำอะไร: เบอร์โทรเป็น token ให้ `otp_send` ใช้ · เลขบัตรประชาชนถูกปิด · เลขบัตรเครดิตทำให้ข้อความไม่ถูกส่งต่อ … แก้ให้เข้ากับงานได้ |
+| `agent/lib/pdpa.ts` | `createPdpa({ policy })`: guard พร้อม key และ token store ที่อ่านจาก env |
+| `agent/hooks/pdpa.ts` | `export default pdpa.hook`: ผูกแต่ละแชตเข้ากับ token ของแชตนั้น |
+| `agent/channels/eve.ts` | HTTP channel ของ eve ที่ห่อแล้ว **`--overwrite` ทับไฟล์ที่ `eve init` สร้างไว้** และทับไฟล์ไหนก็ตามใน 4 ไฟล์นี้ที่คุณแก้ไว้ด้วย ถ้าไม่ใส่ eve add จะข้ามไฟล์นี้ไปเงียบๆ แล้ว channel ก็ยังไม่ถูกห่อ |
+
+**2. ใน `agent/agent.ts`** แก้ 4 บรรทัด: import `pdpa` · ห่อ model เดิมด้วย `pdpa.model(…)` · ใส่ `modelContextWindowTokens` (model ที่ห่อแล้ว eve จะหา id ใน catalog ไม่เจอ ให้ใส่ context window ของ model ที่ใช้) · ปิด default tools ของ eve (bash, ไฟล์, web fetch) ซึ่งส่งสิ่งที่โมเดลอ่านออกไปในที่ที่ไม่มี wrapper ไหนดูอยู่ได้
+
+**3. key** เป็นค่าลับอะไรก็ได้ 2 ตัว ยาวอย่างน้อย 32 bytes ถ้าไม่ตั้ง `eve dev` จะใช้ key สำหรับ dev และบอกครั้งเดียว ส่วน production จะไม่ยอมเริ่ม
+
+**ตรวจ** `eve-pdpa-check` อ่านโปรเจกต์แล้วบอกว่าขาดอะไร บอกแค่ชื่อ ไม่พิมพ์ค่า
+
+```bash
+npx eve-pdpa-check                # channel, model, hook, รุ่นของ eve
+npx eve-pdpa-check --production   # ตรวจ key ทั้งสองตัว และ token store ที่ใช้ร่วมกันด้วย
+```
+
+ถ้า jsDelivr ล่ม ไฟล์เดียวกันอยู่ที่ `https://unpkg.com/@eve-pdpa-extension/eve@0.1.1/r/pdpa.json`
+
+### ขึ้น Vercel
+
+1. เพิ่ม **Upstash for Redis** ให้โปรเจกต์จาก Vercel Marketplace จะได้ `KV_REST_API_URL` และ `KV_REST_API_TOKEN` (หรือตั้ง `UPSTASH_REDIS_REST_URL` และ `UPSTASH_REDIS_REST_TOKEN` เอง) token เก็บไว้ที่นั่น function ทุกตัวจึงแลก token ได้ · key ขึ้นต้นด้วย `pdpa-eve:`
+2. ตั้ง `PDPA_HMAC_KEY` และ `PDPA_SESSION_KEY` ให้ Production เป็นค่าใหม่ ไม่ใช่ค่าใน `.env.local`
+
+ถ้า `VERCEL_ENV` เป็น `production` แล้วขาด key หรือ store `createPdpa` จะ throw ตอน agent โหลด พร้อมบอกชื่อตัวแปร ที่อื่นจะใช้ key สำหรับ dev และ memory store ซึ่งเห็นได้แค่เครื่องเดียว
+
+### tool ที่ต้องใช้ค่าจริง
+
+```ts
+// agent/tools/otp_send.ts
+import { defineTool } from "eve/tools";
+import { pdpa } from "../lib/pdpa.js";
+
+export default pdpa.tool(
+  defineTool({
+    description: "Send an OTP by SMS. Pass the phone number as written in the chat.",
+    inputSchema: { type: "object", properties: { phone: { type: "string" } }, required: ["phone"] },
+    async execute(input: { phone: string }) {
+      // ตรงนี้ input.phone เป็นเบอร์จริง และเป็นที่เดียวที่เห็น
+      return { sent: true, to: input.phone };
+    },
+  }),
+  "otp_send", // ต้องอยู่ใน allowedPurposes ของ PHONE ใน policy
+);
+```
+
+### channel อื่น
+
+ห่อทุกไฟล์ใน `agent/channels/` แบบเดียวกัน พร้อมชื่อไฟล์ (ไม่มีนามสกุล)
+
+```ts
+// agent/channels/telegram.ts
+import { telegramChannel } from "eve/channels/telegram";
+import { pdpa } from "../lib/pdpa.js";
+
+export default pdpa.channel(telegramChannel(), "telegram");
+```
+
+---
+
+## ตั้งเองทีละขั้น
+
+สิ่งที่ `createPdpa` ทำให้ แยกเป็นทีละ wrapper ยังใช้ได้เหมือนเดิม และ `pdpa.channel`, `pdpa.model`, `pdpa.tool`, `pdpa.hook` ก็เรียกพวกนี้ตรงๆ
 
 ### 1. สร้าง guard และ policy
 
@@ -149,7 +237,21 @@ tool ที่ดึงข้อมูลส่วนบุคคลมาจา
 
 ```ts
 // agent/tools/crm_lookup.ts
-export default withOutputGuard(crmLookupTool, pdpa)
+import { withOutputGuard } from '@eve-pdpa-extension/eve/guard'
+import { defineTool } from 'eve/tools'
+import { pdpa } from '../lib/guard.js'
+
+export default withOutputGuard(
+  defineTool({
+    description: 'Look up a customer by their customer number.',
+    inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+    async execute(input: { id: string }) {
+      // ดึงข้อมูลลูกค้าจากที่อื่น: ผลที่คืนมาถูกปิดข้อมูลก่อน eve เก็บ
+      return { id: input.id, phone: '091-888-7777' }
+    },
+  }),
+  pdpa,
+)
 ```
 
 ต้องห่อเพราะ eve เก็บและ stream ผลของ tool ไว้ตามที่ได้มา ส่วน `guardModel` ปิดให้แค่ตอนส่งให้โมเดล tool ที่ไม่ได้ยุ่งกับข้อมูลส่วนบุคคลไม่ต้องห่อ
@@ -174,6 +276,53 @@ export default defineAgent({
 ---
 
 ## อ้างอิง
+
+### `createPdpa(options)`
+
+```ts
+import { createPdpa } from '@eve-pdpa-extension/eve/guard'
+```
+
+| Option | ค่าตั้งต้น |
+|---|---|
+| `policy` | ต้องใส่: policy JSON ที่ import มา (`with { type: 'json' }`) หรือผลของ `definePolicy` |
+| `hmacKey`, `sessionKey` | env `PDPA_HMAC_KEY`, `PDPA_SESSION_KEY` · นอก production ใช้ค่าสำหรับ dev |
+| `tokenStore` | Upstash จาก env `UPSTASH_REDIS_REST_*` หรือ `KV_REST_API_*` · นอก production ใช้ memory store ตัวเดียวทั้ง process |
+| `upstash.prefix` | `'pdpa-eve:'` ใส่ไว้หน้าทุก key ที่เขียน |
+| `onAudit` | เขียน NDJSON ลง stdout บรรทัดละ 1 event · event ไม่มีค่าจริงเลย |
+| `production` | `process.env.VERCEL_ENV === 'production'` (ไม่อ่าน `NODE_ENV` เพราะเครื่องมือ build ตั้งค่านี้เอง) |
+| `env` | `process.env` · ส่งของตัวเองมาเพื่อไม่ให้อ่านที่อื่น |
+
+คืนค่า `{ guard, sessionKey, policy, channel, model, tool, hook }`
+
+| | เท่ากับ |
+|---|---|
+| `pdpa.channel(channel, name, options?)` | `withPdpaGuard(channel, { guard, sessionKey, policy, channelName: name, ...options })` · ไม่ใส่ `name` ได้เฉพาะ HTTP channel ของ eve |
+| `pdpa.model(model)` | `guardModel(model, { guard, sessionKey })` |
+| `pdpa.tool(tool, purpose)` | `withTokenResolution(tool, { guard, sessionKey, purpose })` |
+| `pdpa.hook` | `pdpaHook({ guard, sessionKey })` |
+
+**Error** เป็น `PdpaConfigError` throw ตอน agent โหลด ข้อความบอกว่าต้องตั้งอะไร ไม่มีค่าจริง
+
+| `code` | เมื่อ |
+|---|---|
+| `ERR_PDPA_EVE_HMAC_KEY`, `ERR_PDPA_EVE_SESSION_KEY` | production ไม่มี key หรือ key สั้นกว่า 32 bytes (ทุกที่) |
+| `ERR_PDPA_EVE_STORE` | production ไม่มี token store หรือตั้ง URL กับ token ไว้แค่ตัวเดียว |
+| `ERR_PDPA_EVE_PURPOSE` | `pdpa.tool` ด้วย purpose ที่ไม่มี entity ไหนใน policy อนุญาต |
+| `ERR_PDPA_EVE_ADAPTER` | channel ของ eve รุ่นที่แพ็กเกจนี้ปิดข้อมูลขาออกไม่ได้ (ข้างล่าง) |
+
+### `eve-pdpa-check [--production] [--cwd <dir>]`
+
+| ตรวจ | ไม่ผ่านเมื่อ |
+|---|---|
+| channels | ไฟล์ใน `agent/channels/` ไม่ได้ห่อด้วย `pdpa.channel(` หรือ `withPdpaGuard(` |
+| model | `agent/agent.ts` ไม่มี `pdpa.model(` หรือ `guardModel(` |
+| hook | ไม่มีไฟล์ใน `agent/hooks/` ที่ default export เป็น `pdpa.hook` หรือ `pdpaHook(…)` |
+| eve | eve ที่ติดตั้งไม่ใช่ 0.80.x |
+| keys, store | ใช้ `--production` แล้วไม่ได้ตั้ง key หรือ token store ที่ใช้ร่วมกัน (ใน env หรือไฟล์ `.env`) |
+| defaultTools | เตือนอย่างเดียว เมื่อ `agent/agent.ts` ไม่ได้ตั้ง `defaultTools: false` |
+
+exit 0 = ผ่าน · 1 = เจอปัญหา · 2 = ใช้คำสั่งผิด
 
 ### `withPdpaGuard(channel, options)`
 
@@ -212,7 +361,7 @@ export default defineAgent({
 
 token ที่รู้จักแสดงในรูปที่ตั้งไว้ใน `display` เช่น `xxx-xxx-7777` · token ที่ไม่รู้จักหรือเป็นของแชตอื่นกลายเป็น `[ข้อมูลที่ปิดไว้]` · ข้อความที่ policy สั่ง block ถูกแทนด้วยข้อความแจ้ง (ตาม `language`) · ถ้า guard ตอบไม่ได้ เช่น token store ล่ม จะไม่โพสต์อะไรเลย ส่วนที่ eve เก็บและ stream ไม่เปลี่ยน ประวัติของ session ยังมี token อยู่
 
-handler เหล่านี้อยู่ใน `adapter` ของ channel ซึ่ง eve ไม่ได้เขียนไว้ในเอกสาร (0.80.1) เทสต์ของแพ็กเกจรันมันบน eve จริง ถ้า eve รุ่นไหนเปลี่ยนโครงนี้ เทสต์จะล้ม
+handler เหล่านี้อยู่ใน `adapter` ของ channel ซึ่ง eve ไม่ได้เขียนไว้ในเอกสาร (0.80.1) เทสต์ของแพ็กเกจรันมันบน eve จริง ถ้า eve รุ่นไหนเปลี่ยนโครงนี้ เทสต์จะล้ม ส่วน channel ที่ adapter ส่งออกผ่าน event ที่ eve 0.80.x ไม่มีเลย เช่น `interaction.opened` และ `interaction.settled` ของ eve 1.0.0-rc.1 จะ throw `ERR_PDPA_EVE_ADAPTER` ตอนห่อ แทนที่จะส่งคำตอบออกไปโดยไม่ได้ปิดข้อมูล
 
 **HTTP channel ของ eve กับ token** channel นี้ stream คำตอบออกไปตามที่โมเดลเขียน ถ้าโมเดลพิมพ์ `[tok:…]` ซ้ำ ผู้เรียกจะเห็น token นั้น ดังนั้นการห่อ channel นี้ด้วย policy ที่มี `tokenise` จะ throw เว้นแต่ตั้ง `allowRawTokensInOutput: true` ซึ่งควรใช้ในเครื่องเท่านั้น
 

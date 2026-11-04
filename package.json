@@ -17,7 +17,7 @@
     "gate:deps": "node scripts/assert-zero-deps.mjs",
     "gate:builtins": "node scripts/assert-no-node-builtins.mjs && node scripts/assert-no-node-builtins.mjs http",
     "gate:ner": "node scripts/assert-no-ner-import.mjs",
-    "gate:pack": "pnpm --filter @eve-pdpa-extension/core exec publint --strict && pnpm --filter @eve-pdpa-extension/core exec attw --pack --profile node16",
+    "gate:pack": "pnpm --filter @eve-pdpa-extension/core exec publint --strict && pnpm --filter @eve-pdpa-extension/core exec attw --pack --profile node16 && pnpm --filter @eve-pdpa-extension/eve check:pack",
     "gate:tarballs": "node scripts/assert-tarballs.mjs",
     "gate:attestation": "node scripts/assert-attestation.mjs",
     "demo": "pnpm build && node scripts/demo/build.mjs",
