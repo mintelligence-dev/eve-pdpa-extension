@@ -22,6 +22,9 @@ scripts/demo/out/
 # Generated benchmark data and report (bench/generate.mjs, bench/evaluate.mjs)
 bench/out/
 
+# The eve package's registry, built from packages/eve/registry by scripts/build-eve-registry.mjs
+packages/eve/r/
+
 # Copied from the root by scripts/copy-legal.mjs on pack
 packages/*/LICENSE
 packages/*/NOTICE

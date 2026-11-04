@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "eve-pdpa-extension",
+  "homepage": "https://github.com/mintelligence-dev/eve-pdpa-extension",
+  "items": [
+    {
+      "name": "pdpa",
+      "type": "registry:item",
+      "title": "PDPA guard",
+      "description": "Mask Thai personal data in an eve agent: every message in, the model's prompt, tool input and every reply out.",
+      "dependencies": ["@eve-pdpa-extension/eve@{{version}}"],
+      "envVars": {
+        "PDPA_HMAC_KEY": "",
+        "PDPA_SESSION_KEY": ""
+      },
+      "files": [
+        {
+          "path": "pdpa/pdpa-policy.json",
+          "type": "registry:file",
+          "target": "policies/pdpa-policy.json"
+        },
+        {
+          "path": "pdpa/pdpa.ts",
+          "type": "registry:file",
+          "target": "agent/lib/pdpa.ts"
+        },
+        {
+          "path": "pdpa/hook.ts",
+          "type": "registry:file",
+          "target": "agent/hooks/pdpa.ts"
+        },
+        {
+          "path": "pdpa/eve.ts",
+          "type": "registry:file",
+          "target": "agent/channels/eve.ts"
+        }
+      ]
+    }
+  ]
+}
