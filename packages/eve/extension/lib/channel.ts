@@ -34,7 +34,7 @@ import {
   scanDelivery,
 } from './content.js'
 import { PdpaBlockedError } from './errors.js'
-import { guardAdapter } from './outbound.js'
+import { checkAdapter, guardAdapter } from './outbound.js'
 import type { Language } from './reason.js'
 import {
   addressConversation,
@@ -470,6 +470,7 @@ export function withPdpaGuard<C extends GuardableChannel>(
   if (isEveHttp && policyTokenises(options.policy) && options.allowRawTokensInOutput !== true) {
     throw new TypeError(TOKENS_IN_OUTPUT)
   }
+  if (channel.adapter !== undefined && options.outbound !== false) checkAdapter(channel.adapter)
 
   const scan: Scan = async (input, conversation) =>
     scanDelivery(input, {

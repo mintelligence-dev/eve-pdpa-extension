@@ -20,7 +20,9 @@
  * A handler that throws is logged and dropped by eve: if the guard cannot
  * answer — the token store is down — nothing is posted.
  */
+import { createRequire } from 'node:module'
 import type { Guard } from '@eve-pdpa-extension/core'
+import { PdpaConfigError } from './errors.js'
 import { type Language, outboundBlockedReason } from './reason.js'
 import { currentPdpaSessionId } from './session-state.js'
 
@@ -120,6 +122,54 @@ const REWRITES: Readonly<Record<string, Rewrite>> = {
   'actions.requested': presentation,
   'action.partial': presentation,
   'action.result': presentation,
+}
+
+/**
+ * Every event an adapter of eve 0.80.x handles, built-in channels included
+ * (read from telegramChannel, slackChannel and defineChannel, 0.80.1).
+ */
+const EVENTS_080: ReadonlySet<string> = new Set([
+  ...Object.keys(REWRITES),
+  'approval.candidate',
+  'approval.settled',
+  'turn.started',
+  'turn.waiting',
+  'turn.failed',
+  'turn.completed',
+  'turn.cancelled',
+  'message.appended',
+  'reasoning.appended',
+  'step.started',
+  'task.started',
+  'task.settled',
+  'session.failed',
+  'authorization.required',
+  'authorization.completed',
+])
+
+function eveVersion(): string {
+  try {
+    return (createRequire(import.meta.url)('eve/package.json') as { version: string }).version
+  } catch {
+    return 'unknown'
+  }
+}
+
+/**
+ * Refuses an adapter that posts through events eve 0.80.x does not have —
+ * eve 1.0.0-rc.1 posts from `interaction.opened` and `interaction.settled`.
+ * Its replies would go out unmasked, and nothing would say so. An adapter
+ * with no event handler at all posts nothing, and passes.
+ */
+export function checkAdapter(adapter: object): void {
+  const handlers = Object.entries(adapter)
+    .filter(([k, v]) => k.includes('.') && typeof v === 'function')
+    .map(([k]) => k)
+  if (handlers.length === 0 || handlers.some((k) => EVENTS_080.has(k))) return
+  throw new PdpaConfigError(
+    'ERR_PDPA_EVE_ADAPTER',
+    `withPdpaGuard: this channel posts through events this package cannot mask (${handlers.join(', ')}), so its replies would leave unmasked. Found eve ${eveVersion()}; @eve-pdpa-extension/eve supports eve 0.80.x.`,
+  )
 }
 
 /**
