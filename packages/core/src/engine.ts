@@ -20,6 +20,7 @@ const MERGE_PRIORITY: readonly EntityType[] = [
   'LINE_USER_ID',
   'PHONE',
   'BANK_ACCOUNT',
+  'LICENSE_PLATE',
 ]
 
 function priorityOf(entity: EntityType): number {

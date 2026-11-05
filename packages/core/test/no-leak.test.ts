@@ -49,8 +49,9 @@ describe('no real value ever leaves the guard', () => {
         if (e.type === 'scan') events.push(e)
       },
     }).processSync('hello')
-    // All six entities 0.1 claims. Anything 0.2 adds — names, addresses, dates
-    // of birth — must stay off this list until a detector can really see it.
+    // The entities this release claims. Anything 0.2 has not built yet — names,
+    // addresses, dates of birth — must stay off this list until a detector can
+    // really see it.
     expect(events[0]?.engine.entitiesSupported).toEqual([
       'TH_NATIONAL_ID',
       'CREDIT_CARD',
@@ -58,6 +59,7 @@ describe('no real value ever leaves the guard', () => {
       'LINE_USER_ID',
       'PHONE',
       'BANK_ACCOUNT',
+      'LICENSE_PLATE',
     ])
   })
 })

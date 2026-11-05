@@ -58,6 +58,7 @@ const ALL_SIX =
   'เลขบัญชี 123-4-56789-0 บัตรเครดิต 4111 1111 1111 1111 ไลน์ U4af4980629a4b1c2d3e4f5a6b7c8d9e0'
 const MESSAGES = [
   ALL_SIX,
+  'ทะเบียนรถ กข 1234 โทร 091-888-7777',
   'สวัสดีครับ ไม่มีอะไร',
   '',
   'เบอร์ ๐๙๑-๘๘๘-๗๗๗๗ ติดต่อร้านที่ 02-123-4567 หรือ support@myshop.co.th',
@@ -352,7 +353,7 @@ describe('what the schema rejects', () => {
 
   it('another schemaVersion or type', () => {
     const { scan } = sample()
-    expect(schemaAccepts({ ...scan, schemaVersion: '1.1' })).toBe(false)
+    expect(schemaAccepts({ ...scan, schemaVersion: '1.2' })).toBe(false)
     expect(schemaAccepts({ ...scan, type: 'scan.v2' })).toBe(false)
   })
 

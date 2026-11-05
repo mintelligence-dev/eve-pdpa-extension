@@ -7,6 +7,7 @@ export const ENTITY_TYPES = [
   'BANK_ACCOUNT',
   'CREDIT_CARD',
   'LINE_USER_ID',
+  'LICENSE_PLATE',
 ] as const
 export type EntityType = (typeof ENTITY_TYPES)[number]
 
@@ -145,7 +146,7 @@ export interface AuditFinding {
 
 /** Carries positions and types. Never a real value. D2. */
 export interface AuditEvent {
-  readonly schemaVersion: '1.0'
+  readonly schemaVersion: '1.1'
   readonly eventId: string
   readonly type: 'scan'
   readonly at: string
@@ -218,7 +219,7 @@ export type ResolveReason =
  * the token format, so a raw number passed by mistake cannot reach the log.
  */
 export interface TokenResolveEvent {
-  readonly schemaVersion: '1.0'
+  readonly schemaVersion: '1.1'
   readonly eventId: string
   readonly type: 'token.resolve'
   readonly at: string
@@ -251,7 +252,7 @@ export interface TokenResolveEvent {
  * It does not hide a phone number from someone willing to try all of them.
  */
 export interface PolicyLoadedEvent {
-  readonly schemaVersion: '1.0'
+  readonly schemaVersion: '1.1'
   readonly eventId: string
   readonly type: 'policy.loaded'
   readonly at: string

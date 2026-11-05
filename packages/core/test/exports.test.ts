@@ -30,7 +30,7 @@ describe('public surface', () => {
     expect(VERSION).toBe(pkg.version)
   })
 
-  it('declares exactly the 0.1 entity set', () => {
+  it('declares exactly the entity set this release claims', () => {
     expect([...core.ENTITY_TYPES]).toEqual([
       'TH_NATIONAL_ID',
       'PHONE',
@@ -38,6 +38,7 @@ describe('public surface', () => {
       'BANK_ACCOUNT',
       'CREDIT_CARD',
       'LINE_USER_ID',
+      'LICENSE_PLATE',
     ])
   })
 })

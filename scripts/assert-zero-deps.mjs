@@ -110,7 +110,11 @@ try {
   // its maps — the shared digit-run reading behind four detectors (edge cases),
   // then settle.ts (D18). Comments ship four times over (.js, .cjs and both
   // maps), so every 1 KB of explanation in the source costs about 4 KB here.
-  const MAX_UNPACKED = 800 * 1024
+  //
+  // Raised to 900 KB on 2026-11-03: 786,239 → 820,267 bytes, only dist/ and its
+  // maps — the LICENSE_PLATE detector (0.2) and its list of provinces. Same
+  // arithmetic as above: the detector is 3.5 KB minified and ships four times.
+  const MAX_UNPACKED = 900 * 1024
   if (meta.unpackedSize > MAX_UNPACKED) {
     note(`tarball: unpacked ${meta.unpackedSize} bytes exceeds the ${MAX_UNPACKED} byte tripwire`)
   }

@@ -52,6 +52,7 @@ const PLACEHOLDER_TH: Readonly<Record<EntityType, string>> = {
   BANK_ACCOUNT: '[เลขบัญชี]',
   CREDIT_CARD: '[บัตรเครดิต]',
   LINE_USER_ID: '[LINE ID]',
+  LICENSE_PLATE: '[ทะเบียนรถ]',
 }
 
 const PLACEHOLDER_EN: Readonly<Record<EntityType, string>> = {
@@ -61,6 +62,7 @@ const PLACEHOLDER_EN: Readonly<Record<EntityType, string>> = {
   BANK_ACCOUNT: '[bank-account]',
   CREDIT_CARD: '[credit-card]',
   LINE_USER_ID: '[line-id]',
+  LICENSE_PLATE: '[license-plate]',
 }
 
 /** For a token the guard cannot vouch for: not issued here, or not to this session. */
@@ -313,7 +315,7 @@ export function createGuard(options: GuardOptions): Guard {
   // explains itself. Emitted last, once nothing above can still refuse to build.
   if (onAudit !== undefined) {
     const loaded: PolicyLoadedEvent = {
-      schemaVersion: '1.0',
+      schemaVersion: '1.1',
       eventId: newEventId(Date.now()),
       type: 'policy.loaded',
       at: nowIso(),
@@ -364,7 +366,7 @@ export function createGuard(options: GuardOptions): Guard {
 
     if (onAudit !== undefined) {
       const event: TokenResolveEvent = {
-        schemaVersion: '1.0',
+        schemaVersion: '1.1',
         eventId: newEventId(Date.now()),
         type: 'token.resolve',
         at: nowIso(),
@@ -622,7 +624,7 @@ export function createGuard(options: GuardOptions): Guard {
     if (onAudit !== undefined) {
       // Built only when someone will receive it.
       const event: AuditEvent = {
-        schemaVersion: '1.0',
+        schemaVersion: '1.1',
         eventId: newEventId(startedAt),
         type: 'scan',
         at: nowIso(),
@@ -687,7 +689,7 @@ export function createGuard(options: GuardOptions): Guard {
     } catch {}
     const given = opts?.sessionId
     const event: AuditEvent = {
-      schemaVersion: '1.0',
+      schemaVersion: '1.1',
       eventId: newEventId(startedAt),
       type: 'scan',
       at: nowIso(),

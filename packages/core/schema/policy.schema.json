@@ -47,6 +47,10 @@
         "LINE_USER_ID": {
           "$ref": "#/$defs/rule",
           "description": "LINE user id (U + 32 hex). Group and room ids are not covered."
+        },
+        "LICENSE_PLATE": {
+          "$ref": "#/$defs/rule",
+          "description": "Thai vehicle plate, e.g. กข 1234 or 1กข 2345. Found when a cue word such as ทะเบียน stands beside it; a bare letters-and-digits run is not claimed."
         }
       }
     },

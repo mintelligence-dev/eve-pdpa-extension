@@ -31,6 +31,11 @@ export function canonicalValue(entity: EntityType, folded: string): string {
       // Fixed shape, no separators, and the case is part of the id: U + lowercase hex.
       return folded
 
+    case 'LICENSE_PLATE':
+      // Series digit, letters and number with the separator taken off: กข 1234
+      // and กข-1234 are one plate. The letters stay; they are half the value.
+      return folded.replace(SEPARATORS, '')
+
     case 'PHONE':
       // +66 91 888 7777 and 091-888-7777 are one number.
       return toNationalForm(folded.replace(SEPARATORS, ''))

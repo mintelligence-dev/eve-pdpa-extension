@@ -1,4 +1,5 @@
 import { canonicalValue } from './actions/canonical.js'
+import { SEPARATORS } from './actions/separators.js'
 import { PdpaError } from './errors.js'
 import { normalise } from './normalise.js'
 import type { EntityType, PolicyInput } from './types.js'
@@ -31,13 +32,17 @@ function checkStrings(value: unknown, path: string): readonly string[] {
 
 const LINE_USER_ID_SHAPE = /^U[0-9a-f]{32}$/
 
+/** Series digit, one to three consonants, up to four digits: กข1234, 1กข2345. */
+const LICENSE_PLATE_SHAPE = /^[1-9]?[ก-ฮ]{1,3}[0-9]{1,4}$/
+
 /**
  * The one form of an allowlist entry that the `policy.loaded` digest is taken
  * of, so `02-123-4567`, `๐๒-๑๒๓-๔๕๖๗` and `021234567` in a policy give one
  * digest, and an investigator holding the value can recompute it.
  *
  * Entries are not tagged with an entity, so the entity is read off the shape:
- * an `@` means email, U + 32 hex a LINE id, anything else a number — and every
+ * an `@` means email, U + 32 hex a LINE id, letters and digits in the shape of a
+ * plate (กข 1234) a license plate, anything else a number — and every
  * numeric entity canonicalises the way PHONE does (separators out, +66 → 0),
  * since none of the others can start with +66. The rule is written out in
  * audit-event.schema.json; change one and the other must follow.
@@ -48,7 +53,9 @@ export function allowlistDigestForm(entry: string): string {
     ? 'EMAIL'
     : LINE_USER_ID_SHAPE.test(folded)
       ? 'LINE_USER_ID'
-      : 'PHONE'
+      : LICENSE_PLATE_SHAPE.test(folded.replace(SEPARATORS, ''))
+        ? 'LICENSE_PLATE'
+        : 'PHONE'
   return canonicalValue(entity, folded)
 }
 
