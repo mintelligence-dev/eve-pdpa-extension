@@ -1,11 +1,10 @@
 # @eve-pdpa-extension/cli
 
-Find out what Thai personal data is sitting in old chat exports — **without writing any code**. Run it before letting an AI read your chats, or before handing a file to someone else.
+> Find out what Thai personal data is sitting in old chat exports — **without writing any code**. Run it before letting an AI read your chats, or before handing a file to someone else.
 
-- Reads JSONL · CSV · TSV · chat exports from LINE Official Account
-- Says what it found, how many, and on which line · given a policy, says what that policy would mask or block
-- **The report contains no personal data** · paste it into a ticket or pass it on
-- Uses the same detectors as [`@eve-pdpa-extension/core`](https://www.npmjs.com/package/@eve-pdpa-extension/core)
+[![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/cli)](https://www.npmjs.com/package/@eve-pdpa-extension/cli)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![Node](https://img.shields.io/badge/Node-18.18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 
 > **This is a technical tool, not a certification of compliance with Thailand's Personal Data Protection Act (PDPA).**
 > A report that finds nothing does not mean the file holds no personal data — see [Limitations](#limitations).
@@ -13,6 +12,23 @@ Find out what Thai personal data is sitting in old chat exports — **without wr
 [ภาษาไทย](./README.th.md)
 
 ---
+
+## What it does
+
+1. **Reads your chat files:** JSONL · CSV · TSV · chat exports from LINE Official Account.
+2. **Says what it found**, how many, and on which line.
+3. **Given a policy, says what that policy would mask or block**, and checks policy files with `policy validate`.
+4. **Fits scripts and CI:** the exit code says whether anything was found. See [In scripts and CI](#in-scripts-and-ci).
+5. **Uses the same detectors** as [`@eve-pdpa-extension/core`](https://www.npmjs.com/package/@eve-pdpa-extension/core).
+
+## Safeguards
+
+| Rule | How it is enforced |
+|---|---|
+| The report holds no personal data | It lists types, counts, line numbers and message ids, never a value, a masked value or the text around one. Paste it into a ticket or pass it on. Message ids are copied from your file, so check they are not phone numbers. |
+| Your file is never changed | The CLI only reads. No command writes a file. |
+| Nothing leaves your machine | No network calls: the CLI reads local files and prints to the terminal. |
+| No silent misses on a format change | If a LINE OA export does not look as expected, the CLI stops and says which column it cannot find, rather than scanning the wrong one. If nothing was found but some lines could not be read, the exit code is 3, not 0. |
 
 ## Usage
 
