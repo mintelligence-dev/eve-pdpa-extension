@@ -79,7 +79,7 @@ const audit = (): any[] =>
     .flatMap((l) => {
       try {
         const e = JSON.parse(l)
-        return typeof e.type === 'string' && e.schemaVersion === '1.0' ? [e] : []
+        return typeof e.type === 'string' && typeof e.schemaVersion === 'string' ? [e] : []
       } catch {
         return []
       }
