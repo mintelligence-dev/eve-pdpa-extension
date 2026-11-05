@@ -1,0 +1,67 @@
+{
+  "cases": [
+    {
+      "id": "plate-sealed-dash-province-space",
+      "text": "ทะเบียน [[LICENSE_PLATE:ธน-6060 นครราชสีมา]] ค่ะ"
+    },
+    {
+      "id": "plate-sealed-series-thai-digits-glued",
+      "text": "ป้ายทะเบียน[[LICENSE_PLATE:๕กษ๙๙๐]]ครับ"
+    },
+    {
+      "id": "plate-sealed-province-glued-phuket",
+      "text": "รถเช่าทะเบียน [[LICENSE_PLATE:ภก 7123ภูเก็ต]] คืนรถพรุ่งนี้ค่ะ"
+    },
+    {
+      "id": "plate-sealed-line-break-before-province",
+      "text": "ทะเบียนรถ\n[[LICENSE_PLATE:ขบ 4455\nขอนแก่น]]"
+    },
+    { "id": "plate-sealed-cue-english-after", "text": "[[LICENSE_PLATE:กร 3210]] is my plate" },
+    { "id": "plate-sealed-cue-pen-glued", "text": "ทะเบียนเป็น[[LICENSE_PLATE:6กช 1122]]นะคะ" },
+    {
+      "id": "plate-sealed-context-short",
+      "text": "[[LICENSE_PLATE:ศพ 909]] ค่ะ",
+      "context": "ทะเบียนรถอะไรคะ"
+    },
+    {
+      "id": "plate-sealed-next-to-time",
+      "text": "ทะเบียน [[LICENSE_PLATE:ฮก 1001]] เข้าจอด 18:30 ค่ะ"
+    },
+    {
+      "id": "plate-sealed-next-to-phone-and-emoji",
+      "text": "🚙 ทะเบียน [[LICENSE_PLATE:2ฒม 8765]] โทร [[PHONE:0961234567]] ค่ะ"
+    },
+    { "id": "plate-sealed-fullwidth-dash", "text": "plate: [[LICENSE_PLATE:วว－2580]]" },
+    {
+      "id": "plate-sealed-no-cue-checkin",
+      "text": "เช็คอินค่ะ รถ [[LICENSE_PLATE:บท 4321]] สีดำ",
+      "note": "out of scope per README: a plate needs a cue"
+    },
+    {
+      "id": "plate-sealed-evasion-words",
+      "text": "ทะเบียน ขค สี่สองสาม ค่ะ",
+      "note": "out of scope per README: digits written as words are not mentioned"
+    },
+
+    { "id": "plate-sealed-decoy-rop-2-chonburi", "text": "รอบ 2 ชลบุรี ออกกี่โมงคะ" },
+    { "id": "plate-sealed-decoy-booking-hotel", "text": "จอง 3 ห้อง 2 คืน เชียงใหม่ ค่ะ" },
+    {
+      "id": "plate-sealed-decoy-renew-years",
+      "text": "ต่อทะเบียนรถครบ 5 ปีแล้วค่ะ",
+      "note": "ครบ is consonants + digit right after the cue"
+    },
+    { "id": "plate-sealed-decoy-jot-2-khan", "text": "ทะเบียนรถ จด 2 คันเลยค่ะ" },
+    { "id": "plate-sealed-decoy-seat-queue", "text": "ที่นั่ง ข 7 คิว 23 ค่ะ" },
+    { "id": "plate-sealed-decoy-lot-percent", "text": "ลด 50 บาท ส่งฟรี กทม. ค่ะ" },
+    {
+      "id": "plate-sealed-decoy-tracking",
+      "text": "เลขพัสดุ [[~TRACKING:EF582934617TH]] ส่ง 2 ชิ้น ลำพูน"
+    },
+    {
+      "id": "plate-sealed-decoy-latin-plate-en",
+      "text": "my plate is [[~LATIN_PLATE:WXY 4321]] (Malaysia)",
+      "note": "Latin letters, not a Thai plate"
+    },
+    { "id": "plate-sealed-decoy-transfer-amount", "text": "โอนเข้า ยอด 2,450 ชลบุรี สาขาบางแสนค่ะ" }
+  ]
+}

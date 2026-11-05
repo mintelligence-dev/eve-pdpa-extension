@@ -37,7 +37,15 @@ const arg = (name, fallback) => {
 
 const SET = arg('set', 'open')
 const DETAIL = SET !== 'sealed' || process.argv.includes('--detail')
-const MEASURED = ['TH_NATIONAL_ID', 'PHONE', 'EMAIL', 'BANK_ACCOUNT', 'CREDIT_CARD', 'LINE_USER_ID']
+const MEASURED = [
+  'TH_NATIONAL_ID',
+  'PHONE',
+  'EMAIL',
+  'BANK_ACCOUNT',
+  'CREDIT_CARD',
+  'LINE_USER_ID',
+  'LICENSE_PLATE',
+]
 const THRESHOLD = 0.95
 
 const policy = core.definePolicy({

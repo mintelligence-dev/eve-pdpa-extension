@@ -251,7 +251,7 @@ check(
     )
     await guard.process('เบอร์ ๐๙๑-๘๘๘-๗๗๗๗ ค่ะ', { sessionId: 'conv_8f2a', ref: 'msg_10293' })
     const e = scans()[0]
-    assert.equal(e.schemaVersion, '1.0')
+    assert.equal(e.schemaVersion, '1.1')
     assert.deepEqual(
       [e.type, e.sessionId, e.ref, e.boundary, e.outcome],
       ['scan', 'conv_8f2a', 'msg_10293', 'inbound', 'processed'],

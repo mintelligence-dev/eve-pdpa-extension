@@ -13,8 +13,16 @@ import * as core from '../packages/core/dist/index.js'
 
 const here = (p) => new URL(p, import.meta.url)
 
-/** The six entities 0.1 detects. NAME, ADDRESS and the rest are in the data for 0.2. */
-const MEASURED = ['TH_NATIONAL_ID', 'PHONE', 'EMAIL', 'BANK_ACCOUNT', 'CREDIT_CARD', 'LINE_USER_ID']
+/** The entities detected so far. NAME, ADDRESS and the rest are in the data for 0.2. */
+const MEASURED = [
+  'TH_NATIONAL_ID',
+  'PHONE',
+  'EMAIL',
+  'BANK_ACCOUNT',
+  'CREDIT_CARD',
+  'LINE_USER_ID',
+  'LICENSE_PLATE',
+]
 const THRESHOLD = 0.95
 
 const policy = core.definePolicy({
