@@ -1,6 +1,11 @@
 # @eve-pdpa-extension/eve
 
-ปิดข้อมูลส่วนบุคคลไทยใน agent ที่สร้างด้วย [eve](https://eve.dev) ก่อนที่ข้อมูลจะไปถึงโมเดล ถูกบันทึก หรือถูกส่งกลับไปให้ลูกค้า
+> ปิดข้อมูลส่วนบุคคลไทยใน agent ที่สร้างด้วย [eve](https://eve.dev) ก่อนที่ข้อมูลจะไปถึงโมเดล ถูกบันทึก หรือถูกส่งกลับไปให้ลูกค้า
+
+[![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/eve)](https://www.npmjs.com/package/@eve-pdpa-extension/eve)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![Node](https://img.shields.io/badge/Node-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![eve](https://img.shields.io/badge/eve-0.80.1-black)](https://eve.dev)
 
 ```text
 ลูกค้าพิมพ์          ขอ OTP ที่เบอร์ 091-888-7777
@@ -9,15 +14,30 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
 คำตอบที่ลูกค้าเห็น   ส่ง OTP ไปที่ xxx-xxx-7777 แล้วค่ะ
 ```
 
-- ใช้ตัวตรวจจากแพ็กเกจ [`@eve-pdpa-extension/core`](../core) ได้แก่ เลขบัตรประชาชน, เบอร์โทร, อีเมล, เลขบัญชี, บัตรเครดิต และ LINE user ID
-- audit event **ไม่มีค่าจริงอยู่ข้างใน**
-- ใช้กับ Node 24 ขึ้นไป ทดสอบกับ eve **0.80.1** (eve ยังเป็น beta ให้รันเทสต์ทุกครั้งก่อนเปลี่ยนรุ่น)
-
 > **เป็นเครื่องมือทางเทคนิค ไม่ใช่ใบรับรองการปฏิบัติตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล**
 
 [English](./README.md)
 
 ---
+
+## ทำอะไรได้
+
+1. **ปิดข้อมูลครบ 4 จุดที่ agent ทำข้อมูลรั่วได้** ข้อความขาเข้า · tool ทั้งตอนเรียกและผลที่ได้ · prompt ที่ส่งไปผู้ให้บริการโมเดล · คำตอบขาออกของทุก channel ยกเว้น HTTP channel ของ eve ดู [ทำงานยังไง](#ทำงานยังไง)
+2. **ให้ค่าจริงเฉพาะ tool ที่อนุญาต** tool ส่ง OTP ส่งไปเบอร์จริงได้ ส่วนโมเดลเห็นแค่ `[tok:…]`
+3. **ติดตั้ง 3 ขั้น** ด้วย `eve add` ดู [ติดตั้งใน 3 ขั้น](#ติดตั้งใน-3-ขั้น)
+4. **ตรวจโปรเจกต์ให้** `eve-pdpa-check` บอกชื่อ channel, model หรือ hook ที่ลืมห่อ
+5. **audit ไม่มีค่าจริง** ใช้ตัวตรวจจากแพ็กเกจ [`@eve-pdpa-extension/core`](../core) ได้แก่ เลขบัตรประชาชน, เบอร์โทร, อีเมล, เลขบัญชี, บัตรเครดิต และ LINE user ID และ audit event **ไม่มีค่าจริงอยู่ข้างใน**
+
+ใช้กับ Node 24 ขึ้นไป ทดสอบกับ eve **0.80.1** (eve ยังเป็น beta ให้รันเทสต์ทุกครั้งก่อนเปลี่ยนรุ่น)
+
+## หลักความปลอดภัย
+
+| กฎ | บังคับใช้อย่างไร |
+|---|---|
+| ไม่มีอะไรลืมห่อโดยไม่รู้ตัว | `eve-pdpa-check` ได้ exit 1 ถ้า channel, model หรือ hook ไม่ได้ห่อ และ `pdpaHook` เตือนตอนรันเมื่อมีข้อความมาจาก channel ที่ไม่ได้ห่อ |
+| ไม่ใช้กับ eve รุ่นที่ไม่ได้ทดสอบ | `eve-pdpa-check` ไม่ผ่านถ้า eve ที่ติดตั้งไม่ใช่ 0.80.x |
+| ไม่มี key สำหรับ dev หลุดไป production | ไม่ตั้ง key 2 ตัว `eve dev` จะใช้ key สำหรับ dev และบอกครั้งเดียว ส่วน production จะไม่ยอมเริ่ม · `eve-pdpa-check --production` ก็ไม่ผ่านถ้าไม่ได้ตั้ง key หรือ token store ที่ใช้ร่วมกัน |
+| ไม่มีทางเข้าที่ไม่ถูกตรวจ | request สร้าง session ที่มีข้อความพร้อม `callback` หรือ `operationId` ถูกปฏิเสธด้วย `400 pdpa_unsupported` แทนที่จะเข้า eve โดยไม่ถูกปิด |
 
 ## ทำงานยังไง
 

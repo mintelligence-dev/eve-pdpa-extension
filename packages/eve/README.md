@@ -1,6 +1,11 @@
 # @eve-pdpa-extension/eve
 
-Mask Thai personal data in an [eve](https://eve.dev) agent before it reaches the model, gets recorded, or goes back to the customer.
+> Mask Thai personal data in an [eve](https://eve.dev) agent before it reaches the model, gets recorded, or goes back to the customer.
+
+[![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/eve)](https://www.npmjs.com/package/@eve-pdpa-extension/eve)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![Node](https://img.shields.io/badge/Node-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![eve](https://img.shields.io/badge/eve-0.80.1-black)](https://eve.dev)
 
 ```text
 Customer writes          ขอ OTP ที่เบอร์ 091-888-7777
@@ -9,15 +14,30 @@ otp_send tool receives    0918887777                     ← the real value, see
 Reply the customer sees   ส่ง OTP ไปที่ xxx-xxx-7777 แล้วค่ะ
 ```
 
-- Detection comes from [`@eve-pdpa-extension/core`](../core): Thai national ID, phone number, email, bank account, credit card and LINE user ID
-- Audit events **never contain the real value**
-- Node 24+, tested with eve **0.80.1** (eve is in beta: re-run the tests before moving to a new version)
-
 > **This is a technical tool, not a certification of compliance with Thailand's Personal Data Protection Act (PDPA).**
 
 [ภาษาไทย](./README.th.md)
 
 ---
+
+## What it does
+
+1. **Masks personal data at all 4 points where an agent leaks it:** messages coming in, tool calls and results, the prompt sent to the model provider, and replies going out on every channel except eve's HTTP channel. See [How it works](#how-it-works).
+2. **Gives the real value only to the tools you allow**, so an OTP tool can send to the real number while the model only ever sees `[tok:…]`.
+3. **Installs in 3 steps** with `eve add`. See [Install in 3 steps](#install-in-3-steps).
+4. **Checks your project:** `eve-pdpa-check` says by name which channel, model or hook you forgot to wrap.
+5. **Audits without real values:** detection comes from [`@eve-pdpa-extension/core`](../core) (Thai national ID, phone number, email, bank account, credit card and LINE user ID), and audit events **never contain the real value**.
+
+Node 24+, tested with eve **0.80.1**. eve is in beta: re-run the tests before moving to a new version.
+
+## Safeguards
+
+| Rule | How it is enforced |
+|---|---|
+| Nothing left unwrapped by mistake | `eve-pdpa-check` exits 1 when a channel, the model or the hook is not wrapped, and `pdpaHook` warns at runtime about messages from an unwrapped channel. |
+| No masking on an eve it was not tested with | `eve-pdpa-check` fails when the installed eve is not 0.80.x. |
+| No dev keys in production | Without both keys, `eve dev` uses dev keys and says so once, but production refuses to start. `eve-pdpa-check --production` also fails when a key or a shared token store is not set. |
+| No unchecked path in | A create request that carries a message with `callback` or `operationId` is refused with `400 pdpa_unsupported` instead of reaching eve unmasked. |
 
 ## How it works
 
