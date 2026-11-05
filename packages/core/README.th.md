@@ -1,10 +1,11 @@
 # @eve-pdpa-extension/core
 
-ตรวจจับและปิดข้อมูลส่วนบุคคลไทยในข้อความ ก่อนส่งต่อให้ AI model, tool, log หรือคนรีวิว
+> ตรวจจับและปิดข้อมูลส่วนบุคคลไทยในข้อความ ก่อนส่งต่อให้ AI model, tool, log หรือคนรีวิว
 
-- เลขบัตรประชาชน · เบอร์โทร · อีเมล · เลขบัญชี · บัตรเครดิต · LINE user ID
-- ปิดได้ 6 แบบ ตาม policy ที่กำหนด · ทุกครั้งที่ตรวจมี audit event ที่**ไม่มีค่าจริงอยู่ข้างใน**
-- ไม่มี dependency · ~38 KB minified (~14 KB gzip) · ใช้ได้กับ Node 18.18+ · Deno · Bun · Cloudflare Workers · browser
+[![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/core)](https://www.npmjs.com/package/@eve-pdpa-extension/core)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![Node](https://img.shields.io/badge/Node-18.18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Dependencies: 0](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#ทำอะไรได้)
 
 > **เป็นเครื่องมือทางเทคนิค ไม่ใช่ใบรับรองการปฏิบัติตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล**
 > การใช้ไลบรารีนี้ไม่ได้ทำให้ระบบของคุณปฏิบัติตามกฎหมายครบถ้วนโดยอัตโนมัติ
@@ -12,6 +13,24 @@
 [English](./README.md)
 
 ---
+
+## ทำอะไรได้
+
+1. **ตรวจ 6 ประเภท** เลขบัตรประชาชน · เบอร์โทร · อีเมล · เลขบัญชี · บัตรเครดิต · LINE user ID ทั้งเลขไทยและเลขอารบิก
+2. **ปิดตาม policy** เลือกได้ 6 แบบต่อประเภท ดู [action ทั้ง 6](#action-ทั้ง-6)
+3. **บันทึก audit ทุกครั้งที่ตรวจ** โดย audit event **ไม่มีค่าจริงอยู่ข้างใน** ดู [audit](#audit)
+4. **ใช้ได้ทุกที่** ไม่มี dependency · ~38 KB minified (~14 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser
+
+## หลักความปลอดภัย
+
+| กฎ | บังคับใช้อย่างไร |
+|---|---|
+| audit ไม่มีค่าจริง | event เก็บแค่ประเภท ตำแหน่ง confidence และ action ไม่เก็บข้อความที่ตรวจเจอ · ส่วน `sessionId` และ `ref` ถูกเก็บตามที่ส่งมา จึงไม่ควรใช้เบอร์หรือ LINE userId เป็นค่าพวกนี้ |
+| ได้ค่าจริงเฉพาะ purpose ที่อนุญาต | `resolve` แลก token ได้เฉพาะ purpose ที่อยู่ใน `allowedPurposes` ของ policy · ทุกครั้งที่ขอแลก ทั้งที่ผ่านและถูกปฏิเสธ ถูกบันทึกใน audit · token หมดอายุตาม `ttlSec` (สูงสุด 3600 วินาที) |
+| เดา token ไม่ได้ | token id สุ่มจากแหล่งสุ่มที่ปลอดภัย ไม่มีการถอยไปใช้ `Math.random()` · ถ้าไม่มีแหล่งสุ่มที่ปลอดภัย guard จะ throw `ERR_PDPA_NO_CSPRNG` |
+| `hash` ต้องมี key จริง | ไม่ใส่ `hmacKey` หรือ key สั้นกว่า 32 byte → throw `ERR_PDPA_HMAC_KEY` ตั้งแต่ตอนสร้าง guard |
+| ข้อความที่ถูก block ไม่หลุด | `block` คืน `text: ''` เสมอ ถึงจะลืมเช็ค `outcome` ข้อความก็ไม่ถูกส่งต่อ |
+| ไม่ใช้เน็ต ไม่ใช้ builtin ของ Node | CI ไม่ให้ผ่านถ้า core มี dependency, import โมดูล `node:` หรือต้องขอ permission ใดๆ บน Deno |
 
 ## ติดตั้ง
 

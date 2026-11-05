@@ -1,10 +1,11 @@
 # @eve-pdpa-extension/core
 
-Detect and protect Thai personal data in text before it reaches an AI model, a tool, a log or a human reviewer.
+> Detect and protect Thai personal data in text before it reaches an AI model, a tool, a log or a human reviewer.
 
-- Thai national ID · phone number · email · bank account · credit card · LINE user ID
-- 6 ways to protect a value, chosen per type by your policy · every scan emits an audit event that **never contains the real value**
-- Zero dependencies · ~38 KB minified (~14 KB gzip) · runs on Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers
+[![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/core)](https://www.npmjs.com/package/@eve-pdpa-extension/core)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![Node](https://img.shields.io/badge/Node-18.18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Dependencies: 0](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#what-it-does)
 
 > **This is a technical tool, not a certification of compliance with Thailand's Personal Data Protection Act (PDPA).**
 > Using this library does not by itself make your system compliant.
@@ -12,6 +13,24 @@ Detect and protect Thai personal data in text before it reaches an AI model, a t
 [ภาษาไทย](./README.th.md)
 
 ---
+
+## What it does
+
+1. **Detects 6 types:** Thai national ID · phone number · email · bank account · credit card · LINE user ID, in Thai or Arabic digits.
+2. **Protects each one the way your policy says**, in 6 ways chosen per type. See [The 6 actions](#the-6-actions).
+3. **Audits every scan**, and an audit event **never contains the real value**. See [Audit](#audit).
+4. **Runs anywhere:** zero dependencies · ~38 KB minified (~14 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers.
+
+## Safeguards
+
+| Rule | How it is enforced |
+|---|---|
+| No real values in audit | An event records the type, position, confidence and action, never the matched text. `sessionId` and `ref` are stored as you pass them, so do not use a phone number or LINE userId for them. |
+| Real values only for an allowed purpose | `resolve` exchanges a token only for a purpose in the policy's `allowedPurposes`. Every attempt, allowed or refused, is audited, and tokens expire after `ttlSec` (at most 3600 s). |
+| Tokens cannot be guessed | Token ids come from a secure random source. There is no `Math.random()` fallback: with no secure source, the guard throws `ERR_PDPA_NO_CSPRNG`. |
+| `hash` needs a real key | A missing `hmacKey`, or one under 32 bytes, throws `ERR_PDPA_HMAC_KEY` when the guard is created. |
+| Blocked text does not leak | `block` always returns `text: ''`, so forgetting to check `outcome` still sends nothing. |
+| No network, no Node built-ins | CI fails the build if core gains a dependency, imports a `node:` module, or needs any permission under Deno. |
 
 ## Install
 
