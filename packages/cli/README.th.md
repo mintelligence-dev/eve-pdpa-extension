@@ -64,7 +64,7 @@ m7,สั่งเพิ่ม 2 ตัว, ส่งด่วน
 ```
 $ eve-pdpa scan chats.csv
 eve-pdpa scan  chats.csv
-policy   none given — every entity reported, nothing rewritten  (fnv1a64:8443d01abb12f0a8)
+policy   none given — every entity reported, nothing rewritten  (fnv1a64:96f96e3a7a3a212a)
 messages 6 scanned · 4 with personal data · 1 line unreadable
 
 found
@@ -161,7 +161,7 @@ CLI **หยุดแทนที่จะอ่านต่อแบบเพ�
 ```
 $ eve-pdpa scan "3_20261001_20261007_สมชาย ตัวอย่าง.csv"
 eve-pdpa scan  3_20261001_20261007_….csv
-policy   none given — every entity reported, nothing rewritten  (fnv1a64:8443d01abb12f0a8)
+policy   none given — every entity reported, nothing rewritten  (fnv1a64:96f96e3a7a3a212a)
 messages 3 scanned · 2 with personal data
          from customers 1 of 2 · from the shop 1 of 1
 
@@ -191,6 +191,8 @@ pdpa-policy.json  valid  fnv1a64:ee142dc8b1111706
   CREDIT_CARD     block · minConfidence 0.6
   LINE_USER_ID    redact
   LICENSE_PLATE   not in the policy → redact (onUnmapped)
+  DATE_OF_BIRTH   not in the policy → redact (onUnmapped)
+  PASSPORT        not in the policy → redact (onUnmapped)
 
 allowlist   2 exact · 1 pattern (values not shown)
 placeholders [เบอร์โทร]
