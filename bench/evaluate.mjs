@@ -22,6 +22,8 @@ const MEASURED = [
   'CREDIT_CARD',
   'LINE_USER_ID',
   'LICENSE_PLATE',
+  'DATE_OF_BIRTH',
+  'PASSPORT',
 ]
 const THRESHOLD = 0.95
 
