@@ -11,6 +11,8 @@ const NAMES_TH: Readonly<Record<EntityType, string>> = {
   CREDIT_CARD: 'เลขบัตรเครดิต',
   LINE_USER_ID: 'LINE ID',
   LICENSE_PLATE: 'ทะเบียนรถ',
+  DATE_OF_BIRTH: 'วันเกิด',
+  PASSPORT: 'เลขพาสปอร์ต',
 }
 
 const NAMES_EN: Readonly<Record<EntityType, string>> = {
@@ -21,6 +23,8 @@ const NAMES_EN: Readonly<Record<EntityType, string>> = {
   CREDIT_CARD: 'a credit card number',
   LINE_USER_ID: 'a LINE user ID',
   LICENSE_PLATE: 'a license plate',
+  DATE_OF_BIRTH: 'a date of birth',
+  PASSPORT: 'a passport number',
 }
 
 export type Language = 'th' | 'en'
