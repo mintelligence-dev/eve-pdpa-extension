@@ -39,6 +39,8 @@ describe('public surface', () => {
       'CREDIT_CARD',
       'LINE_USER_ID',
       'LICENSE_PLATE',
+      'DATE_OF_BIRTH',
+      'PASSPORT',
     ])
   })
 })

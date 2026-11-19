@@ -8,8 +8,8 @@ import { phoneDetector } from './phone.js'
 import { thaiNationalIdDetector } from './thai-national-id.js'
 
 /**
- * The detectors a guard runs when the caller names none — all six entities 0.1
- * claims.
+ * The detectors a guard runs when the caller names none — every entity this
+ * release claims.
  *
  * The engine derives the audit event's detector list and entitiesSupported from
  * whatever is in this array, so a build can never claim to cover an entity it
@@ -22,7 +22,12 @@ export const BUILTIN_DETECTORS: readonly Detector[] = [
   lineUserIdDetector,
   phoneDetector,
   bankAccountDetector,
+  // The 0.2 detectors, one line each under its own heading, so the branch that
+  // adds one merges in any order.
+  // License plate.
   licensePlateDetector,
+  // Date of birth.
+  // Passport.
 ]
 
 export {

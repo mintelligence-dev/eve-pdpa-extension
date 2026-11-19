@@ -48,6 +48,14 @@
           "$ref": "#/$defs/rule",
           "description": "LINE user id (U + 32 hex). Group and room ids are not covered."
         },
+        "PASSPORT": {
+          "$ref": "#/$defs/rule",
+          "description": "A passport number: a Thai one, two letters and seven digits (AA1234567), or a foreign one beside a cue. A Thai-shaped number with no cue is reported at confidence 0.6, under the default threshold."
+        },
+        "DATE_OF_BIRTH": {
+          "$ref": "#/$defs/rule",
+          "description": "A date of birth, e.g. 12/05/2530, 12 พ.ค. 2530 or 12 May 1987. Found when a birth cue such as วันเกิด or เกิด stands beside it; a date with nothing to say it is a birthday is not claimed."
+        },
         "LICENSE_PLATE": {
           "$ref": "#/$defs/rule",
           "description": "Thai vehicle plate, e.g. กข 1234 or 1กข 2345. Found when a cue word such as ทะเบียน stands beside it; a bare letters-and-digits run is not claimed."

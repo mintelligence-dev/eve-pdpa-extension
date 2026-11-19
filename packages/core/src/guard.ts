@@ -53,6 +53,8 @@ const PLACEHOLDER_TH: Readonly<Record<EntityType, string>> = {
   CREDIT_CARD: '[บัตรเครดิต]',
   LINE_USER_ID: '[LINE ID]',
   LICENSE_PLATE: '[ทะเบียนรถ]',
+  DATE_OF_BIRTH: '[วันเกิด]',
+  PASSPORT: '[พาสปอร์ต]',
 }
 
 const PLACEHOLDER_EN: Readonly<Record<EntityType, string>> = {
@@ -63,6 +65,8 @@ const PLACEHOLDER_EN: Readonly<Record<EntityType, string>> = {
   CREDIT_CARD: '[credit-card]',
   LINE_USER_ID: '[line-id]',
   LICENSE_PLATE: '[license-plate]',
+  DATE_OF_BIRTH: '[date-of-birth]',
+  PASSPORT: '[passport]',
 }
 
 /** For a token the guard cannot vouch for: not issued here, or not to this session. */

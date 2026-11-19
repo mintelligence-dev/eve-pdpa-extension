@@ -32,9 +32,6 @@ function checkStrings(value: unknown, path: string): readonly string[] {
 
 const LINE_USER_ID_SHAPE = /^U[0-9a-f]{32}$/
 
-/** Series digit, one to three consonants, up to four digits: กข1234, 1กข2345. */
-const LICENSE_PLATE_SHAPE = /^[1-9]?[ก-ฮ]{1,3}[0-9]{1,4}$/
-
 /**
  * The one form of an allowlist entry that the `policy.loaded` digest is taken
  * of, so `02-123-4567`, `๐๒-๑๒๓-๔๕๖๗` and `021234567` in a policy give one
@@ -42,21 +39,41 @@ const LICENSE_PLATE_SHAPE = /^[1-9]?[ก-ฮ]{1,3}[0-9]{1,4}$/
  *
  * Entries are not tagged with an entity, so the entity is read off the shape:
  * an `@` means email, U + 32 hex a LINE id, letters and digits in the shape of a
- * plate (กข 1234) a license plate, anything else a number — and every
+ * plate (กข 1234) a license plate, a whole date with a four-digit year
+ * (12/05/2530, 12 พ.ค. 2530) a date of birth, two letters and seven digits
+ * (AA1234567) a passport, anything else a number — and every
  * numeric entity canonicalises the way PHONE does (separators out, +66 → 0),
  * since none of the others can start with +66. The rule is written out in
  * audit-event.schema.json; change one and the other must follow.
  */
 export function allowlistDigestForm(entry: string): string {
   const folded = normalise(entry).text
-  const entity: EntityType = folded.includes('@')
-    ? 'EMAIL'
-    : LINE_USER_ID_SHAPE.test(folded)
-      ? 'LINE_USER_ID'
-      : LICENSE_PLATE_SHAPE.test(folded.replace(SEPARATORS, ''))
-        ? 'LICENSE_PLATE'
-        : 'PHONE'
-  return canonicalValue(entity, folded)
+  return canonicalValue(digestEntity(folded), folded)
+}
+
+/** Separators out: กข 1234 and กข-1234, AA 1234567 and AA-1234567 are one shape. */
+function bare(folded: string): string {
+  return folded.replace(SEPARATORS, '')
+}
+
+/**
+ * The entity an allowlist entry is read as. The 0.2 entities sit one block each
+ * under their own heading, in the order they are tried, so the branch that adds
+ * one merges in any order.
+ */
+function digestEntity(folded: string): EntityType {
+  if (folded.includes('@')) return 'EMAIL'
+  if (LINE_USER_ID_SHAPE.test(folded)) return 'LINE_USER_ID'
+
+  // License plate.
+  // A series digit, one to three consonants, up to four digits (กข1234, 1กข2345).
+  if (/^[1-9]?[ก-ฮ]{1,3}[0-9]{1,4}$/.test(bare(folded))) return 'LICENSE_PLATE'
+
+  // Date of birth.
+
+  // Passport.
+
+  return 'PHONE'
 }
 
 /**

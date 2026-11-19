@@ -8,6 +8,8 @@ export const ENTITY_TYPES = [
   'CREDIT_CARD',
   'LINE_USER_ID',
   'LICENSE_PLATE',
+  'DATE_OF_BIRTH',
+  'PASSPORT',
 ] as const
 export type EntityType = (typeof ENTITY_TYPES)[number]
 

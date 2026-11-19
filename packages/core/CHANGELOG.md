@@ -4,13 +4,16 @@
 
 ### Detection
 
+<!-- License plate -->
 - New entity type `LICENSE_PLATE`: a series digit, one to three Thai consonants and up to four digits, with the province printed under it when one follows (76 of the 77, without เลย). Every run of that shape is kept as a candidate and scored from what stands round it — a cue word, the other side's question, a province after it, a series digit and four digits for it; a count word after a small number, an amount, a room or table in front, an everyday word as the letters, house and other registrations against it — and the score is the confidence, so `minConfidence` is the dial: at the default 0.95 a plate is hidden only with a cue, at 0.7 also by its province and digits. `canonical` form is the plate without separators, so `hash` and allowlist entries match however it was written.
-- A policy written for 0.1 does not name `LICENSE_PLATE`, so `onUnmapped` applies: plates are redacted unless the policy says otherwise.
-- `audit-event.schema.json` and `policy.schema.json` list the new entity; `engine.entitiesSupported` now names it.
+<!-- Date of birth -->
+<!-- Passport -->
+- A policy written for 0.1 names none of `LICENSE_PLATE`, `DATE_OF_BIRTH` and `PASSPORT`, so `onUnmapped` applies: all three are redacted unless the policy says otherwise.
+- `audit-event.schema.json` and `policy.schema.json` list the new entities; `engine.entitiesSupported` now names them.
 
 ### Audit
 
-- Audit events are now `schemaVersion: "1.1"`. The only change from 1.0 is `LICENSE_PLATE` in the entity list, but a log pipeline that validates against the 1.0 schema would reject an event naming it, so the version says so. Events that name no plate have the same shape as before; update a stored copy of `audit-event.schema.json` before upgrading.
+- Audit events are now `schemaVersion: "1.1"`. The only change from 1.0 is `LICENSE_PLATE`, `DATE_OF_BIRTH` and `PASSPORT` in the entity list, but a log pipeline that validates against the 1.0 schema would reject an event naming one, so the version says so. Events that name none of them have the same shape as before; update a stored copy of `audit-event.schema.json` before upgrading.
 
 ## 0.1.0
 

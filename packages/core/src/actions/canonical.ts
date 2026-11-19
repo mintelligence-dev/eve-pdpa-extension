@@ -31,10 +31,19 @@ export function canonicalValue(entity: EntityType, folded: string): string {
       // Fixed shape, no separators, and the case is part of the id: U + lowercase hex.
       return folded
 
+    // The 0.2 entities, one block each under its own heading, so the branch that
+    // adds one merges in any order. An entity whose block is not here yet falls
+    // to the default below.
+
+    // License plate.
     case 'LICENSE_PLATE':
       // Series digit, letters and number with the separator taken off: กข 1234
       // and กข-1234 are one plate. The letters stay; they are half the value.
       return folded.replace(SEPARATORS, '')
+
+    // Date of birth.
+
+    // Passport.
 
     case 'PHONE':
       // +66 91 888 7777 and 091-888-7777 are one number.
@@ -48,5 +57,9 @@ export function canonicalValue(entity: EntityType, folded: string): string {
       // (`detectors/digit-run.ts`) without being a separator anywhere else:
       // `mask` keeps a separator, and keeping the dots in an email would be wrong.
       return folded.replace(/\D/g, '')
+
+    default:
+      // A type no detector in this build reads has no value to compare yet.
+      return folded
   }
 }

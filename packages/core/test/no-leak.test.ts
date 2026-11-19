@@ -49,9 +49,9 @@ describe('no real value ever leaves the guard', () => {
         if (e.type === 'scan') events.push(e)
       },
     }).processSync('hello')
-    // The entities this release claims. Anything 0.2 has not built yet — names,
-    // addresses, dates of birth — must stay off this list until a detector can
-    // really see it.
+    // The entities this build claims. A type with no detector in the build yet —
+    // names, addresses, or a 0.2 type whose branch is not merged — must stay off
+    // this list until a detector can really see it.
     expect(events[0]?.engine.entitiesSupported).toEqual([
       'TH_NATIONAL_ID',
       'CREDIT_CARD',
@@ -59,7 +59,10 @@ describe('no real value ever leaves the guard', () => {
       'LINE_USER_ID',
       'PHONE',
       'BANK_ACCOUNT',
+      // License plate.
       'LICENSE_PLATE',
+      // Date of birth.
+      // Passport.
     ])
   })
 })
