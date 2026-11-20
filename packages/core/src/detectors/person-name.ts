@@ -75,6 +75,23 @@ const TOKEN_STOPS: readonly string[] = [
   'อยาก',
   'อยู่',
   'ใน',
+  'สำนักงาน',
+  'กระทรวง',
+  'ธนาคาร',
+  'บริษัท',
+  'กรม',
+  'โรงพยาบาล',
+  'โรงเรียน',
+  'มหาวิทยาลัย',
+  'องค์การ',
+  'การไฟฟ้า',
+  'การประปา',
+  'ฝ่าย',
+  'แผนก',
+  'หน่วยงาน',
+  'ศูนย์',
+  'สถาบัน',
+  'เทศบาล',
   'โปรด',
   'กรุณา',
   'จัดส่ง',
@@ -137,7 +154,26 @@ interface Read {
  * Reads up to `max` name tokens from `from`: a first name, then after one
  * space a surname. Returns null when not even the first is there.
  */
-function readName(text: string, from: number, max: number): Read | null {
+/**
+ * How long one word of a name can be before it is a sentence run together
+ * ("มีสิทธิได้รับบ้านฟรีจากโครงการ"): a surname past 16 letters, or a first name
+ * after คุณ past 20, is not read. A first name after a title keeps no limit:
+ * Thai is written without spaces, so "นายสมชายใจดีเมื่อวาน" has to be cut
+ * somewhere, and over-hiding it beats leaving the name.
+ */
+interface Reach {
+  readonly first: number
+  readonly next: number
+}
+const REACH_TITLE: Reach = { first: Number.POSITIVE_INFINITY, next: 16 }
+const REACH_KHUN: Reach = { first: 20, next: 16 }
+
+function readName(
+  text: string,
+  from: number,
+  max: number,
+  reach: Reach = REACH_TITLE,
+): Read | null {
   let at = from
   let end = from
   let tokens = 0
@@ -156,6 +192,7 @@ function readName(text: string, from: number, max: number): Read | null {
     // The cap can land before a mark that belongs to the letter it follows.
     while (!cut && isMark(text[j])) j++
     if (j - at < 2) break
+    if (!cut && j - at > (tokens === 0 ? reach.first : reach.next)) break
     end = j
     tokens++
     if (cut || text[j] !== ' ') break
@@ -190,6 +227,8 @@ const TITLE = new RegExp(`(${TITLES}(?:หญิง)?)[ ]?`, 'gu')
 const NOT_A_NAME: readonly RegExp[] = [
   // นายก (and นายกรัฐมนตรี), นายจ้าง, นายหน้า, นายทุน, นายแบบ, นายท้าย, นายอำเภอ …
   /^(?:ก(?:ฯ|รัฐมนตรี|เทศมนตรี|อบต|อบจ|สมาคม|(?![ก-๛]))|จ้าง|หน้า|ทุน|แบบ|ท้าย|อำเภอ|ตำรวจ|ทหาร|สถานี|ช่าง)/,
+  // นายล่ะ, นางเหรอ: a particle after the slang "you" and "she"
+  /^(?:ล่ะ|เหรอ|หรอ|อ่ะ|แล้ว|ก็|ไม่|คือ|ว่า)/,
   // เด็กชาย อายุ 3 ขวบ: an age, not a name
   /^(?:อายุ|ขวบ)/,
   // นางฟ้า, นางงาม, นางแบบ, นางเอก, นางรำ, นางใน, นางพยาบาล …
@@ -202,7 +241,7 @@ const NOT_A_NAME: readonly RegExp[] = [
  * ธรรม* are ordinary given names after นาย or นาง ("นายสมบัติ รุ่งเรือง").
  */
 const NOT_A_NAME_AFTER_KHUN =
-  /^(?:ภาพ|สมบัติ|ค่า|ลักษณะ|ประโยชน์|ธรรม|วุฒิ|งาม|ไสย|พระ|ย่า|ปู่|พิเศษ|เชิง|ศัพท์|ครู|แม่|พ่อ|หมอ|พี่|น้อง|ลูกค้า|ผู้|ตา|ยาย|ป้า|ลุง|อา(?![ก-๛])|ท่าน|ทุกท่าน|ที่|ใด|ไหน|สามารถ|ต้อง|ช่วย|จะ|ได้|ไม่|ก็|เอง|ทำ|ยา|ลูก)/
+  /^(?:มีสิทธิ|มีการ|มีบัญชี|มีพัสดุ|มีรายการ|มีธุรกรรม|ได้รับ|เป็นผู้|กำลัง|ถูก|เคย|ควร|น่าจะ|ต้องการ|ขอ|โปรด|กรุณา|ยัง|ภาพ|สมบัติ|ค่า|ลักษณะ|ประโยชน์|ธรรม|วุฒิ|งาม|ไสย|พระ|ย่า|ปู่|พิเศษ|เชิง|ศัพท์|ครู|แม่|พ่อ|หมอ|พี่|น้อง|ลูกค้า|ผู้|ตา|ยาย|ป้า|ลุง|อา(?![ก-๛])|ท่าน|ทุกท่าน|ที่|ใด|ไหน|สามารถ|ต้อง|ช่วย|จะ|ได้|ไม่|ก็|เอง|ทำ|ยา|ลูก)/
 
 /** The same list is read for all three words; "นาย" and "นาง" differ only in which entries can apply. */
 function isNotAName(text: string, at: number): boolean {
@@ -288,7 +327,7 @@ const personNameDetectorImpl: Detector = {
     for (const m of text.matchAll(/(?:(?<![ก-๛])|(?<=สวัสดี|ค่ะ|ครับ|คะ|นะ|เรียน|ถึง))คุณ( ?)/gu)) {
       const from = m.index + m[0].length
       if (isNotAKhunName(text, from)) continue
-      const name = readName(text, from, 2)
+      const name = readName(text, from, 2, REACH_KHUN)
       if (name === null) continue
       // A given name is short; "ส่งสติกเกอร์" (sent a sticker) is not, and a second
       // word after it is just the next thing the customer says.

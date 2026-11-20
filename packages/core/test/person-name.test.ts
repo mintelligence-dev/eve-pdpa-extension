@@ -161,6 +161,24 @@ describe('found by measuring public text (Wisesight, ThaiNER)', () => {
   })
 })
 
+describe('found by a call-centre data set (Kaggle, simulated calls)', () => {
+  it('an institution after a name is the next thing said, not a surname', () => {
+    expect(hidden('เรียนคุณสมชาย ธนาคารกรุงเทพขอแจ้งว่าบัญชีของท่านมีธุรกรรม')).toEqual(['คุณสมชาย'])
+    expect(hidden('เรียนคุณสุนิสา สำนักงานประกันสังคม โทรมาแจ้งสิทธิ')).toEqual(['คุณสุนิสา'])
+    expect(hidden('ขอเรียนคุณณัฐพล กระทรวงสาธารณสุขโทรมาแจ้งนัด')).toEqual(['คุณณัฐพล'])
+  })
+
+  it('นาย and นาง with a particle are "you" and "she"', () => {
+    expect(found('แล้วนายล่ะ?')).toEqual([])
+    expect(found('นางเหรอ ไม่เชื่อ')).toEqual([])
+  })
+
+  it('คุณ followed by a long run of words is "you", whatever stands before it', () => {
+    expect(found('สวัสดีค่ะ คุณมีสิทธิได้รับบ้านฟรีจากโครงการเฉพาะกิจ')).toEqual([])
+    expect(found('สวัสดีค่ะ คุณได้รับแจ้งเตือนจากระบบ')).toEqual([])
+  })
+})
+
 describe('ranks', () => {
   it('written out, and as abbreviations', () => {
     expect(hidden('พลตำรวจโท สมชาย ใจดี สั่งซื้อ')).toEqual(['พลตำรวจโท สมชาย ใจดี'])
