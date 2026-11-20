@@ -6,6 +6,7 @@
 
 <!-- License plate -->
 <!-- Date of birth -->
+- New entity type `DATE_OF_BIRTH`: a real date — `12/05/2530`, `12 พ.ค. 30`, `12 พฤษภาคม พ.ศ. 2530`, `12 เดือน 5 ปี 2530`, `May 12, 1987`, `4-Jul-1991`, `1987-05-12`, day before month unless only month-first can be a date, Buddhist or Gregorian era — scored the same way: a birth cue (`วันเกิด`, `เกิด` beside it, `DOB`) or the other side asking for one for it; a shipping, payment or expiry word in front, a time after it or a date range against it, and "เกิด" meaning "happened", a hometown, an animal's birth or a birthday party is no cue. Dates listed on one line after one cue ("พ่อ … แม่ … น้อง …") are read as birthdays too. At the default 0.95 a date is hidden only with a cue. A two-digit year, or a day and month with no year, is read only with the cue pressed against it; a year alone is not read. No clock is consulted, so the result does not change with the day it runs. `canonical` form is the ISO Gregorian date, so `hash` and allowlist entries match however it was written.
 <!-- Passport -->
 - A policy written for 0.1 names none of `LICENSE_PLATE`, `DATE_OF_BIRTH` and `PASSPORT`, so `onUnmapped` applies: all three are redacted unless the policy says otherwise.
 - `audit-event.schema.json` and `policy.schema.json` list the new entities; `engine.entitiesSupported` names each one whose detector is in the build.

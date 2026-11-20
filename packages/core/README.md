@@ -18,6 +18,7 @@
 
 1. **Detects:** Thai national ID · phone number · email
    · bank account
+   · date of birth (with a cue word)
    · credit card · LINE user ID
    — in Thai or Arabic digits.
 2. **Protects each one the way your policy says**, in 6 ways chosen per type. See [The 6 actions](#the-6-actions).
@@ -286,6 +287,7 @@ All are `PdpaError`; check `error.code` · error messages never contain real val
 - **Names and addresses are not detected yet** (planned for 0.2) · audit events carry `engine.entitiesSupported`, listing what was checked, so a report with no names in it does not mean there were none
 - **Bank accounts need a cue** such as "เลขบัญชี" (account number) or "โอนเข้า" (transfer to), or pass `context` · a bare 10-digit number cannot be told apart from an order number
 - **A phone number with no leading 0 needs a cue** such as "เบอร์" or "โทร", or pass `context` · `918887777` (Excel drops the 0) and `66918887777` (66 without the +) alone cannot be told apart from an order number · the same goes for a landline written with dots, `02.123.4567`
+- **A date of birth needs a cue** such as "วันเกิด", "เกิด" or "DOB" (beside the date, earlier in the message, or in the other side's last message passed as `context`) to be hidden at the default 0.95 · a date on its own is as often a delivery, an appointment or a due date · `12/05/2530`, `12 / 05 / 2530`, `12 พ.ค. 30`, `12 พฤษภาคม พ.ศ. 2530`, `12 เดือน 5 ปี 2530`, `May 12, 1987`, `4-Jul-1991` and `1987-05-12` are read, day before month (month first only when the other way cannot be a date, `12/31/1988`), and only real dates (no 31 April; 29 February in leap years) · a two-digit year, or a day and month with no year, only with the cue pressed against it · a year on its own ("เกิดปี 2530") is not read · a shipping, payment or expiry word in front, a time after it, or a date range count against it, and "เกิด" that means "happened" ("อุบัติเหตุเกิดวันที่", "วันที่เกิดรายการ"), a hometown ("บ้านเกิด"), an animal ("ลูกหมาเกิด"), a celebration ("ปาร์ตี้วันเกิด", "วันเกิดบริษัท", "สิทธิ์วันเกิด") and "ไม่ใช่วันเกิด" are not cues · `hash` and the allowlist read every way of writing one date as one value · `mask` hides the slashes too (`xxxxxxxxxx`); `keep: 'last4'` leaves the year (`xxxxxx2530`), which together with a name can be enough to tell who someone is
 - **Short public numbers are not detected, on purpose** · `191`, `1669` and the like identify no one, and hiding them would stop a bot from saying "call 1669"
 - **Phone numbers inside parcel tracking numbers are caught too**, e.g. `TH0812345678` · this is deliberate: if letters before the digits stopped detection, anyone could hide a real number by typing `x0918887777`
 - **Credit cards from an unknown issuer** get confidence 0.6, below the default 0.95 · to protect them too, set `minConfidence: 0.6` · a run written after a key that names a time (`ts:`, `timestamp=`, `message_ts:`) scores 0.2 and is never taken for a card, so a Slack timestamp that happens to pass Luhn does not block a message

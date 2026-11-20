@@ -61,6 +61,7 @@ describe('no real value ever leaves the guard', () => {
       'BANK_ACCOUNT',
       // License plate.
       // Date of birth.
+      'DATE_OF_BIRTH',
       // Passport.
     ])
   })

@@ -1,3 +1,4 @@
+import { dateOfBirthCanonical } from '../detectors/date-of-birth.js'
 import { toNationalForm } from '../detectors/phone.js'
 import type { EntityType } from '../types.js'
 import { SEPARATORS } from './separators.js'
@@ -38,6 +39,10 @@ export function canonicalValue(entity: EntityType, folded: string): string {
     // License plate.
 
     // Date of birth.
+    case 'DATE_OF_BIRTH':
+      // 12/05/2530, 12 พ.ค. 30 and 1987-05-12 are one birthday: ISO, Gregorian.
+      // The span is always a whole date, since the detector read it as one.
+      return dateOfBirthCanonical(folded) ?? folded.replace(/\s/g, '')
 
     // Passport.
 

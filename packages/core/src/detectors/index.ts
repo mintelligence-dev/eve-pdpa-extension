@@ -1,6 +1,7 @@
 import type { Detector } from '../types.js'
 import { bankAccountDetector } from './bank-account.js'
 import { creditCardDetector } from './credit-card.js'
+import { dateOfBirthDetector } from './date-of-birth.js'
 import { emailDetector } from './email.js'
 import { lineUserIdDetector } from './line-user-id.js'
 import { phoneDetector } from './phone.js'
@@ -25,12 +26,14 @@ export const BUILTIN_DETECTORS: readonly Detector[] = [
   // adds one merges in any order.
   // License plate.
   // Date of birth.
+  dateOfBirthDetector,
   // Passport.
 ]
 
 export {
   bankAccountDetector,
   creditCardDetector,
+  dateOfBirthDetector,
   emailDetector,
   lineUserIdDetector,
   phoneDetector,
