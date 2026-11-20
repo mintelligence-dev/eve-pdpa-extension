@@ -8,7 +8,7 @@
 <!-- Date of birth -->
 <!-- Passport -->
 - A policy written for 0.1 names none of `LICENSE_PLATE`, `DATE_OF_BIRTH` and `PASSPORT`, so `onUnmapped` applies: all three are redacted unless the policy says otherwise.
-- `audit-event.schema.json` and `policy.schema.json` list the new entities; `engine.entitiesSupported` now names them.
+- `audit-event.schema.json` and `policy.schema.json` list the new entities; `engine.entitiesSupported` names each one whose detector is in the build.
 
 ### Audit
 
