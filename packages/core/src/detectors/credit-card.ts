@@ -69,8 +69,16 @@ function hasKnownIssuer(d: string): boolean {
 const MIN_DIGITS = 13
 const MAX_DIGITS = 19
 
-/** Luhn plus a real issuer prefix. */
-const CONFIDENCE_ISSUER_KNOWN = 0.98
+/**
+ * Evidence in points out of 100, as the 0.2 detectors keep it (license plate,
+ * date of birth, passport). A card has its check digit, so the base is high
+ * and no cue is needed; what stands round the number only takes points off
+ * when it says the number is something else.
+ */
+
+/** Base: Luhn plus a real issuer prefix. */
+const ISSUER_KNOWN = 98
+const CONFIDENCE_ISSUER_KNOWN = ISSUER_KNOWN / 100
 /**
  * Luhn alone. Below the 0.95 default on purpose: one random run in ten passes
  * Luhn, and an order or invoice number of the right length is exactly the kind
@@ -78,7 +86,8 @@ const CONFIDENCE_ISSUER_KNOWN = 0.98
  * lower its threshold and pick these up, and so the benchmark can show how many
  * there were.
  */
-const CONFIDENCE_LUHN_ONLY = 0.6
+const LUHN_ONLY = 60
+const CONFIDENCE_LUHN_ONLY = LUHN_ONLY / 100
 /**
  * A run written after a key that names a time (`ts:`, `timestamp=`). Shape
  * only, as the national id detector scores it: far below Luhn alone, because a
@@ -87,7 +96,10 @@ const CONFIDENCE_LUHN_ONLY = 0.6
  * sixteen digits with a dot in them, and one in ten passes Luhn: with the
  * threshold at 0.6 it blocked the whole message (Slack, 27 Oct).
  */
-const CONFIDENCE_TIME_KEY = 0.2
+const TIME_KEY = 20
+
+/** A reference word names the run and no card word outweighs it: as Luhn alone. */
+const REFERENCE = -38
 
 function belongsToRun(ch: string): boolean {
   return isAsciiDigit(ch)
@@ -252,13 +264,12 @@ export const creditCardDetector: Detector = {
         // After the choice, not before: the sentence says what the run is, not
         // which of its digits make the card.
         const { start, end, confidence } = r.candidate
-        if (keyedAsTime(input.text, start)) {
-          found.push({ ...r.candidate, confidence: CONFIDENCE_TIME_KEY })
-        } else if (confidence === CONFIDENCE_ISSUER_KNOWN && asReference(input.text, start, end)) {
-          found.push({ ...r.candidate, confidence: CONFIDENCE_LUHN_ONLY })
-        } else {
-          found.push(r.candidate)
-        }
+        const issuer = confidence === CONFIDENCE_ISSUER_KNOWN
+        let points = issuer ? ISSUER_KNOWN : LUHN_ONLY
+        if (issuer && asReference(input.text, start, end)) points += REFERENCE
+        // A value under a key that names a time is not a card, whatever it scored.
+        if (keyedAsTime(input.text, start)) points = TIME_KEY
+        found.push({ ...r.candidate, confidence: points / 100 })
       }
     }
 

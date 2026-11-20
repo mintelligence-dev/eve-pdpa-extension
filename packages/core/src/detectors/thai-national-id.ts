@@ -64,17 +64,23 @@ function belongsToRun(ch: string): boolean {
   return isAsciiDigit(ch)
 }
 
-/** Passes the mod-11 check digit. */
-const CONFIDENCE_CHECKSUM = 0.99
+/**
+ * Evidence in points out of 100, as the 0.2 detectors keep it. The check digit
+ * is the evidence, so the base is high and no cue is needed; what stands round
+ * the number only takes points off when it says the number is something else.
+ */
+
+/** Base: passes the mod-11 check digit. */
+const CHECKSUM = 99
 /** Passes it, spaced in a way the card is not: beside a cue word, or wrapped onto two lines. */
-const CONFIDENCE_LOOSE = 0.97
+const LOOSE = 97
 /**
  * Right shape, wrong check digit — or right check digit under a key that names
  * a time (`keyedAsTime`): a LINE webhook's `"timestamp"` is
  * thirteen digits in milliseconds and passes the checksum one time in eleven
  * (user benchmark, 14 Oct, D20). Kept so a policy can ask to see near misses.
  */
-const CONFIDENCE_SHAPE_ONLY = 0.2
+const SHAPE_ONLY = 20
 
 export const thaiNationalIdDetector: Detector = {
   id: 'th-national-id',
@@ -117,15 +123,13 @@ export const thaiNationalIdDetector: Detector = {
         if (!asCard && !loosely) continue
         if (valid) listed = end
 
+        const points = loosely ? LOOSE : valid ? CHECKSUM : SHAPE_ONLY
+
         found.push({
           entity: 'TH_NATIONAL_ID',
           start,
           end,
-          confidence: loosely
-            ? CONFIDENCE_LOOSE
-            : valid
-              ? CONFIDENCE_CHECKSUM
-              : CONFIDENCE_SHAPE_ONLY,
+          confidence: points / 100,
           detector: 'th-national-id',
         })
         from = to - 1
