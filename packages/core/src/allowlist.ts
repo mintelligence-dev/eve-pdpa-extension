@@ -70,6 +70,8 @@ function digestEntity(folded: string): EntityType {
   // Date of birth.
 
   // Passport.
+  // Two Latin letters and seven digits (AA1234567, aa-1234567).
+  if (/^[A-Za-z]{2}[0-9]{7}$/.test(bare(folded))) return 'PASSPORT'
 
   return 'PHONE'
 }

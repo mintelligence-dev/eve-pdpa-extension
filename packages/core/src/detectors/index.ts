@@ -3,6 +3,7 @@ import { bankAccountDetector } from './bank-account.js'
 import { creditCardDetector } from './credit-card.js'
 import { emailDetector } from './email.js'
 import { lineUserIdDetector } from './line-user-id.js'
+import { passportDetector } from './passport.js'
 import { phoneDetector } from './phone.js'
 import { thaiNationalIdDetector } from './thai-national-id.js'
 
@@ -26,6 +27,7 @@ export const BUILTIN_DETECTORS: readonly Detector[] = [
   // License plate.
   // Date of birth.
   // Passport.
+  passportDetector,
 ]
 
 export {
@@ -33,6 +35,7 @@ export {
   creditCardDetector,
   emailDetector,
   lineUserIdDetector,
+  passportDetector,
   phoneDetector,
   thaiNationalIdDetector,
 }

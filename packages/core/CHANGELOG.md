@@ -7,6 +7,7 @@
 <!-- License plate -->
 <!-- Date of birth -->
 <!-- Passport -->
+- New entity type `PASSPORT`: a Thai passport as two Latin letters and seven digits (`AA1234567`, with an optional space or dash), the format official documents show, and a foreign one (six to nine letters and digits) only with a cue pressed against it. With a cue (`พาสปอร์ต`, `หนังสือเดินทาง`, `passport`) or the other side asking for one it is hidden at the default 0.95; a Thai-shaped number with no cue is reported at 0.6 and not hidden, and beside a parcel, order, booking, invoice or staff-number word it is not reported. Look-alike characters (O for 0) are never corrected. `canonical` form is upper case with no separators.
 - A policy written for 0.1 names none of `LICENSE_PLATE`, `DATE_OF_BIRTH` and `PASSPORT`, so `onUnmapped` applies: all three are redacted unless the policy says otherwise.
 - `audit-event.schema.json` and `policy.schema.json` list the new entities; `engine.entitiesSupported` names each one whose detector is in the build.
 

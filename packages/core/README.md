@@ -19,6 +19,7 @@
 1. **Detects:** Thai national ID · phone number · email
    · bank account
    · credit card · LINE user ID
+   · passport number (with a cue word)
    — in Thai or Arabic digits.
 2. **Protects each one the way your policy says**, in 6 ways chosen per type. See [The 6 actions](#the-6-actions).
 3. **Audits every scan**, and an audit event **never contains the real value**. See [Audit](#audit).
@@ -287,6 +288,7 @@ All are `PdpaError`; check `error.code` · error messages never contain real val
 - **Bank accounts need a cue** such as "เลขบัญชี" (account number) or "โอนเข้า" (transfer to), or pass `context` · a bare 10-digit number cannot be told apart from an order number
 - **A phone number with no leading 0 needs a cue** such as "เบอร์" or "โทร", or pass `context` · `918887777` (Excel drops the 0) and `66918887777` (66 without the +) alone cannot be told apart from an order number · the same goes for a landline written with dots, `02.123.4567`
 - **Short public numbers are not detected, on purpose** · `191`, `1669` and the like identify no one, and hiding them would stop a bot from saying "call 1669"
+- **A passport number needs a cue** such as "พาสปอร์ต", "หนังสือเดินทาง" or "passport" (before or after it, earlier in the message, or in the other side's last message passed as `context`; Chinese `护照` counts too) to be hidden at the default 0.95 · a Thai passport is read as two Latin letters and seven digits (`AA1234567`, `AA 1234567`, `aa-1234567`, `AA.1234567`, `AA 123 4567`), the one format official documents show; other and older Thai formats are not guessed at · with no cue a Thai-shaped number is reported at 0.6 and not hidden, since a parcel code, a SKU or a booking reference has the same shape — set `minConfidence: 0.6` on `PASSPORT` to hide it anyway; beside a parcel, order, booking or staff-number word it is not reported at all, and a bill, a fee, a product or serial code or a Wi-Fi password is never one even right after a passport word ("ใบแจ้งหนี้ค่าธรรมเนียมทำพาสปอร์ต IV…", "ไวไฟ … พาส …") · a foreign passport (six to nine letters and digits) is read only with the cue pressed against it · "พาส" on its own counts only right before the number, and a password ("พาสเวิร์ด", "password") never does · look-alike characters are not corrected: `AB12O4567` with a letter O is not a passport number
 - **Phone numbers inside parcel tracking numbers are caught too**, e.g. `TH0812345678` · this is deliberate: if letters before the digits stopped detection, anyone could hide a real number by typing `x0918887777`
 - **Credit cards from an unknown issuer** get confidence 0.6, below the default 0.95 · to protect them too, set `minConfidence: 0.6` · a run written after a key that names a time (`ts:`, `timestamp=`, `message_ts:`) scores 0.2 and is never taken for a card, so a Slack timestamp that happens to pass Luhn does not block a message
 - **Confidence values and cues were set by reasoning**, not yet tuned on real customer data
