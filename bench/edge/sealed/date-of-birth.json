@@ -1,0 +1,63 @@
+{
+  "cases": [
+    { "id": "dobs-slash-ce", "text": "วันเกิดผม [[DATE_OF_BIRTH:14/02/1985]] ครับ" },
+    { "id": "dobs-dash-be-single-digits", "text": "เกิด [[DATE_OF_BIRTH:9-4-2527]] ค่ะ" },
+    { "id": "dobs-thai-month-full", "text": "เกิดวันที่ [[DATE_OF_BIRTH:1 ตุลาคม 2532]] ค่ะ" },
+    { "id": "dobs-colloquial-singha", "text": "วันเกิดนะ [[DATE_OF_BIRTH:20 สิงหา 2535]]" },
+    { "id": "dobs-pho-so-full-month", "text": "เกิด [[DATE_OF_BIRTH:11 พฤศจิกายน พ.ศ. 2529]] ครับ" },
+    { "id": "dobs-en-month-first-abbr", "text": "birthday: [[DATE_OF_BIRTH:Jan 5, 1991]]" },
+    { "id": "dobs-en-ordinal", "text": "I was born [[DATE_OF_BIRTH:22nd June 1990]]" },
+    { "id": "dobs-iso-key-equals", "text": "dob=[[DATE_OF_BIRTH:1993-09-30]]" },
+    { "id": "dobs-thai-digits", "text": "วันเกิด [[DATE_OF_BIRTH:๓/๘/๒๕๓๔]] ค่ะ" },
+    { "id": "dobs-fullwidth", "text": "เกิด [[DATE_OF_BIRTH:２５/１２/２５３２]] ค่ะ" },
+    { "id": "dobs-no-space-glued", "text": "วันเกิด[[DATE_OF_BIRTH:5มิ.ย.2530]]นะคะ" },
+    { "id": "dobs-cue-after", "text": "[[DATE_OF_BIRTH:17 ม.ค. 2538]] เป็นวันเกิดค่ะ" },
+    {
+      "id": "dobs-context-insured",
+      "text": "[[DATE_OF_BIRTH:08/08/2508]] ค่ะ",
+      "context": "ขอวันเดือนปีเกิดของผู้เอาประกันด้วยนะคะ"
+    },
+    {
+      "id": "dobs-family-two-kids",
+      "text": "วันเกิดลูกสองคนค่ะ คนโต [[DATE_OF_BIRTH:2/4/2558]] คนเล็ก [[DATE_OF_BIRTH:19/10/2561]]"
+    },
+    { "id": "dobs-2digit-pressed", "text": "เกิด [[DATE_OF_BIRTH:15/06/32]] ครับ" },
+    { "id": "dobs-no-year-pressed", "text": "วันเกิด [[DATE_OF_BIRTH:28 ก.พ.]] ค่ะ ขอส่วนลดได้ไหม" },
+    { "id": "dobs-leap-ce", "text": "DOB [[DATE_OF_BIRTH:29/02/1996]]" },
+    { "id": "dobs-invalid-31-nov", "text": "วันเกิด [[~INVALID_DATE:31/11/2530]] ค่ะ" },
+    {
+      "id": "dobs-typo-won-kerd",
+      "text": "วนเกิด [[DATE_OF_BIRTH:12/12/2534]] ค่ะ",
+      "note": "typo วนเกิด"
+    },
+    { "id": "dobs-emoji-hbd", "text": "HBD 🎉🎂 [[DATE_OF_BIRTH:3 มี.ค. 2540]] นะคะ ขอโค้ดวันเกิดด้วย" },
+    { "id": "dobs-neg-car-crash", "text": "รถชนเกิดเหตุเมื่อ [[~INCIDENT_DATE:30/10/2569]] ค่ะ" },
+    { "id": "dobs-neg-slip-txn", "text": "สลิปวันที่เกิดรายการ [[~TRANSACTION_DATE:01/11/2569]] ค่ะ" },
+    { "id": "dobs-neg-delivery", "text": "จะได้ของวันที่ [[~DELIVERY_DATE:7 พ.ย. 2569]] ใช่ไหมคะ" },
+    { "id": "dobs-neg-year-only-ce", "text": "ผมเกิดปี [[~YEAR_ONLY:1990]] ครับ" },
+    {
+      "id": "dobs-neg-expiry-after-cue",
+      "text": "วันเกิดส่งไปแล้วนะคะ ส่วนบัตรหมดอายุ [[~EXPIRY_DATE:30/09/2573]]"
+    },
+    { "id": "dobs-neg-checkin-time", "text": "เช็คอิน [[~CHECKIN_DATE:24/12/2569]] 14:00 ค่ะ" },
+    {
+      "id": "dobs-neg-page-birthday",
+      "text": "วันเกิดเพจครบ 3 ขวบ [[~SHOP_ANNIVERSARY:9 พ.ย. 2569]] แจกโค้ด",
+      "note": "decision: a page's anniversary is not personal data"
+    },
+    {
+      "id": "dobs-mom-dob-and-delivery",
+      "text": "ซื้อของขวัญวันเกิดแม่ค่ะ แม่เกิด [[DATE_OF_BIRTH:4/12/2505]] อยากให้ส่งถึง [[~DELIVERY_DATE:3/12/2569]]"
+    },
+    {
+      "id": "dobs-birth-time-after",
+      "text": "เกิดวันที่ [[DATE_OF_BIRTH:21/09/2530]] เวลา 23.10 น. ค่ะ ดูดวงได้ไหม"
+    },
+    {
+      "id": "dobs-us-order",
+      "text": "DOB [[DATE_OF_BIRTH:11/25/1990]]",
+      "note": "out of scope per README: day before month only"
+    },
+    { "id": "dobs-cue-wan-duean-pi-kerd", "text": "วัน/เดือน/ปีเกิด [[DATE_OF_BIRTH:10 ม.ค. 2531]]" }
+  ]
+}

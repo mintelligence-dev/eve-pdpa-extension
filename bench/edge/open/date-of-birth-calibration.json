@@ -1,0 +1,1086 @@
+{
+  "cases": [
+    {
+      "id": "dobc-near-num-be-member-signup",
+      "text": "สมัครสมาชิกค่ะ วันเกิด [[DATE_OF_BIRTH:12/05/2530]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] membership"
+    },
+    {
+      "id": "dobc-near-num-be-points",
+      "text": "วันเกิดหนู [[DATE_OF_BIRTH:03/09/2535]] ค่ะ ได้แต้มเพิ่มไหม",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] membership points"
+    },
+    {
+      "id": "dobc-near-num-be-insured",
+      "text": "ผู้เอาประกันเกิด [[DATE_OF_BIRTH:17/02/2526]] ค่ะ เบี้ยเท่าไหร่",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] insurance"
+    },
+    {
+      "id": "dobc-near-num-be-kid-kindergarten",
+      "text": "ลูกเกิด [[DATE_OF_BIRTH:4/6/2562]] เข้าอนุบาลปีไหนคะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] school"
+    },
+    {
+      "id": "dobc-near-num-be-bank-open",
+      "text": "เปิดบัญชีออนไลน์ค่ะ วันเกิด [[DATE_OF_BIRTH:28/11/2533]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] bank kyc"
+    },
+    {
+      "id": "dobc-near-num-be-hospital-mom",
+      "text": "นัดหมอให้คุณแม่ค่ะ ชื่อสมพร เกิด [[DATE_OF_BIRTH:9/3/2496]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] hospital"
+    },
+    {
+      "id": "dobc-near-num-be-dash",
+      "text": "วันเกิด [[DATE_OF_BIRTH:15-08-2531]] ครับ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] dash"
+    },
+    {
+      "id": "dobc-near-num-be-dot",
+      "text": "เกิด [[DATE_OF_BIRTH:01.04.2529]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] dot"
+    },
+    {
+      "id": "dobc-near-num-be-kerd-wanthi",
+      "text": "เกิดวันที่ [[DATE_OF_BIRTH:22/07/2538]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-near-num-be-baby-card",
+      "text": "ทำการ์ดวันเกิดลูกค่ะ เกิด [[DATE_OF_BIRTH:10/10/2564]] ใส่ชื่อน้องข้าวหอมด้วย",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] gift card"
+    },
+    {
+      "id": "dobc-near-num-be-gym-with-phone",
+      "text": "สมัครฟิตเนสครับ วันเกิด [[DATE_OF_BIRTH:30/04/2534]] เบอร์ [[PHONE:081-234-5678]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] membership, phone next"
+    },
+    {
+      "id": "dobc-near-num-be-wdp",
+      "text": "ว/ด/ป เกิด [[DATE_OF_BIRTH:16/12/2527]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] form label"
+    },
+    {
+      "id": "dobc-near-num-be-colon",
+      "text": "วันเกิด: [[DATE_OF_BIRTH:05/05/2540]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] form label"
+    },
+    {
+      "id": "dobc-near-num-be-khue",
+      "text": "วันเกิดคือ [[DATE_OF_BIRTH:2/2/2532]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-near-num-be-chan",
+      "text": "วันเกิดฉัน [[DATE_OF_BIRTH:19/8/2536]] จ้า",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-near-num-be-dad-insurance-age",
+      "text": "วันเกิดพ่อ [[DATE_OF_BIRTH:01/10/2500]] ครับ ทำประกันได้ไหม อายุเกินไหม",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] insurance"
+    },
+    {
+      "id": "dobc-near-num-be-grandma",
+      "text": "คุณยายเกิด [[DATE_OF_BIRTH:13/04/2485]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] old year"
+    },
+    {
+      "id": "dobc-near-num-be-wife-visa",
+      "text": "ภรรยาผมเกิด [[DATE_OF_BIRTH:24/06/2537]] ครับ ทำวีซ่าต้องใช้อะไรบ้าง",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-near-num-be-thai-digits",
+      "text": "วันเกิด [[DATE_OF_BIRTH:๑๘/๐๑/๒๕๓๒]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] thai digits"
+    },
+    {
+      "id": "dobc-near-2digit-numeric",
+      "text": "เกิด [[DATE_OF_BIRTH:12/05/30]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=2digit-year] [era=be]"
+    },
+    {
+      "id": "dobc-near-num-ce-dob",
+      "text": "DOB [[DATE_OF_BIRTH:12/05/1987]] ครับ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=ce]"
+    },
+    {
+      "id": "dobc-near-num-ce-wan-kerd",
+      "text": "วันเกิด [[DATE_OF_BIRTH:21/03/1995]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=ce]"
+    },
+    {
+      "id": "dobc-near-num-ce-birthday-ka",
+      "text": "Birthday [[DATE_OF_BIRTH:07/11/1992]] ka",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=ce]"
+    },
+    {
+      "id": "dobc-near-num-ce-dash-single",
+      "text": "เกิด [[DATE_OF_BIRTH:3-9-1988]] ครับ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=ce]"
+    },
+    {
+      "id": "dobc-near-num-ce-born-dot",
+      "text": "born [[DATE_OF_BIRTH:14.07.1990]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=ce]"
+    },
+    {
+      "id": "dobc-near-num-ce-son",
+      "text": "วันเกิดลูกชาย [[DATE_OF_BIRTH:25/12/2018]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=ce] child"
+    },
+    {
+      "id": "dobc-near-thm-be-short",
+      "text": "วันเกิด [[DATE_OF_BIRTH:12 พ.ค. 2530]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-near-thm-be-full-jan",
+      "text": "เกิดวันที่ [[DATE_OF_BIRTH:8 มกราคม 2534]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-near-thm-be-sep",
+      "text": "เกิด [[DATE_OF_BIRTH:30 ก.ย. 2531]] ครับ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-near-thm-be-colloquial-mesa",
+      "text": "วันเกิด [[DATE_OF_BIRTH:1 เมษา 2536]] ค่ะ ไม่ได้โกหกนะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be] colloquial"
+    },
+    {
+      "id": "dobc-near-thm-be-mom-full",
+      "text": "วันเกิดแม่ [[DATE_OF_BIRTH:16 สิงหาคม 2506]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-near-thm-be-pho-so",
+      "text": "เกิด [[DATE_OF_BIRTH:5 ธันวาคม พ.ศ. 2530]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be] พ.ศ."
+    },
+    {
+      "id": "dobc-near-thm-be-gift",
+      "text": "วันเกิด [[DATE_OF_BIRTH:20 มิ.ย. 2539]] ขอรับของขวัญวันเกิดค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be] membership"
+    },
+    {
+      "id": "dobc-near-thm-be-khue",
+      "text": "วันเกิดหนูคือ [[DATE_OF_BIRTH:11 ต.ค. 2541]] นะคะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-near-thm-be-kerd-meua",
+      "text": "ลูกเกิดเมื่อ [[DATE_OF_BIRTH:3 กุมภาพันธ์ 2565]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be] child"
+    },
+    {
+      "id": "dobc-near-thm-be-colloquial-nov",
+      "text": "เกิด [[DATE_OF_BIRTH:27 พฤศจิกา 2533]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be] colloquial"
+    },
+    {
+      "id": "dobc-near-thm-be-zodiac",
+      "text": "วันเกิด [[DATE_OF_BIRTH:9 มี.ค. 2528]] ค่ะ ราศีมีน",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-near-thm-be-no-dots",
+      "text": "เกิด [[DATE_OF_BIRTH:14 กค 2529]] ครับ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be] no dots"
+    },
+    {
+      "id": "dobc-near-thm-2digit-may",
+      "text": "วันเกิด [[DATE_OF_BIRTH:12 พ.ค. 30]]",
+      "note": "[dob] [cue=near] [fmt=2digit-year] [era=be]"
+    },
+    {
+      "id": "dobc-near-thm-2digit-jan",
+      "text": "เกิด [[DATE_OF_BIRTH:2 ม.ค. 35]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=2digit-year] [era=be]"
+    },
+    {
+      "id": "dobc-near-noyear-feb",
+      "text": "วันเกิด [[DATE_OF_BIRTH:14 ก.พ.]] ค่ะ ได้ส่วนลดไหม",
+      "note": "[dob] [cue=near] [fmt=no-year] membership"
+    },
+    {
+      "id": "dobc-near-noyear-colloquial-dec",
+      "text": "วันเกิดหนู [[DATE_OF_BIRTH:25 ธันวา]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=no-year]"
+    },
+    {
+      "id": "dobc-near-noyear-numeric",
+      "text": "วันเกิด [[DATE_OF_BIRTH:12/5]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=no-year] numeric"
+    },
+    {
+      "id": "dobc-near-thm-ce",
+      "text": "เกิด [[DATE_OF_BIRTH:12 พฤษภาคม 1987]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=ce]"
+    },
+    {
+      "id": "dobc-near-thm-kho-so",
+      "text": "วันเกิด [[DATE_OF_BIRTH:6 ส.ค. ค.ศ. 1990]]",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=ce] ค.ศ."
+    },
+    {
+      "id": "dobc-near-en-month-first",
+      "text": "DOB: [[DATE_OF_BIRTH:May 12, 1987]]",
+      "note": "[dob] [cue=near] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-near-en-day-first",
+      "text": "My birthday is [[DATE_OF_BIRTH:12 May 1987]]",
+      "note": "[dob] [cue=near] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-near-en-ordinal",
+      "text": "born [[DATE_OF_BIRTH:3rd March 1993]] krub",
+      "note": "[dob] [cue=near] [fmt=en-month] [era=ce] ordinal"
+    },
+    {
+      "id": "dobc-near-en-no-comma",
+      "text": "Date of birth [[DATE_OF_BIRTH:Oct 21 1989]]",
+      "note": "[dob] [cue=near] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-near-en-thai-cue",
+      "text": "วันเกิด [[DATE_OF_BIRTH:15 Jan 1996]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=en-month] [era=ce] mixed"
+    },
+    {
+      "id": "dobc-near-en-dash-abbr",
+      "text": "DOB [[DATE_OF_BIRTH:4-Jul-1991]]",
+      "note": "[dob] [cue=near] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-near-en-full-month",
+      "text": "birthday [[DATE_OF_BIRTH:December 9, 1985]] na",
+      "note": "[dob] [cue=near] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-near-iso-dob",
+      "text": "DOB [[DATE_OF_BIRTH:1987-05-12]]",
+      "note": "[dob] [cue=near] [fmt=iso] [era=ce]"
+    },
+    {
+      "id": "dobc-near-iso-thai-cue",
+      "text": "วันเกิด [[DATE_OF_BIRTH:1992-11-03]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=iso] [era=ce]"
+    },
+    {
+      "id": "dobc-near-iso-snake-key",
+      "text": "birth_date: [[DATE_OF_BIRTH:1999-01-31]]",
+      "note": "[dob] [cue=near] [fmt=iso] [era=ce] form export"
+    },
+    {
+      "id": "dobc-far-num-be-member",
+      "text": "ขอสมัครบัตรสมาชิกค่ะ ข้อมูลวันเกิดตามนี้นะคะ ชื่อ มะลิ ชาวนา ไซซ์ S [[DATE_OF_BIRTH:23/05/2536]]",
+      "note": "[dob] [cue=far] [fmt=numeric] [era=be] membership"
+    },
+    {
+      "id": "dobc-far-thm-be-nickname",
+      "text": "กรอกวันเกิดให้นะคะ ชื่อเล่นแนน ชอบเค้กช็อกโกแลต [[DATE_OF_BIRTH:4 ต.ค. 2537]]",
+      "note": "[dob] [cue=far] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-far-iso-travel-insurance",
+      "text": "แจ้ง DOB สำหรับประกันเดินทางครับ ผู้เดินทาง 1 คน ไปญี่ปุ่น 7 วัน [[DATE_OF_BIRTH:1990-08-14]]",
+      "note": "[dob] [cue=far] [fmt=iso] [era=ce] insurance"
+    },
+    {
+      "id": "dobc-far-num-be-born-at-place",
+      "text": "เกิดที่โคราช โตที่กรุงเทพ ตอนนี้ทำงานบริษัทครับ [[DATE_OF_BIRTH:11/09/2532]]",
+      "note": "[dob] [cue=far] [fmt=numeric] [era=be] เกิดที่ = born at"
+    },
+    {
+      "id": "dobc-far-en-birthday-member",
+      "text": "birthday ลูกค้าค่ะ สมาชิกใหม่ชื่อ ต้นข้าว อยู่บางนา [[DATE_OF_BIRTH:9 June 1994]]",
+      "note": "[dob] [cue=far] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-far-dot-be-birth-month-promo",
+      "text": "ขอแจ้งวันเกิดค่ะ เพื่อรับสิทธิ์ส่วนลดเดือนเกิด ชื่อ วิภา [[DATE_OF_BIRTH:20.11.2530]]",
+      "note": "[dob] [cue=far] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-far-num-be-zodiac-year",
+      "text": "เกิดปีระกาค่ะ จำได้ว่าเป็นวันพ่อพอดี [[DATE_OF_BIRTH:5/12/2536]]",
+      "note": "[dob] [cue=far] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-far-2digit-out-of-scope",
+      "text": "วันเกิดนะคะ ชื่อจอยค่ะ [[DATE_OF_BIRTH:12/05/30]]",
+      "note": "[dob] [cue=far] [fmt=2digit-year] [era=be] out of scope per README: 2-digit year needs the cue pressed against it"
+    },
+    {
+      "id": "dobc-far-noyear-out-of-scope",
+      "text": "วันเกิดหนูใกล้แล้ว จำไว้นะคะ [[DATE_OF_BIRTH:28 พ.ย.]]",
+      "note": "[dob] [cue=far] [fmt=no-year] out of scope per README: day-month needs the cue pressed against it"
+    },
+    {
+      "id": "dobc-far-family-list-lines",
+      "text": "ประกันกลุ่มครอบครัวค่ะ ขอแจ้งวันเกิดทุกคน\nพ่อ [[DATE_OF_BIRTH:07/02/2505]]\nแม่ [[DATE_OF_BIRTH:19/09/2508]]\nลูก [[DATE_OF_BIRTH:01/06/2540]]",
+      "note": "[dob] [cue=far] [fmt=numeric] [era=be] family list insurance"
+    },
+    {
+      "id": "dobc-ctx-num-be-member",
+      "text": "[[DATE_OF_BIRTH:12/05/2530]] ค่ะ",
+      "context": "ขอวันเกิดเพื่อลงทะเบียนสมาชิกด้วยค่ะ",
+      "note": "[dob] [cue=context] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-ctx-thm-be",
+      "text": "[[DATE_OF_BIRTH:8 มี.ค. 2532]]",
+      "context": "รบกวนแจ้งวัน/เดือน/ปีเกิดค่ะ",
+      "note": "[dob] [cue=context] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-ctx-iso-en",
+      "text": "[[DATE_OF_BIRTH:1990-02-14]]",
+      "context": "Could you share your date of birth?",
+      "note": "[dob] [cue=context] [fmt=iso] [era=ce]"
+    },
+    {
+      "id": "dobc-ctx-thm-be-child",
+      "text": "[[DATE_OF_BIRTH:16 ตุลาคม 2563]] ค่ะ",
+      "context": "วันเกิดน้องวันไหนคะ",
+      "note": "[dob] [cue=context] [fmt=thai-month] [era=be] child"
+    },
+    {
+      "id": "dobc-ctx-num-ce-insured",
+      "text": "[[DATE_OF_BIRTH:24/04/1985]] ครับ",
+      "context": "ขอ DOB ผู้เอาประกันค่ะ",
+      "note": "[dob] [cue=context] [fmt=numeric] [era=ce] insurance"
+    },
+    {
+      "id": "dobc-ctx-num-be-kerd-wanthi",
+      "text": "[[DATE_OF_BIRTH:3/1/2534]] ค่ะ",
+      "context": "เกิดวันที่เท่าไหร่คะ",
+      "note": "[dob] [cue=context] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-ctx-num-be-thai-digits",
+      "text": "[[DATE_OF_BIRTH:๒๒/๐๗/๒๕๓๗]]",
+      "context": "ขอวันเกิดค่ะ",
+      "note": "[dob] [cue=context] [fmt=numeric] [era=be] thai digits"
+    },
+    {
+      "id": "dobc-ctx-2digit",
+      "text": "[[DATE_OF_BIRTH:9/9/39]] ค่ะ",
+      "context": "ขอวันเกิดค่ะ",
+      "note": "[dob] [cue=context] [fmt=2digit-year] [era=be] README unclear whether context counts as pressed"
+    },
+    {
+      "id": "dobc-ctx-num-be-mom",
+      "text": "แม่ [[DATE_OF_BIRTH:30/01/2502]] ค่ะ",
+      "context": "ช่วยบอกวันเกิดคุณแม่ด้วยค่ะ",
+      "note": "[dob] [cue=context] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-ctx-outbound-on-record",
+      "text": "ในระบบบันทึกไว้ [[DATE_OF_BIRTH:12/05/2530]] ค่ะ",
+      "context": "ขอเช็กวันเกิดที่ลงทะเบียนไว้หน่อยค่ะ",
+      "boundary": "outbound",
+      "note": "[dob] [cue=context] [fmt=numeric] [era=be] outbound"
+    },
+    {
+      "id": "dobc-ctx-en-month",
+      "text": "[[DATE_OF_BIRTH:May 3, 1991]]",
+      "context": "กรอกวันเกิดในฟอร์มให้ด้วยนะคะ",
+      "note": "[dob] [cue=context] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-none-signup-name-phone",
+      "text": "สมัครสมาชิกค่ะ น้ำฝน [[DATE_OF_BIRTH:12/05/2530]] [[PHONE:089-123-4567]]",
+      "note": "[dob] [cue=none] [fmt=numeric] [era=be] out of scope per README: no cue"
+    },
+    {
+      "id": "dobc-none-age-then-date",
+      "text": "อายุ 37 ปี ค่ะ [[DATE_OF_BIRTH:03/03/2532]]",
+      "note": "[dob] [cue=none] [fmt=numeric] [era=be] out of scope per README: no cue, age only"
+    },
+    {
+      "id": "dobc-none-school-form",
+      "text": "ชื่อ-สกุล สมหญิง ใจงาม [[DATE_OF_BIRTH:1 ม.ค. 2533]] ห้อง ม.6/2 ค่ะ",
+      "note": "[dob] [cue=none] [fmt=thai-month] [era=be] out of scope per README: no cue; ม.6/2 is a class"
+    },
+    {
+      "id": "dobc-none-id-then-date",
+      "text": "เลขบัตร [[TH_NATIONAL_ID:1101700203450]] [[DATE_OF_BIRTH:15/07/2531]] ค่ะ",
+      "note": "[dob] [cue=none] [fmt=numeric] [era=be] out of scope per README: no cue"
+    },
+    {
+      "id": "dobc-near-kyc-id-and-dob",
+      "text": "ยืนยันตัวตนค่ะ เลขบัตรประชาชน [[TH_NATIONAL_ID:3100500123458]] วันเกิด [[DATE_OF_BIRTH:02/08/2527]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] bank kyc"
+    },
+    {
+      "id": "dobc-near-school-apply",
+      "text": "สมัครเรียนให้ ด.ญ.พิมพ์ เกิดวันที่ [[DATE_OF_BIRTH:14 มิถุนายน 2560]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be] school"
+    },
+    {
+      "id": "dobc-near-hospital-new-patient",
+      "text": "ลงทะเบียนคนไข้ใหม่ วันเกิด [[DATE_OF_BIRTH:5/5/2490]] ค่ะ ญาติพามา",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] hospital"
+    },
+    {
+      "id": "dobc-near-health-insurance-baby",
+      "text": "ทำประกันสุขภาพให้ลูก เกิด [[DATE_OF_BIRTH:17/03/2566]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] insurance"
+    },
+    {
+      "id": "dobc-near-bank-nephew",
+      "text": "เปิดบัญชีเงินฝากให้หลาน วันเกิดหลาน [[DATE_OF_BIRTH:09/12/2558]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] bank"
+    },
+    {
+      "id": "dobc-near-birthday-month-perk",
+      "text": "รับสิทธิ์ birthday month ค่ะ วันเกิด [[DATE_OF_BIRTH:11/11/2536]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] membership"
+    },
+    {
+      "id": "dobc-near-cake-age",
+      "text": "สั่งเค้กวันเกิดค่ะ น้องเกิด [[DATE_OF_BIRTH:20/11/2565]] อยากให้เขียนว่าครบ 4 ขวบ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] cake"
+    },
+    {
+      "id": "dobc-near-horoscope",
+      "text": "ดูดวงค่ะ เกิด [[DATE_OF_BIRTH:13 ส.ค. 2532]] ราศีสิงห์",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-after-num-be",
+      "text": "[[DATE_OF_BIRTH:07/04/2533]] วันเกิดค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] cue after"
+    },
+    {
+      "id": "dobc-after-en",
+      "text": "[[DATE_OF_BIRTH:12 May 1987]] is my DOB",
+      "note": "[dob] [cue=near] [fmt=en-month] [era=ce] cue after"
+    },
+    {
+      "id": "dobc-after-thm-be",
+      "text": "[[DATE_OF_BIRTH:28 ก.พ. 2534]] เป็นวันเกิดหนูค่ะ",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be] cue after"
+    },
+    {
+      "id": "dobc-near-age-toddler",
+      "text": "ลูกอายุ 3 ขวบ เกิด [[DATE_OF_BIRTH:01/08/2566]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] age next"
+    },
+    {
+      "id": "dobc-near-age-after",
+      "text": "เกิด [[DATE_OF_BIRTH:22/02/2530]] อายุ 39 แล้วค่ะ ทำประกันทันไหม",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] age next"
+    },
+    {
+      "id": "dobc-near-num-ce-no-zeros",
+      "text": "DOB [[DATE_OF_BIRTH:5/7/1989]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=ce]"
+    },
+    {
+      "id": "dobc-near-num-be-dec31",
+      "text": "เกิด [[DATE_OF_BIRTH:31/12/2529]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] last day of year"
+    },
+    {
+      "id": "dobc-near-num-be-leap",
+      "text": "วันเกิด [[DATE_OF_BIRTH:29/02/2535]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] leap day (1992)"
+    },
+    {
+      "id": "dobc-near-thm-be-mom-member",
+      "text": "สมัครสมาชิกให้แม่ค่ะ วันเกิดแม่ [[DATE_OF_BIRTH:10 ก.ค. 2510]]",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be] membership"
+    },
+    {
+      "id": "dobc-near-student-card",
+      "text": "ทำบัตรนักเรียน วันเกิด [[DATE_OF_BIRTH:3/10/2555]] ค่ะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] school"
+    },
+    {
+      "id": "dobc-near-hbd-today",
+      "text": "HBD ตัวเองวันนี้ค่ะ เกิด [[DATE_OF_BIRTH:5/11/2535]] ขอโค้ดได้ไหมคะ",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-near-thm-be-freebie",
+      "text": "ของแถมวันเกิดค่ะ วันเกิด [[DATE_OF_BIRTH:21 พ.ย. 2538]]",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-near-new-employee",
+      "text": "พนักงานใหม่ค่ะ วันเกิด [[DATE_OF_BIRTH:19/06/2543]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] hr form"
+    },
+    {
+      "id": "dobc-near-driving-licence-age",
+      "text": "เกิด [[DATE_OF_BIRTH:8 ก.พ. 2547]] ค่ะ ทำใบขับขี่ได้ยัง",
+      "note": "[dob] [cue=near] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-near-en-leap",
+      "text": "born on [[DATE_OF_BIRTH:Feb 29, 1992]]",
+      "note": "[dob] [cue=near] [fmt=en-month] [era=ce] leap day"
+    },
+    {
+      "id": "dobc-near-app-cannot-edit",
+      "text": "วันเกิด [[DATE_OF_BIRTH:9/1/2541]] ค่ะ แก้ในแอปไม่ได้",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-near-correction-two-dates",
+      "text": "แก้วันเกิดในระบบให้หน่อยค่ะ จาก [[DATE_OF_BIRTH:12/05/2530]] เป็น [[DATE_OF_BIRTH:21/05/2530]]",
+      "note": "[dob] [cue=near] [fmt=numeric] [era=be] wrong and right birthday, both personal"
+    },
+
+    {
+      "id": "dobc-not-delivery-num-be",
+      "text": "ส่งของวันที่ [[~DELIVERY:12/05/2569]] ได้ไหมคะ",
+      "note": "[not-dob] [kind=delivery] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-delivery-thm-be",
+      "text": "ของจะถึง [[~DELIVERY:8 พ.ย. 2569]] ใช่ไหมคะ",
+      "note": "[not-dob] [kind=delivery] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-delivery-jat-song",
+      "text": "จัดส่ง [[~DELIVERY:15/11/2569]] นะคะ",
+      "note": "[not-dob] [kind=delivery] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-delivery-parcel-out",
+      "text": "พัสดุส่งออก [[~DELIVERY:6/11/2569]] ค่ะ เลขพัสดุ TH12345XYZ",
+      "note": "[not-dob] [kind=delivery] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-delivery-thm-full",
+      "text": "ขอส่ง [[~DELIVERY:10 พฤศจิกายน 2569]] ค่ะ",
+      "note": "[not-dob] [kind=delivery] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-delivery-en",
+      "text": "Delivery on [[~DELIVERY:Nov 12, 2026]] please",
+      "note": "[not-dob] [kind=delivery] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-not-delivery-2digit",
+      "text": "รับของ [[~DELIVERY:20/11/69]] ค่ะ",
+      "note": "[not-dob] [kind=delivery] [fmt=2digit-year] [era=be]"
+    },
+    {
+      "id": "dobc-not-delivery-noyear",
+      "text": "ส่ง [[~DELIVERY:12/11]] ทันไหมคะ",
+      "note": "[not-dob] [kind=delivery] [fmt=no-year]"
+    },
+    {
+      "id": "dobc-not-delivery-kerry-dot",
+      "text": "Kerry มาส่ง [[~DELIVERY:7.11.2569]] ค่ะ",
+      "note": "[not-dob] [kind=delivery] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-delivery-iso",
+      "text": "ขอเลื่อนส่งเป็น [[~DELIVERY:2026-11-14]] ค่ะ",
+      "note": "[not-dob] [kind=delivery] [fmt=iso] [era=ce]"
+    },
+    {
+      "id": "dobc-not-delivery-ctx-answer",
+      "text": "[[~DELIVERY:9/11/2569]] ค่ะ",
+      "context": "สะดวกรับของวันไหนคะ",
+      "note": "[not-dob] [kind=delivery] [fmt=numeric] [era=be] answer-only"
+    },
+    {
+      "id": "dobc-not-delivery-birthday-gift",
+      "text": "ส่งของขวัญวันเกิดแม่ ส่งถึงวันที่ [[~DELIVERY:18/11/2569]] ค่ะ",
+      "note": "[not-dob] [kind=delivery] [fmt=numeric] [era=be] birthday word earlier"
+    },
+    {
+      "id": "dobc-not-appt-checkup",
+      "text": "นัดตรวจ [[~APPT:20/11/2569]] ค่ะ",
+      "note": "[not-dob] [kind=appointment] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-appt-dentist-time",
+      "text": "นัดหมอฟัน [[~APPT:25 พ.ย. 2569]] 10:00 น.",
+      "note": "[not-dob] [kind=appointment] [fmt=thai-month] [era=be] time after"
+    },
+    {
+      "id": "dobc-not-appt-nails-noyear",
+      "text": "จองคิวทำเล็บ [[~APPT:13/11]] บ่ายสองค่ะ",
+      "note": "[not-dob] [kind=appointment] [fmt=no-year]"
+    },
+    {
+      "id": "dobc-not-appt-reschedule",
+      "text": "ขอเลื่อนนัดเป็น [[~APPT:2 ธ.ค. 2569]] ค่ะ",
+      "note": "[not-dob] [kind=appointment] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-appt-en",
+      "text": "appointment [[~APPT:Dec 1, 2026]] 3pm",
+      "note": "[not-dob] [kind=appointment] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-not-appt-aircon",
+      "text": "นัดช่างมาติดแอร์ [[~APPT:16/11/2569]] ช่วงเช้า",
+      "note": "[not-dob] [kind=appointment] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-appt-vaccine-child",
+      "text": "นัดฉีดวัคซีนลูก [[~APPT:12/12/2569]] ค่ะ",
+      "note": "[not-dob] [kind=appointment] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-appt-ctx-answer",
+      "text": "[[~APPT:24/11/2569]] ค่ะ",
+      "context": "สะดวกนัดวันไหนคะ",
+      "note": "[not-dob] [kind=appointment] [fmt=numeric] [era=be] answer-only"
+    },
+    {
+      "id": "dobc-not-appt-interview",
+      "text": "นัดสัมภาษณ์งาน [[~APPT:9 ธันวาคม 2569]] ค่ะ",
+      "note": "[not-dob] [kind=appointment] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-appt-room-viewing-2digit",
+      "text": "นัดดูห้อง [[~APPT:21/11/69]] ได้ไหม",
+      "note": "[not-dob] [kind=appointment] [fmt=2digit-year] [era=be]"
+    },
+    {
+      "id": "dobc-not-booking-checkin-out",
+      "text": "จองห้องพัก เช็คอิน [[~BOOKING:24/12/2569]] เช็คเอาท์ [[~BOOKING:26/12/2569]]",
+      "note": "[not-dob] [kind=booking] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-booking-table",
+      "text": "จองโต๊ะ [[~BOOKING:31/12/2569]] 4 ท่านค่ะ",
+      "note": "[not-dob] [kind=booking] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-booking-flight",
+      "text": "ตั๋วเครื่องบินวันที่ [[~BOOKING:3 ม.ค. 2570]] ค่ะ",
+      "note": "[not-dob] [kind=booking] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-booking-iso",
+      "text": "check-in [[~BOOKING:2026-12-28]]",
+      "note": "[not-dob] [kind=booking] [fmt=iso] [era=ce]"
+    },
+    {
+      "id": "dobc-not-booking-van",
+      "text": "จองรถตู้ไปเขาใหญ่ [[~BOOKING:5/12/2569]] ค่ะ",
+      "note": "[not-dob] [kind=booking] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-booking-spa",
+      "text": "จองสปา [[~BOOKING:14 ก.พ. 2570]] วาเลนไทน์ค่ะ",
+      "note": "[not-dob] [kind=booking] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-booking-en",
+      "text": "booking for [[~BOOKING:20 Dec 2026]] 2 pax",
+      "note": "[not-dob] [kind=booking] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-not-booking-stay",
+      "text": "เข้าพัก [[~BOOKING:01/01/2570]] ค่ะ",
+      "note": "[not-dob] [kind=booking] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-transfer-time",
+      "text": "โอนแล้วค่ะ วันที่ [[~TRANSFER:05/11/2569]] 14:32 น.",
+      "note": "[not-dob] [kind=transfer] [fmt=numeric] [era=be] time after"
+    },
+    {
+      "id": "dobc-not-transfer-paid-thm",
+      "text": "ชำระเงิน [[~TRANSFER:4 พ.ย. 2569]] แล้วนะคะ",
+      "note": "[not-dob] [kind=transfer] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-transfer-slip-2digit",
+      "text": "สลิปลงวันที่ [[~TRANSFER:03/11/69]] ค่ะ",
+      "note": "[not-dob] [kind=transfer] [fmt=2digit-year] [era=be]"
+    },
+    {
+      "id": "dobc-not-transfer-amount",
+      "text": "โอนเข้าวันที่ [[~TRANSFER:1/11/2569]] ยอด 590 บาท",
+      "note": "[not-dob] [kind=transfer] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-transfer-deposit",
+      "text": "จ่ายมัดจำไป [[~TRANSFER:28/10/2569]] ค่ะ",
+      "note": "[not-dob] [kind=transfer] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-transfer-en",
+      "text": "paid on [[~TRANSFER:Nov 3, 2026]]",
+      "note": "[not-dob] [kind=transfer] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-not-transfer-wanthi-kerd-raikan",
+      "text": "วันที่เกิดรายการ [[~TRANSFER:02/11/2569]] ค่ะ",
+      "note": "[not-dob] [kind=transfer] [fmt=numeric] [era=be] README: วันที่เกิดรายการ is not a cue"
+    },
+    {
+      "id": "dobc-not-transfer-raikan-kerd-meua",
+      "text": "รายการเกิดเมื่อ [[~TRANSFER:30/10/2569]] แต่เงินยังไม่เข้า",
+      "note": "[not-dob] [kind=transfer] [fmt=numeric] [era=be] เกิดเมื่อ = happened"
+    },
+    {
+      "id": "dobc-not-transfer-installment",
+      "text": "ผ่อนงวดแรก [[~TRANSFER:15/11/2569]] ค่ะ",
+      "note": "[not-dob] [kind=transfer] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-transfer-card-charge-iso",
+      "text": "ตัดบัตรวันที่ [[~TRANSFER:2026-11-02]] ครับ",
+      "note": "[not-dob] [kind=transfer] [fmt=iso] [era=ce]"
+    },
+    {
+      "id": "dobc-not-due-payment",
+      "text": "ครบกำหนดชำระ [[~DUE:25/11/2569]]",
+      "note": "[not-dob] [kind=due] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-due-pay-before",
+      "text": "ต้องจ่ายก่อน [[~DUE:30 พ.ย. 2569]] ใช่ไหมคะ",
+      "note": "[not-dob] [kind=due] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-due-en",
+      "text": "due [[~DUE:Dec 5, 2026]]",
+      "note": "[not-dob] [kind=due] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-not-due-installment",
+      "text": "ค่างวดครบกำหนด [[~DUE:10/12/2569]]",
+      "note": "[not-dob] [kind=due] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-due-work-deadline",
+      "text": "ส่งงานภายใน [[~DUE:20/11/2569]] นะคะ",
+      "note": "[not-dob] [kind=due] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-due-baby-due-date",
+      "text": "กำหนดคลอด [[~DUE:15/02/2570]] ค่ะ",
+      "note": "[not-dob] [kind=due] [fmt=numeric] [era=be] expected birth, not a date of birth yet"
+    },
+    {
+      "id": "dobc-not-expiry-card",
+      "text": "บัตรหมดอายุ [[~EXPIRY:11/05/2572]] ค่ะ",
+      "note": "[not-dob] [kind=expiry] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-expiry-credit-card-mmyy",
+      "text": "บัตรเครดิตหมดอายุ [[~EXPIRY:09/28]] ค่ะ",
+      "note": "[not-dob] [kind=expiry] [fmt=no-year] mm/yy"
+    },
+    {
+      "id": "dobc-not-expiry-product-exp",
+      "text": "EXP [[~EXPIRY:12.05.2570]]",
+      "note": "[not-dob] [kind=expiry] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-expiry-passport",
+      "text": "พาสปอร์ตหมดอายุ [[~EXPIRY:14 มี.ค. 2573]]",
+      "note": "[not-dob] [kind=expiry] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-expiry-coupon",
+      "text": "คูปองใช้ได้ถึง [[~EXPIRY:30/11/2569]]",
+      "note": "[not-dob] [kind=expiry] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-expiry-birthday-perk",
+      "text": "สิทธิ์วันเกิดใช้ได้ถึง [[~EXPIRY:30/11/2569]] นะคะ",
+      "note": "[not-dob] [kind=expiry] [fmt=numeric] [era=be] birthday word in front"
+    },
+    {
+      "id": "dobc-not-expiry-driving-licence",
+      "text": "ใบขับขี่หมดอายุ [[~EXPIRY:22/06/2571]] ค่ะ",
+      "note": "[not-dob] [kind=expiry] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-expiry-best-before-iso",
+      "text": "best before [[~EXPIRY:2027-03-01]]",
+      "note": "[not-dob] [kind=expiry] [fmt=iso] [era=ce]"
+    },
+    {
+      "id": "dobc-not-issue-card",
+      "text": "วันออกบัตร [[~ISSUE:12/05/2565]]",
+      "note": "[not-dob] [kind=issue] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-issue-receipt",
+      "text": "ใบเสร็จลงวันที่ [[~ISSUE:01/11/2569]]",
+      "note": "[not-dob] [kind=issue] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-issue-tax-invoice",
+      "text": "ใบกำกับภาษีวันที่ [[~ISSUE:31/10/2569]]",
+      "note": "[not-dob] [kind=issue] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-issue-card-issued",
+      "text": "บัตรออกให้เมื่อ [[~ISSUE:5 ม.ค. 2566]]",
+      "note": "[not-dob] [kind=issue] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-policy-start",
+      "text": "เริ่มคุ้มครอง [[~POLICY:01/12/2569]]",
+      "note": "[not-dob] [kind=policy] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-policy-end",
+      "text": "กรมธรรม์สิ้นสุด [[~POLICY:30/11/2570]]",
+      "note": "[not-dob] [kind=policy] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-policy-car-renew",
+      "text": "ประกันรถต่ออายุ [[~POLICY:15/01/2570]] ค่ะ",
+      "note": "[not-dob] [kind=policy] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-policy-lease-old-year",
+      "text": "สัญญาเช่าเริ่มตั้งแต่ [[~POLICY:01/06/2540]] ตอนนั้นยังเช่าอยู่",
+      "note": "[not-dob] [kind=policy] [fmt=numeric] [era=be] year that looks like a birth year"
+    },
+    {
+      "id": "dobc-not-accident-kerd-wanthi",
+      "text": "อุบัติเหตุเกิดวันที่ [[~INCIDENT:3/11/2569]] ค่ะ",
+      "note": "[not-dob] [kind=accident] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-accident-kerd-het",
+      "text": "เกิดเหตุวันที่ [[~INCIDENT:28 ต.ค. 2569]]",
+      "note": "[not-dob] [kind=accident] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-accident-car-crash",
+      "text": "รถชนเมื่อ [[~INCIDENT:1/11/2569]] เคลมได้ไหม",
+      "note": "[not-dob] [kind=accident] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-incident-lost-item",
+      "text": "ของหายวันที่ [[~INCIDENT:30/10/2569]] ค่ะ",
+      "note": "[not-dob] [kind=accident] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-incident-problem-happened",
+      "text": "ปัญหาเกิดขึ้นวันที่ [[~INCIDENT:02/11/2569]]",
+      "note": "[not-dob] [kind=accident] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-incident-flood-hometown",
+      "text": "น้ำท่วมที่บ้านเกิดเมื่อ [[~INCIDENT:15/10/2554]]",
+      "note": "[not-dob] [kind=accident] [fmt=numeric] [era=be] บ้านเกิด = hometown, then เกิดเมื่อ"
+    },
+    {
+      "id": "dobc-not-incident-blackout-time",
+      "text": "ไฟดับเกิดขึ้นตอน [[~INCIDENT:4/11/2569]] 21:00",
+      "note": "[not-dob] [kind=accident] [fmt=numeric] [era=be] time after"
+    },
+    {
+      "id": "dobc-not-incident-police-report",
+      "text": "แจ้งความวันที่ [[~INCIDENT:31/10/2569]]",
+      "note": "[not-dob] [kind=accident] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-range-promo",
+      "text": "โปร [[~RANGE:1-15 พ.ย. 2569]]",
+      "note": "[not-dob] [kind=range] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-range-leave",
+      "text": "ลาพักร้อน [[~RANGE:20-25/12/2569]]",
+      "note": "[not-dob] [kind=range] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-range-booking-window",
+      "text": "เปิดจอง [[~RANGE:10/11/2569 - 20/11/2569]]",
+      "note": "[not-dob] [kind=range] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-range-birth-month-promo",
+      "text": "ลูกค้าที่เกิดเดือน พ.ย. รับส่วนลด ใช้ได้ [[~RANGE:1-30 พ.ย.]]",
+      "note": "[not-dob] [kind=range] [fmt=no-year] birth-month promo"
+    },
+    {
+      "id": "dobc-not-range-closed",
+      "text": "ปิดร้าน [[~RANGE:31/12/2569-2/1/2570]]",
+      "note": "[not-dob] [kind=range] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-range-en",
+      "text": "from [[~RANGE:Dec 20 to Dec 25, 2026]]",
+      "note": "[not-dob] [kind=range] [fmt=en-month] [era=ce]"
+    },
+    {
+      "id": "dobc-not-time-live",
+      "text": "ไลฟ์สด [[~TIME:9/11/2569]] 20.00 น.",
+      "note": "[not-dob] [kind=time] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-time-sent",
+      "text": "ส่งเข้าแชท [[~TIME:05/11/2569]] 09:15 แล้วค่ะ",
+      "note": "[not-dob] [kind=time] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-time-1111-sale",
+      "text": "เปิดขาย [[~TIME:11.11]] เที่ยงคืน",
+      "note": "[not-dob] [kind=promo] [fmt=no-year]"
+    },
+    {
+      "id": "dobc-not-time-movie",
+      "text": "รอบฉาย [[~TIME:15/11]] 19:30",
+      "note": "[not-dob] [kind=time] [fmt=no-year]"
+    },
+    {
+      "id": "dobc-not-promo-1212",
+      "text": "ลด [[~PROMO:12.12]] เหลือ 199",
+      "note": "[not-dob] [kind=promo] [fmt=no-year]"
+    },
+    {
+      "id": "dobc-not-score-wdl",
+      "text": "สถิติ ชนะ/เสมอ/แพ้ [[~SCORE:12/5/3]]",
+      "note": "[not-dob] [kind=score]"
+    },
+    {
+      "id": "dobc-not-dimensions",
+      "text": "ขนาด [[~DIMENSIONS:20/10/15]] ซม.",
+      "note": "[not-dob] [kind=price]"
+    },
+    {
+      "id": "dobc-not-pack-sizes",
+      "text": "แพ็ค [[~QUANTITY:6/12/24]] ชิ้น",
+      "note": "[not-dob] [kind=price] could read as 6 Dec 2024"
+    },
+    {
+      "id": "dobc-not-price-dotted",
+      "text": "ราคา [[~PRICE:1.250.000]] บาท",
+      "note": "[not-dob] [kind=price]"
+    },
+    {
+      "id": "dobc-not-version-app",
+      "text": "แอปเวอร์ชัน [[~VERSION:12.5.30]]",
+      "note": "[not-dob] [kind=version]"
+    },
+    {
+      "id": "dobc-not-version-ios",
+      "text": "อัปเดต iOS [[~VERSION:18.1.1]] แล้วค่ะ",
+      "note": "[not-dob] [kind=version]"
+    },
+    {
+      "id": "dobc-not-version-firmware",
+      "text": "firmware [[~VERSION:2.10.2025]]",
+      "note": "[not-dob] [kind=version] reads as 2 Oct 2025"
+    },
+    { "id": "dobc-not-age-years", "text": "อายุ 37 ปีค่ะ", "note": "[not-dob] [kind=age]" },
+    { "id": "dobc-not-age-toddler", "text": "ลูกอายุ 2 ขวบ 5 เดือน", "note": "[not-dob] [kind=age]" },
+    {
+      "id": "dobc-not-age-idiom",
+      "text": "เกิดมา 30 ปีเพิ่งเคยเจอ",
+      "note": "[not-dob] [kind=age] idiom with เกิด"
+    },
+    {
+      "id": "dobc-not-year-only-be",
+      "text": "เกิดปี [[~YEAR:2530]] ค่ะ",
+      "note": "[not-dob] [kind=year-only] [era=be]"
+    },
+    {
+      "id": "dobc-not-year-only-en",
+      "text": "born in [[~YEAR:1987]]",
+      "note": "[not-dob] [kind=year-only] [era=ce]"
+    },
+    {
+      "id": "dobc-not-year-only-pho-so",
+      "text": "เกิด [[~YEAR:พ.ศ. 2535]] ค่ะ",
+      "note": "[not-dob] [kind=year-only] [era=be]"
+    },
+    {
+      "id": "dobc-not-year-only-2digit",
+      "text": "ลูกเกิดปี [[~YEAR:66]] ค่ะ",
+      "note": "[not-dob] [kind=year-only] [era=be]"
+    },
+    {
+      "id": "dobc-not-phone-dashes",
+      "text": "เบอร์ [[PHONE:081-234-5678]] ค่ะ",
+      "note": "[not-dob] [kind=phone] phone must stay PHONE"
+    },
+    {
+      "id": "dobc-not-bank-dashes",
+      "text": "เลขบัญชี [[BANK_ACCOUNT:123-4-56789-0]] ค่ะ",
+      "note": "[not-dob] [kind=account] account must stay BANK_ACCOUNT"
+    },
+    {
+      "id": "dobc-not-order-no-date-shaped",
+      "text": "เลขออเดอร์ [[~ORDER:2569-11-0512]]",
+      "note": "[not-dob] [kind=order] starts like an ISO date"
+    },
+    {
+      "id": "dobc-not-shop-birthday",
+      "text": "วันเกิดร้านครบ 5 ปี [[~SHOP_BIRTHDAY:12/11/2569]] ลดทั้งร้าน",
+      "note": "[not-dob] [kind=shop-birthday] decision: a shop's anniversary is not personal data"
+    },
+    {
+      "id": "dobc-not-company-birthday",
+      "text": "งานวันเกิดบริษัท [[~SHOP_BIRTHDAY:1 ธ.ค. 2569]] ค่ะ",
+      "note": "[not-dob] [kind=shop-birthday] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-friend-party",
+      "text": "ปาร์ตี้วันเกิดเพื่อน [[~EVENT:22/11/2569]] จองโต๊ะได้ไหม",
+      "note": "[not-dob] [kind=event] party date this year, not the date of birth"
+    },
+    {
+      "id": "dobc-not-pet-cat",
+      "text": "น้องแมวเกิด [[~PET_BIRTH:12/05/2566]] ฉีดวัคซีนอะไรบ้าง",
+      "note": "[not-dob] [kind=pet] decision: a pet's birth date is not personal data"
+    },
+    {
+      "id": "dobc-not-pet-puppies",
+      "text": "ลูกหมาเกิด [[~PET_BIRTH:20/09/2569]] ขายตัวละ 8,000",
+      "note": "[not-dob] [kind=pet]"
+    },
+    {
+      "id": "dobc-not-invalid-31-apr",
+      "text": "วันเกิด [[~INVALID:31/04/2530]]",
+      "note": "[not-dob] [kind=invalid] README: only real dates"
+    },
+    {
+      "id": "dobc-not-invalid-29feb-1987",
+      "text": "เกิด [[~INVALID:29/02/2530]]",
+      "note": "[not-dob] [kind=invalid] 2530 not leap"
+    },
+    {
+      "id": "dobc-not-invalid-30feb-ce",
+      "text": "DOB [[~INVALID:30/02/1990]]",
+      "note": "[not-dob] [kind=invalid]"
+    },
+    {
+      "id": "dobc-not-shop-opening",
+      "text": "ร้านเปิด [[~OPEN_DATE:1 ธ.ค. 2569]]",
+      "note": "[not-dob] [kind=event] [fmt=thai-month] [era=be]"
+    },
+    {
+      "id": "dobc-not-manufactured",
+      "text": "ผลิตวันที่ [[~MFG:12/05/2569]]",
+      "note": "[not-dob] [kind=expiry] manufacture date"
+    },
+    {
+      "id": "dobc-not-posted-date",
+      "text": "ลงประกาศ [[~POST:02/11/2569]]",
+      "note": "[not-dob] [kind=event] [fmt=numeric] [era=be]"
+    },
+    {
+      "id": "dobc-not-holiday-noyear",
+      "text": "วันหยุด [[~HOLIDAY:5 ธ.ค.]] ร้านปิดค่ะ",
+      "note": "[not-dob] [kind=event] [fmt=no-year]"
+    }
+  ]
+}
