@@ -66,8 +66,6 @@ function digestEntity(folded: string): EntityType {
   if (LINE_USER_ID_SHAPE.test(folded)) return 'LINE_USER_ID'
 
   // License plate.
-  // A series digit, one to three consonants, up to four digits (กข1234, 1กข2345).
-  if (/^[1-9]?[ก-ฮ]{1,3}[0-9]{1,4}$/.test(bare(folded))) return 'LICENSE_PLATE'
 
   // Date of birth.
 

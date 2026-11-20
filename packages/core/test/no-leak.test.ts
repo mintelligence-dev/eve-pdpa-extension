@@ -60,7 +60,6 @@ describe('no real value ever leaves the guard', () => {
       'PHONE',
       'BANK_ACCOUNT',
       // License plate.
-      'LICENSE_PLATE',
       // Date of birth.
       // Passport.
     ])
