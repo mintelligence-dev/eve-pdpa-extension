@@ -1,0 +1,150 @@
+{
+  "cases": [
+    { "id": "plate-cue-space", "text": "ทะเบียน [[LICENSE_PLATE:กข 1234]] ค่ะ" },
+    { "id": "plate-cue-dash", "text": "ทะเบียนรถ [[LICENSE_PLATE:ฒห-4521]] ครับ" },
+    { "id": "plate-cue-no-separator", "text": "ป้ายทะเบียน [[LICENSE_PLATE:งท7788]] นะคะ" },
+    { "id": "plate-series-digit-with-cue", "text": "ทะเบียน [[LICENSE_PLATE:1กข 2345]] สีขาวค่ะ" },
+    {
+      "id": "plate-series-digit-three-digits",
+      "text": "รถตู้ทะเบียน [[LICENSE_PLATE:7กท 509]] มารับที่ล็อบบี้"
+    },
+    {
+      "id": "plate-single-consonant",
+      "text": "รถคุณพ่อทะเบียน [[LICENSE_PLATE:ก 4512]] ครับ",
+      "note": "old single-consonant plate"
+    },
+    { "id": "plate-three-consonants", "text": "ทะเบียนมอเตอร์ไซค์ [[LICENSE_PLATE:กขค 123]] ค่ะ" },
+    { "id": "plate-thai-digits", "text": "ทะเบียน [[LICENSE_PLATE:กข ๑๒๓๔]] ค่ะ" },
+    { "id": "plate-thai-digits-series", "text": "ทะเบียนรถ [[LICENSE_PLATE:๒ขค ๕๖๗๘]] นะครับ" },
+    { "id": "plate-fullwidth-digits", "text": "ทะเบียน [[LICENSE_PLATE:ฆง １２３４]]" },
+    { "id": "plate-double-space", "text": "ทะเบียน [[LICENSE_PLATE:บย  6012]] ค่ะ" },
+    { "id": "plate-line-break-inside", "text": "ทะเบียนรถค่ะ\n[[LICENSE_PLATE:ผล\n8833]]" },
+    { "id": "plate-en-dash", "text": "ทะเบียน [[LICENSE_PLATE:ศษ–3301]] ครับ" },
+    { "id": "plate-province-full-bkk", "text": "ทะเบียน [[LICENSE_PLATE:กข 1234 กรุงเทพมหานคร]] ค่ะ" },
+    { "id": "plate-province-glued", "text": "ทะเบียน [[LICENSE_PLATE:ศร 4410ชลบุรี]] ค่ะ" },
+    {
+      "id": "plate-province-ktm-abbrev",
+      "text": "ทะเบียน [[LICENSE_PLATE:ฎฉ 7071 กทม.]] จอดชั้น B2 ค่ะ"
+    },
+    {
+      "id": "plate-province-bkk-paiyannoi",
+      "text": "ทะเบียน [[LICENSE_PLATE:3กศ 9012 กรุงเทพฯ]] ครับ"
+    },
+    {
+      "id": "plate-province-chiangmai-mid-sentence",
+      "text": "รถทะเบียน [[LICENSE_PLATE:ขค 5566 เชียงใหม่]] จอดหน้าโรงแรมค่ะ"
+    },
+    {
+      "id": "plate-province-loei-not-taken",
+      "text": "ทะเบียน [[LICENSE_PLATE:กค 2211]] เลย ครับ",
+      "note": "README: เลย is not taken as the province (it also means 'at all')"
+    },
+    { "id": "plate-cue-glued-both-sides", "text": "ทะเบียน[[LICENSE_PLATE:พพ 3456]]ค่ะ" },
+    { "id": "plate-cue-after", "text": "[[LICENSE_PLATE:ลอ 7788]] คือทะเบียนรถผมครับ" },
+    { "id": "plate-cue-english", "text": "plate [[LICENSE_PLATE:กข 8890]] please" },
+    {
+      "id": "plate-cue-english-license-plate-colon",
+      "text": "License plate: [[LICENSE_PLATE:2ขย 4410]], white Honda"
+    },
+    { "id": "plate-cue-verb-khue", "text": "ทะเบียนคือ [[LICENSE_PLATE:ชม 1450]] ค่ะ" },
+    { "id": "plate-cue-verb-pen", "text": "ทะเบียนเป็น [[LICENSE_PLATE:2กร 6677]] นะครับ" },
+    {
+      "id": "plate-cue-khue-glued",
+      "text": "ทะเบียนรถคือ[[LICENSE_PLATE:กข 1234]]ค่ะ",
+      "note": "คือ ends in อ, a consonant, glued to the plate letters"
+    },
+    {
+      "id": "plate-cue-far",
+      "text": "ขอแจ้งทะเบียนรถสำหรับจอดที่โรงแรมนะคะ เป็นฮอนด้าซีวิคสีเทา มาถึงประมาณบ่ายสอง คันนี้ค่ะ [[LICENSE_PLATE:ภธ 2468]]"
+    },
+    {
+      "id": "plate-context-bare-reply",
+      "text": "[[LICENSE_PLATE:กข 1234]]",
+      "context": "ขอทะเบียนรถด้วยค่ะ"
+    },
+    {
+      "id": "plate-context-bare-with-province",
+      "text": "[[LICENSE_PLATE:9กฎ 4321 กรุงเทพมหานคร]] ค่ะ",
+      "context": "รบกวนแจ้งเลขทะเบียนรถที่จะมาจอดด้วยครับ"
+    },
+    {
+      "id": "plate-context-english",
+      "text": "[[LICENSE_PLATE:ขม 5050]]",
+      "context": "May I have your car plate number?"
+    },
+    {
+      "id": "plate-cue-lek-thabian-rot-yon",
+      "text": "เลขทะเบียนรถยนต์ [[LICENSE_PLATE:4กต 8080]] ค่ะ"
+    },
+    {
+      "id": "plate-cue-misspelt",
+      "text": "ทะเบีนย [[LICENSE_PLATE:กข 1234]] ค่ะ",
+      "note": "transposed letters in the cue word"
+    },
+    {
+      "id": "plate-two-plates-one-cue",
+      "text": "ทะเบียน [[LICENSE_PLATE:กข 1234]] กับ [[LICENSE_PLATE:ขค 5678]] จะเข้ามาจอดสองคันค่ะ"
+    },
+    {
+      "id": "plate-no-cue",
+      "text": "จอดหน้าร้าน [[LICENSE_PLATE:กข 1234]] ค่ะ",
+      "note": "out of scope per README: a plate needs a cue"
+    },
+    {
+      "id": "plate-series-no-cue",
+      "text": "รถ [[LICENSE_PLATE:1กข 2345]] มารับของค่ะ",
+      "note": "out of scope per README: series-digit plate without cue is 0.6, below the default 0.95"
+    },
+    {
+      "id": "plate-next-to-phone",
+      "text": "ทะเบียน [[LICENSE_PLATE:กข 1234]] เบอร์ [[PHONE:0812345678]] ค่ะ"
+    },
+    { "id": "plate-then-amount", "text": "ทะเบียน [[LICENSE_PLATE:ฉช 4040]] [[~AMOUNT:500]] บาทค่ะ" },
+    {
+      "id": "plate-after-order-no",
+      "text": "ออเดอร์ [[~ORDER:#10234]] รถมารับทะเบียน [[LICENSE_PLATE:ดต 2020]] ครับ"
+    },
+    { "id": "plate-emoji-around", "text": "ทะเบียน🚗[[LICENSE_PLATE:กข 1234]]🙏" },
+    {
+      "id": "plate-then-url",
+      "text": "ทะเบียน [[LICENSE_PLATE:นบ 3030]] แผนที่ https://maps.app.goo.gl/AbC123xyz"
+    },
+    {
+      "id": "plate-json-field",
+      "text": "{\"plate\":\"[[LICENSE_PLATE:กข 1234]]\",\"province\":\"ชลบุรี\"}"
+    },
+    { "id": "plate-glued-thai-right", "text": "รถทะเบียน[[LICENSE_PLATE:กข1234]]มาถึงแล้วค่ะ" },
+    {
+      "id": "plate-spelled-out-digits",
+      "text": "ทะเบียน กข หนึ่งสองสามสี่ ค่ะ",
+      "note": "out of scope per README: digits written as words are not mentioned"
+    },
+
+    { "id": "plate-decoy-jong-2-chiangmai", "text": "จอง 2 เชียงใหม่ ค่ะ วันที่ 12" },
+    { "id": "plate-decoy-kho-2-bkk", "text": "ขอ 2 กรุงเทพ ค่ะ" },
+    { "id": "plate-decoy-song-3-chonburi", "text": "ส่ง 3 ชลบุรี 2 กล่องค่ะ" },
+    { "id": "plate-decoy-yot-amount-bkk", "text": "ยอด 1,500 กรุงเทพ ส่ง EMS ค่ะ" },
+    { "id": "plate-decoy-room-letter", "text": "ห้อง ก 12 ชั้น 3 ค่ะ" },
+    { "id": "plate-decoy-row-seat", "text": "แถว ก 5 ที่นั่ง ก 12 กับ ก 13 ค่ะ" },
+    { "id": "plate-decoy-locker", "text": "ฝากของไว้ที่ตู้ ข 12 นะคะ" },
+    {
+      "id": "plate-decoy-house-registration-kho-2",
+      "text": "สำเนาทะเบียนบ้าน ขอ 2 ชุดค่ะ",
+      "note": "ทะเบียน cue + consonants + digit, but it is house registration"
+    },
+    {
+      "id": "plate-decoy-transfer-fee-ruam",
+      "text": "ค่าโอนทะเบียน รวม 3500 บาทค่ะ",
+      "note": "รวม is three consonants followed by a number, after the cue"
+    },
+    { "id": "plate-decoy-rot-2-khan-context", "text": "มีรถ 2 คันค่ะ", "context": "ขอทะเบียนรถด้วยค่ะ" },
+    {
+      "id": "plate-decoy-latin-plate",
+      "text": "ทะเบียน [[~LATIN_PLATE:AB 1234]] รถจากมาเลเซียค่ะ",
+      "note": "Latin letters, not a Thai plate"
+    },
+    { "id": "plate-decoy-sku-thai-letters", "text": "รหัสสินค้า [[~SKU:กข-1234]] เหลือ 5 ชิ้นค่ะ" },
+    { "id": "plate-decoy-khon-khong", "text": "มากัน 5 คน ของ 2 ชิ้น จอง 3 คืนค่ะ" },
+    { "id": "plate-decoy-table-order", "text": "โต๊ะ 7 สั่ง ตม 2 ถ้วย ผด 1 จานค่ะ" }
+  ]
+}
