@@ -1,6 +1,6 @@
 import type { Candidate, DetectContext, Detector, NormalisedText } from '../types.js'
 import { containsAny, previousHasCue } from './context.js'
-import { PROVINCES } from './license-plate.js'
+import { PROVINCES } from './provinces.js'
 import { squeezing } from './squeeze.js'
 
 /**

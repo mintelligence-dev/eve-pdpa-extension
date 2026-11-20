@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { addressDetector } from '../src/detectors/address.js'
-import { PROVINCES } from '../src/detectors/license-plate.js'
+import { PROVINCES } from '../src/detectors/provinces.js'
 import { normalise } from '../src/normalise.js'
 import type { Candidate, DetectContext } from '../src/types.js'
 

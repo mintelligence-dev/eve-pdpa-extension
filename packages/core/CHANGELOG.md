@@ -5,15 +5,22 @@
 ### Detection
 
 <!-- License plate -->
-- New entity type `LICENSE_PLATE`: a series digit, one to three Thai consonants and up to four digits, with the province printed under it when one follows (76 of the 77, without เลย). Every run of that shape is kept as a candidate and scored from what stands round it — a cue word, the other side's question, a province after it, a series digit and four digits for it; a count word after a small number, an amount, a room or table in front, an everyday word as the letters, house and other registrations against it — and the score is the confidence, so `minConfidence` is the dial: at the default 0.95 a plate is hidden only with a cue, at 0.7 also by its province and digits. `canonical` form is the plate without separators, so `hash` and allowlist entries match however it was written.
 <!-- Date of birth -->
 <!-- Passport -->
+<!-- PromptPay -->
+- `PROMPTPAY`: a phone number, a national or tax ID, or a 15-digit e-wallet ID beside พร้อมเพย์, PromptPay or e-wallet (a thirteen-digit ID there is hidden even when its check digit is wrong: a typo is still the person's ID), and a whole PromptPay QR payload, checked by its CRC-16, with no cue. Ranked after `PHONE` and `TH_NATIONAL_ID`: where it covers the same characters the older entity keeps the name, and a stricter action on `PROMPTPAY` still wins the span.
+<!-- Address -->
+- `ADDRESS`: a postal address, in Thai or romanised, read from its labels: house number, หมู่ / Moo, ซอย / Soi, ถนน / Road, ตำบล · แขวง / Subdistrict, อำเภอ · เขต / District, province and postcode. Three kinds of part, or two beside a cue such as ที่อยู่ or address, are hidden; two with no cue are reported at 0.8, under the default threshold. The cue word stays readable. The province list is `detectors/provinces.ts`.
+<!-- Person name -->
+- `PERSON_NAME`: a person's name, found when the sentence introduces it: a title or rank (นาย, นางสาว, ดร., พ.ต.ท., Mr, Dr), คุณ with a first name and surname or straight after a greeting, an introduction (ผมชื่อ, my name is), a label (ชื่อ-นามสกุล, name:), or the answer to a question that asked for a name. No list of names ships, so a name with none of these is not found: see Known limitations in the README.
+- `ADDRESS`, `PERSON_NAME` and `PROMPTPAY` read runs of spaces and tabs as one space. A name does not go on across a line break; an address may.
+- A policy written for 0.1 names none of `PROMPTPAY`, `ADDRESS` and `PERSON_NAME` either, so `onUnmapped` applies and they are redacted unless the policy says otherwise.
 - A policy written for 0.1 names none of `LICENSE_PLATE`, `DATE_OF_BIRTH` and `PASSPORT`, so `onUnmapped` applies: all three are redacted unless the policy says otherwise.
-- `audit-event.schema.json` and `policy.schema.json` list the new entities; `engine.entitiesSupported` now names them.
+- `audit-event.schema.json` and `policy.schema.json` list the new entities; `engine.entitiesSupported` names each one whose detector is in the build.
 
 ### Audit
 
-- Audit events are now `schemaVersion: "1.1"`. The only change from 1.0 is `LICENSE_PLATE`, `DATE_OF_BIRTH` and `PASSPORT` in the entity list, but a log pipeline that validates against the 1.0 schema would reject an event naming one, so the version says so. Events that name none of them have the same shape as before; update a stored copy of `audit-event.schema.json` before upgrading.
+- Audit events are now `schemaVersion: "1.1"`. The only change from 1.0 is `LICENSE_PLATE`, `DATE_OF_BIRTH`, `PASSPORT`, `PROMPTPAY`, `ADDRESS` and `PERSON_NAME` in the entity list, but a log pipeline that validates against the 1.0 schema would reject an event naming one, so the version says so. Events that name none of them have the same shape as before; update a stored copy of `audit-event.schema.json` before upgrading.
 
 ## 0.1.0
 

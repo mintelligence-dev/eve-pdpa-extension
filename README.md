@@ -18,7 +18,11 @@
 
 ### ทำอะไรได้
 
-1. **ตรวจ 12 ประเภท** เลขบัตรประชาชน · เบอร์โทร · อีเมล · เลขบัญชี · บัตรเครดิต · LINE user ID · ทะเบียนรถ · วันเกิด · เลขพาสปอร์ต · พร้อมเพย์ · ที่อยู่ · ชื่อบุคคล ทั้งเลขไทยและเลขอารบิก
+1. **ตรวจ** เลขบัตรประชาชน · เบอร์โทร · อีเมล
+   · เลขบัญชี
+   · บัตรเครดิต · LINE user ID
+   · พร้อมเพย์ · ที่อยู่ · ชื่อบุคคล
+   ทั้งเลขไทยและเลขอารบิก
 2. **ปิดตาม policy** เลือกได้ต่อประเภท `redact` · `mask` · `tokenise` · `hash` · `flag` · `block` เช่น AI เห็น `[tok:…]` แต่ tool ส่ง OTP ได้เบอร์จริง และลูกค้าเห็น `xxx-xxx-7777`
 3. **บันทึก audit** ทุกครั้งที่ตรวจ โดยไม่มีค่าจริงอยู่ใน audit
 4. **ตรวจไฟล์แชทเก่า** โดยไม่ต้องเขียนโค้ด รองรับ JSONL · CSV · ไฟล์ export จาก LINE OA
@@ -89,7 +93,7 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
 ### ข้อจำกัดที่ควรรู้
 
 - ชื่อคนและที่อยู่จับได้เฉพาะที่มีตัวบอก: ชื่อต้องมีคำนำหน้า (นาย นางสาว ดร. ยศ …) คำแนะนำตัว ("ผมชื่อ") ป้ายในฟอร์ม ("ชื่อ-นามสกุล") หรือเป็นคำตอบของคำถามที่ขอชื่อ · ที่อยู่ภาษาไทยหรือภาษาอังกฤษ (Soi, Road, Moo, Subdistrict, District, Bangkok …) ต้องมีส่วนประกอบอย่างน้อยสามชนิด (บ้านเลขที่ ซอย ตำบล อำเภอ จังหวัด รหัสไปรษณีย์) หรือสองชนิดกับคำว่า "ที่อยู่" / address · ชื่อลอย ๆ กลางประโยค ชื่อเล่น และชื่อสถานที่ที่ไม่มีป้ายยังไม่จับ (ต้องใช้ NER)
-- เลขบัญชี ทะเบียนรถ วันเกิด เลขพาสปอร์ต และเบอร์ที่ไม่มี 0 นำหน้า ต้องมีคำบอกใบ้ เช่น "เลขบัญชี" "ทะเบียน" "วันเกิด" "พาสปอร์ต" "เบอร์" หรือส่ง `context`
+- เลขบัญชี เบอร์ที่ไม่มี 0 นำหน้า และประเภทที่เขียนว่า "ต้องมีคำบอกใบ้" ด้านบน ต้องมีคำบอกใบ้ เช่น "เลขบัญชี" "เบอร์" หรือส่ง `context`
 - eve: HTTP channel ของ eve ยังไม่ถูกปิดตอนขาออก และ eve 1.0.0-rc.1 ยังไม่รองรับ
 - ตัวเลขความแม่นยำวัดจากข้อมูลสังเคราะห์ จึงเป็นค่าสูงสุดที่ทำได้ ไม่ใช่ค่าที่จะเจอจริง
 
@@ -110,7 +114,11 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
 
 ### What it does
 
-1. **Detects 12 types:** Thai national ID · phone number · email · bank account · credit card · LINE user ID · license plate · date of birth · passport number · PromptPay ID · address · person name, in Thai or Arabic digits.
+1. **Detects:** Thai national ID · phone number · email
+   · bank account
+   · credit card · LINE user ID
+   · PromptPay ID · address · person name
+   — in Thai or Arabic digits.
 2. **Protects them per your policy:** `redact` · `mask` · `tokenise` · `hash` · `flag` · `block`, chosen per type. For example, the AI sees `[tok:…]`, the OTP tool gets the real number, and the customer sees `xxx-xxx-7777`.
 3. **Audits every scan**, and an audit event never contains the real value.
 4. **Scans old chat exports** without writing code: JSONL · CSV · LINE OA exports.
@@ -167,7 +175,7 @@ See the code sample in the Thai section, or the full flow (resolving a token in 
 ### Known limitations
 
 - Names and addresses are found only when something points to them: a name needs a title (นาย, นางสาว, a rank, Mr, Dr …), an introduction ("ผมชื่อ", "my name is"), a form label ("ชื่อ-นามสกุล"), or to be the answer to a question that asked for one · an address, in Thai or in English (Soi, Road, Moo, Subdistrict, District, Bangkok …), must hold three kinds of part (house number, soi, tambon, amphoe, province, postcode), or two with a word such as "ที่อยู่" or "address" · a bare name in the middle of a sentence, a nickname, and a place named with no labels are not found (that needs NER)
-- Bank accounts, license plates, dates of birth, passport numbers, and phone numbers without a leading 0, need a cue such as "เลขบัญชี", "ทะเบียน", "วันเกิด", "พาสปอร์ต" or "เบอร์", or pass `context`.
+- Bank accounts, phone numbers without a leading 0, and the types marked "with a cue word" above, need a cue such as "เลขบัญชี" or "เบอร์", or pass `context`.
 - eve: eve's HTTP channel is not masked on the way out, and eve 1.0.0-rc.1 is not supported yet.
 - Accuracy figures come from synthetic data, so they are an upper bound, not what you will see in production.
 

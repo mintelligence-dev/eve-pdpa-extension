@@ -16,7 +16,11 @@
 
 ## What it does
 
-1. **Detects 12 types:** Thai national ID · phone number · email · bank account · credit card · LINE user ID · license plate, date of birth and passport number (each with a cue word) · PromptPay ID · address · person name, in Thai or Arabic digits.
+1. **Detects:** Thai national ID · phone number · email
+   · bank account
+   · credit card · LINE user ID
+   · PromptPay ID · address · person name
+   — in Thai or Arabic digits.
 2. **Protects each one the way your policy says**, in 6 ways chosen per type. See [The 6 actions](#the-6-actions).
 3. **Audits every scan**, and an audit event **never contains the real value**. See [Audit](#audit).
 4. **Runs anywhere:** zero dependencies · ~38 KB minified (~14 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers.
@@ -282,7 +286,6 @@ All are `PdpaError`; check `error.code` · error messages never contain real val
 
 - Names and addresses are found only when something points to them: a name needs a title (นาย, นางสาว, a rank, Mr, Dr …), an introduction ("ผมชื่อ", "my name is"), a form label ("ชื่อ-นามสกุล"), or to be the answer to a question that asked for one · an address, in Thai or in English (Soi, Road, Moo, Subdistrict, District, Bangkok …), must hold three kinds of part (house number, soi, tambon, amphoe, province, postcode), or two with a word such as "ที่อยู่" or "address" · a bare name in the middle of a sentence, a nickname, and a place named with no labels are not found (that needs NER) · audit events carry `engine.entitiesSupported`, listing what was checked, so a report with no names in it does not mean there were none
 - **Bank accounts need a cue** such as "เลขบัญชี" (account number) or "โอนเข้า" (transfer to), or pass `context` · a bare 10-digit number cannot be told apart from an order number
-- **A license plate needs a cue** such as "ทะเบียน" (anywhere earlier in the message, or in the other side's last message passed as `context`) to be hidden at the default 0.95 · `กข 1234` on its own is a consonant and a number, which is ordinary Thai ("ขอ 2 ชุด", "จอง 2 เชียงใหม่") · each plate is scored from what stands round it: a province after it, a series digit (`1กข`) and four digits count for it; a count word (`2 ชุด`), an amount (`บาท`), a room or table in front, or an everyday word as the letters (`ขอ` `รวม` `จอง`) count against · set `minConfidence: 0.7` on `LICENSE_PLATE` to also hide a plate found by its province and digits alone — at that setting a look-alike (a tracking code, a locker, a room) is now and then hidden too, so trade it against what a missed plate costs you · the province printed under the number is hidden with it when it follows, except เลย, which is also "at all" · `ทะเบียนบ้าน` and other registrations are not read as a cue · a misspelt cue (`ทะเบีย`) is not
 - **A phone number with no leading 0 needs a cue** such as "เบอร์" or "โทร", or pass `context` · `918887777` (Excel drops the 0) and `66918887777` (66 without the +) alone cannot be told apart from an order number · the same goes for a landline written with dots, `02.123.4567`
 - **Short public numbers are not detected, on purpose** · `191`, `1669` and the like identify no one, and hiding them would stop a bot from saying "call 1669"
 - **Phone numbers inside parcel tracking numbers are caught too**, e.g. `TH0812345678` · this is deliberate: if letters before the digits stopped detection, anyone could hide a real number by typing `x0918887777`

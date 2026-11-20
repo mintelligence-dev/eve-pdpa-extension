@@ -54,15 +54,6 @@ describe('every way of writing a value collapses to one form', () => {
     expect(canon('BANK_ACCOUNT', '123-4-56789-0')).toBe('1234567890')
   })
 
-  it('license plate: separators and Thai numerals, letters kept', () => {
-    for (const f of ['กข1234', 'กข 1234', 'กข-1234', 'กข ๑๒๓๔', 'กข\u200b1234']) {
-      expect(canon('LICENSE_PLATE', f)).toBe('กข1234')
-    }
-    expect(canon('LICENSE_PLATE', '1กข 2345')).toBe('1กข2345')
-    // The letters are half the value: two plates sharing digits are two plates.
-    expect(canon('LICENSE_PLATE', 'กข 1234')).not.toBe(canon('LICENSE_PLATE', 'กค 1234'))
-  })
-
   it('email: case, including full-width input', () => {
     expect(canon('EMAIL', 'Somchai@Example.COM')).toBe('somchai@example.com')
     expect(canon('EMAIL', 'ＳＯＭＣＨＡＩ＠ｅｘａｍｐｌｅ．ｃｏｍ')).toBe('somchai@example.com')
