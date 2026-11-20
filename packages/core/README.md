@@ -289,6 +289,7 @@ All are `PdpaError`; check `error.code` · error messages never contain real val
 - **Short public numbers are not detected, on purpose** · `191`, `1669` and the like identify no one, and hiding them would stop a bot from saying "call 1669"
 - **Phone numbers inside parcel tracking numbers are caught too**, e.g. `TH0812345678` · this is deliberate: if letters before the digits stopped detection, anyone could hide a real number by typing `x0918887777`
 - **Credit cards from an unknown issuer** get confidence 0.6, below the default 0.95 · to protect them too, set `minConfidence: 0.6` · a run written after a key that names a time (`ts:`, `timestamp=`, `message_ts:`) scores 0.2 and is never taken for a card, so a Slack timestamp that happens to pass Luhn does not block a message
+- **Numbers inside links are not read as cards or national ids** · a post or product id in `https://…`, `www.…` or `host.com/…` passes the check digit one time in ten, so it scores 0.2 and is not hidden · the value of a query key that names a card or an id (`?card=`, `?citizen_id=`, `?thai_id=`) is still read as usual · a 13-digit number named as a post, product, barcode, order or parcel is not read as an id either, unless an id cue such as "เลขบัตร" is nearer
 - **Confidence values and cues were set by reasoning**, not yet tuned on real customer data
 
 ## Accuracy

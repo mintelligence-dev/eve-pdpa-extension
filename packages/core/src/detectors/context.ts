@@ -203,13 +203,73 @@ const KEY_LENGTH = 32
 export function keyedAsTime(text: string, start: number): boolean {
   const m = KEY_BEFORE.exec(text.slice(Math.max(0, start - KEY_LENGTH - 4), start))
   if (m === null) return false
-  const words = (m[1] as string)
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .toLowerCase()
-    .split('_')
-    .filter((w) => w !== '')
+  const words = keyWords(m[1] as string)
   if (words.some((w) => TIME_KEY_WORDS.has(w))) return true
   return words.length > 1 && words[words.length - 1] === 'at'
+}
+
+/** A key name read a word at a time: split at `_`, `-` and case changes, lower-cased. */
+function keyWords(key: string): string[] {
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .toLowerCase()
+    .split(/[_-]/)
+    .filter((w) => w !== '')
+}
+
+/** What a link is written with: RFC 3986's unreserved and reserved characters, and %. */
+const LINK_CHAR = /[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]/
+
+/** A scheme, a www., or a host name followed by a path. */
+const LINK = /:\/\/|^www\.|[A-Za-z0-9-]{2,}\.[A-Za-z]{2,}\//i
+
+/**
+ * Query keys that say the value is someone's card or id, so a number under
+ * one is read as if it were not in a link at all. Matched against each word of
+ * the key and against the whole key with its separators taken out, so
+ * `citizen_id`, `cardNumber` and `thai_id` all count. `id` alone does not:
+ * nearly every link has one, and it names a post or a product.
+ */
+const PERSONAL_KEYS: ReadonlySet<string> = new Set([
+  'card',
+  'cc',
+  'ccnum',
+  'pan',
+  'credit',
+  'debit',
+  'citizen',
+  'idcard',
+  'thaiid',
+  'national',
+  'nid',
+  'cid',
+  'pid',
+  'idno',
+  'ssn',
+  'personal',
+])
+
+/**
+ * True when the digits at `start`..`end` are part of a link — the same run of
+ * link characters as a `://`, a leading `www.` or a host name with a path —
+ * and not the value of a query key that names a card or an id. A post id in a
+ * Facebook link passes Luhn or the id checksum one time in ten, and under a
+ * policy that blocks cards it stopped the whole message (issue, 20 Nov).
+ */
+export function inLink(text: string, start: number, end: number): boolean {
+  let from = start
+  while (from > 0 && LINK_CHAR.test(text[from - 1] as string)) from--
+  let to = end
+  while (to < text.length && LINK_CHAR.test(text[to] as string)) to++
+  if (!LINK.test(text.slice(from, to))) return false
+
+  if (text[start - 1] !== '=') return true
+  let keyFrom = start - 1
+  while (keyFrom > from && !'?&;#/='.includes(text[keyFrom - 1] as string)) keyFrom--
+  if (!'?&;'.includes(text[keyFrom - 1] ?? '')) return true
+  const key = text.slice(keyFrom, start - 1)
+  const words = keyWords(key)
+  return !(words.some((w) => PERSONAL_KEYS.has(w)) || PERSONAL_KEYS.has(words.join('')))
 }
 
 /** What may open a list line before its value: a bullet, a number, spaces. */

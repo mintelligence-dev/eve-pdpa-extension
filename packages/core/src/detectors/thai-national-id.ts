@@ -5,6 +5,9 @@ import {
   containsAny,
   contextWindow,
   continuesList,
+  cueDistance,
+  cuesIn,
+  inLink,
   keyedAsTime,
   previousHasCue,
 } from './context.js'
@@ -45,6 +48,23 @@ const CARD_GROUPING = '1-4-5-2-1'
 const ID_CUES = ['บัตรประชาชน', 'ประชาชน', 'ปชช', 'เลขบัตร', 'id card', 'citizen', 'national id']
 
 /**
+ * Words that say a thirteen-digit number is something else: a post, a product,
+ * a barcode, an order, a parcel. "เลขโพสต์ 9610000015570" passed the checksum
+ * at 0.99 (issue, 20 Nov). Read in the number's own window and weighed against
+ * the id cues by distance: the nearer word names the number, and a tie stays
+ * an id. Not a reference or a bill: a Thai bill payment's Ref1 is the payer's
+ * national id more often than not.
+ */
+const NOT_AN_ID_CUES = ['โพสต์', 'รหัสสินค้า', 'สินค้า', 'บาร์โค้ด', 'ออเดอร์', 'คำสั่งซื้อ', 'พัสดุ']
+const NOT_AN_ID_CUE_WORDS = ['post', 'sku', 'barcode', 'order', 'tracking']
+
+/** True when a word for something else names the number and no id cue is as near. */
+function namedAsSomethingElse(text: string, start: number, end: number): boolean {
+  const other = cueDistance(text, start, end, (w) => cuesIn(w, NOT_AN_ID_CUES, NOT_AN_ID_CUE_WORDS))
+  return other < cueDistance(text, start, end, (w) => cuesIn(w, ID_CUES))
+}
+
+/**
  * One line break somewhere inside the thirteen digits, from a PDF, an email or
  * a form that wrapped the id where it ran out of room — not where the card
  * groups it, and with no cue word to go on. Taken when neither line could be a
@@ -81,6 +101,8 @@ const LOOSE = 97
  * (user benchmark, 14 Oct, D20). Kept so a policy can ask to see near misses.
  */
 const SHAPE_ONLY = 20
+/** Part of a link (`inLink`), or named as a post, a product or an order. */
+const NOT_AN_ID = 20
 
 export const thaiNationalIdDetector: Detector = {
   id: 'th-national-id',
@@ -121,9 +143,16 @@ export const thaiNationalIdDetector: Detector = {
             containsAny(contextWindow(input.text, start, end), ID_CUES) ||
             continuesList(input.text, start, listed))
         if (!asCard && !loosely) continue
-        if (valid) listed = end
 
-        const points = loosely ? LOOSE : valid ? CHECKSUM : SHAPE_ONLY
+        let points = loosely ? LOOSE : valid ? CHECKSUM : SHAPE_ONLY
+        if (
+          points > NOT_AN_ID &&
+          (inLink(input.text, start, end) || namedAsSomethingElse(input.text, start, end))
+        ) {
+          points = NOT_AN_ID
+        }
+        // Only an id that stands may open a list for the next line to borrow.
+        if (points > NOT_AN_ID) listed = end
 
         found.push({
           entity: 'TH_NATIONAL_ID',

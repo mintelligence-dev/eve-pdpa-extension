@@ -1,6 +1,13 @@
 import type { Candidate, Detector, NormalisedText } from '../types.js'
 import { isAsciiDigit, isIsolated } from './boundary.js'
-import { containsAny, containsWord, contextWindow, keyedAsTime, ownWindow } from './context.js'
+import {
+  containsAny,
+  containsWord,
+  contextWindow,
+  inLink,
+  keyedAsTime,
+  ownWindow,
+} from './context.js'
 import { DIGIT_RUN, type Group, isBareDash, opensValue, splitRun } from './digit-run.js'
 
 /**
@@ -55,6 +62,30 @@ function hasKnownIssuer(d: string): boolean {
   return false
 }
 
+/**
+ * Whether a number with a known issuer prefix has a length that issuer uses.
+ * Only the schemes whose lengths have stood still are checked: Visa issues 13,
+ * 16 and 19 and may issue more, so any Visa length passes. A wrong length is
+ * not proof the number is no card, only that its issuer reading is weak: a
+ * 15-digit run under a Discover or JCB prefix was a Facebook page id (issue,
+ * 20 Nov).
+ */
+function fitsIssuer(d: string): boolean {
+  const n = d.length
+  const two = Number(d.slice(0, 2))
+  const three = Number(d.slice(0, 3))
+  const four = Number(d.slice(0, 4))
+
+  if (d.startsWith('4')) return true // Visa
+  if ((two >= 51 && two <= 55) || (four >= 2221 && four <= 2720)) return n === 16 // Mastercard
+  if (two === 34 || two === 37) return n === 15 // American Express
+  if (four >= 3528 && four <= 3589) return n >= 16 // JCB
+  if (two === 62) return n >= 16 // UnionPay
+  if (two === 36 || two === 38 || two === 39 || (three >= 300 && three <= 305)) return n >= 14 // Diners
+  if (four === 6011 || two === 65 || (three >= 644 && three <= 649)) return n >= 16 // Discover
+  return true
+}
+
 // Digit groups joined by the separators every digit detector reads
 // (`digit-run.ts`): a line break among them, because a card pasted from a note
 // or a narrow chat bubble arrives split across two lines.
@@ -100,6 +131,10 @@ const TIME_KEY = 20
 
 /** A reference word names the run and no card word outweighs it: as Luhn alone. */
 const REFERENCE = -38
+/** A length the issuer does not use (`fitsIssuer`): as Luhn alone. */
+const WRONG_LENGTH = -38
+/** Part of a link, and not under a key that names a card (`inLink`). */
+const IN_LINK = 20
 
 function belongsToRun(ch: string): boolean {
   return isAsciiDigit(ch)
@@ -267,8 +302,13 @@ export const creditCardDetector: Detector = {
         const issuer = confidence === CONFIDENCE_ISSUER_KNOWN
         let points = issuer ? ISSUER_KNOWN : LUHN_ONLY
         if (issuer && asReference(input.text, start, end)) points += REFERENCE
-        // A value under a key that names a time is not a card, whatever it scored.
+        if (issuer && !fitsIssuer(input.text.slice(start, end).replace(/\D/g, ''))) {
+          points += WRONG_LENGTH
+        }
+        // A value under a key that names a time, or a post id in a link, is not
+        // a card, whatever it scored.
         if (keyedAsTime(input.text, start)) points = TIME_KEY
+        else if (inLink(input.text, start, end)) points = IN_LINK
         found.push({ ...r.candidate, confidence: points / 100 })
       }
     }
