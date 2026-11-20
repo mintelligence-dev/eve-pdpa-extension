@@ -4,6 +4,7 @@
 
 ### Detection
 
+- An `@` in a link's path is no longer read as an address: `https://line.me/R/ti/p/@shop.com` and `instagram.com/@handle.name` were spanned from `//` as emails. A slash now ends the local part, as a space does, which also finds an address written right before one (`somchai@example.com/…`), missed until now.
 <!-- License plate -->
 <!-- Date of birth -->
 <!-- Passport -->

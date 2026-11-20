@@ -25,7 +25,16 @@ import { isAsciiDigit, isAsciiLetter, isIsolated } from './boundary.js'
  * sees only the punycode form. Left out of 0.1 because folding Unicode labels
  * belongs with the NFC work that normalise also deferred.
  */
-const LOCAL_SYMBOLS = "!#$%&'*+/=?^_`{|}~-"
+/**
+ * atext, less the slash. RFC 5322 allows "/" in a local part; no mailbox a
+ * customer types has one, and every link has several. With it, the local part
+ * read back from the @ ran through the path of a link: a LINE OA link,
+ * "https://line.me/R/ti/p/@shop.com", was spanned from "//line.me" as an
+ * address, and so was an Instagram handle (issue, 20 Nov). It also made the
+ * address before a slash, "somchai@example.com/", fail its isolation check
+ * and go unfound. Now a slash ends the local part like a space does.
+ */
+const LOCAL_SYMBOLS = "!#$%&'*+=?^_`{|}~-"
 const LABEL = '[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
 /** Everything after the @. Sticky: tried only where an @ was found. */
 const DOMAIN = new RegExp(`(?:${LABEL}\\.)+[A-Za-z]{2,63}`, 'y')
