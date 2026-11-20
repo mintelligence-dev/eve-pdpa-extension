@@ -45,6 +45,11 @@ export function canonicalValue(entity: EntityType, folded: string): string {
 
     // Passport.
 
+    // Person name.
+    case 'PERSON_NAME':
+      // One name however it was spaced. Case is folded: Somchai and SOMCHAI are one person.
+      return folded.replace(/\s+/g, ' ').trim().toLowerCase()
+
     // Address.
     case 'ADDRESS':
       // Spacing and commas are how it was typed, not what it says.

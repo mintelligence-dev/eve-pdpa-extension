@@ -15,6 +15,7 @@ const NAMES_TH: Readonly<Record<EntityType, string>> = {
   PASSPORT: 'เลขพาสปอร์ต',
   PROMPTPAY: 'พร้อมเพย์',
   ADDRESS: 'ที่อยู่',
+  PERSON_NAME: 'ชื่อ-นามสกุล',
 }
 
 const NAMES_EN: Readonly<Record<EntityType, string>> = {
@@ -29,6 +30,7 @@ const NAMES_EN: Readonly<Record<EntityType, string>> = {
   PASSPORT: 'a passport number',
   PROMPTPAY: 'a PromptPay ID',
   ADDRESS: 'an address',
+  PERSON_NAME: "a person's name",
 }
 
 export type Language = 'th' | 'en'

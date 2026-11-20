@@ -5,6 +5,7 @@ import { creditCardDetector } from './credit-card.js'
 import { emailDetector } from './email.js'
 import { licensePlateDetector } from './license-plate.js'
 import { lineUserIdDetector } from './line-user-id.js'
+import { personNameDetector } from './person-name.js'
 import { phoneDetector } from './phone.js'
 import { promptpayDetector } from './promptpay.js'
 import { thaiNationalIdDetector } from './thai-national-id.js'
@@ -34,6 +35,8 @@ export const BUILTIN_DETECTORS: readonly Detector[] = [
   promptpayDetector,
   // Address.
   addressDetector,
+  // Person name.
+  personNameDetector,
 ]
 
 export {
@@ -43,6 +46,7 @@ export {
   emailDetector,
   licensePlateDetector,
   lineUserIdDetector,
+  personNameDetector,
   phoneDetector,
   promptpayDetector,
   thaiNationalIdDetector,

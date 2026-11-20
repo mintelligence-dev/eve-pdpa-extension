@@ -43,6 +43,7 @@ describe('public surface', () => {
       'PASSPORT',
       'PROMPTPAY',
       'ADDRESS',
+      'PERSON_NAME',
     ])
   })
 })

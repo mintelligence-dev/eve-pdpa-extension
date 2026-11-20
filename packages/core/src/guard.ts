@@ -57,6 +57,7 @@ const PLACEHOLDER_TH: Readonly<Record<EntityType, string>> = {
   PASSPORT: '[พาสปอร์ต]',
   PROMPTPAY: '[พร้อมเพย์]',
   ADDRESS: '[ที่อยู่]',
+  PERSON_NAME: '[ชื่อ]',
 }
 
 const PLACEHOLDER_EN: Readonly<Record<EntityType, string>> = {
@@ -71,6 +72,7 @@ const PLACEHOLDER_EN: Readonly<Record<EntityType, string>> = {
   PASSPORT: '[passport]',
   PROMPTPAY: '[promptpay]',
   ADDRESS: '[address]',
+  PERSON_NAME: '[name]',
 }
 
 /** For a token the guard cannot vouch for: not issued here, or not to this session. */

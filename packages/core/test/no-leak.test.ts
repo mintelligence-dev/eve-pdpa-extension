@@ -67,6 +67,8 @@ describe('no real value ever leaves the guard', () => {
       'PROMPTPAY',
       // Address.
       'ADDRESS',
+      // Person name.
+      'PERSON_NAME',
     ])
   })
 })

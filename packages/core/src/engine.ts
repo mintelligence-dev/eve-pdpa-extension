@@ -30,6 +30,7 @@ const MERGE_PRIORITY: readonly EntityType[] = [
   'PROMPTPAY',
   // The longest and loosest claim: it wins a span on length, and this only breaks a tie.
   'ADDRESS',
+  'PERSON_NAME',
 ]
 
 function priorityOf(entity: EntityType): number {
