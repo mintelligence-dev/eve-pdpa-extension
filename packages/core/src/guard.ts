@@ -319,10 +319,10 @@ export function createGuard(options: GuardOptions): Guard {
   // explains itself. Emitted last, once nothing above can still refuse to build.
   if (onAudit !== undefined) {
     const loaded: PolicyLoadedEvent = {
-      schemaVersion: '1.1',
+      schemaVersion: '2.0',
       eventId: newEventId(Date.now()),
       type: 'policy.loaded',
-      at: nowIso(),
+      timestamp: nowIso(),
       policy: {
         hash: policy.hash,
         entitySet: policy.entitySet,
@@ -370,10 +370,10 @@ export function createGuard(options: GuardOptions): Guard {
 
     if (onAudit !== undefined) {
       const event: TokenResolveEvent = {
-        schemaVersion: '1.1',
+        schemaVersion: '2.0',
         eventId: newEventId(Date.now()),
         type: 'token.resolve',
-        at: nowIso(),
+        timestamp: nowIso(),
         sessionId,
         ...(ref === undefined ? {} : { ref }),
         policy: { hash: policy.hash, entitySet: policy.entitySet },
@@ -426,10 +426,16 @@ export function createGuard(options: GuardOptions): Guard {
     // to act on is not a finding, allowlisted or not (D1). The folded slice is
     // what it compares, so ๐๙๑ and 091 are the same digits.
     const claims: Claim[] = []
+    // Counted for the audit event: how often a type the policy acts on was
+    // read but too weakly to act on. Types the policy ignores are not counted.
+    const belowThreshold: Partial<Record<EntityType, number>> = {}
     for (const c of detected.raw) {
-      if (c.confidence < (policy.entities[c.entity]?.minConfidence ?? 0.95)) continue
       const action = actionFor(policy, c.entity)
       if (action === null) continue
+      if (c.confidence < (policy.entities[c.entity]?.minConfidence ?? 0.95)) {
+        belowThreshold[c.entity] = (belowThreshold[c.entity] ?? 0) + 1
+        continue
+      }
       const allowlisted =
         !allowlist.isEmpty &&
         allowlist.allows(c.entity, canonicalValue(c.entity, norm.text.slice(c.start, c.end)))
@@ -473,13 +479,14 @@ export function createGuard(options: GuardOptions): Guard {
         confidence: c.confidence,
         detector: c.detector,
         action,
+        result: c.widened ? 'widened' : 'applied',
         ...(rule === undefined ? { unmapped: true as const } : {}),
       }
 
       // D1: found, and allowed through. Reported so the audit shows the value
       // was seen and deliberately let pass, rather than never found at all.
       if (c.allowlisted) {
-        findings.push({ ...finding, allowlisted: true })
+        findings.push({ ...finding, result: 'allowlisted', allowlisted: true })
         continue
       }
 
@@ -525,6 +532,7 @@ export function createGuard(options: GuardOptions): Guard {
           // raw value in it. A store failure is also reported and marked on the
           // finding: otherwise a store that is down blocks every message with
           // a phone number in it and nothing says why (D15).
+          finding = { ...finding, result: 'failed' }
           if (error instanceof StoreFailure) {
             report(error.original, 'token_store', 'scan')
             finding = { ...finding, failed: 'token_store' }
@@ -555,6 +563,8 @@ export function createGuard(options: GuardOptions): Guard {
     }
 
     findings.reverse()
+    // Collected right to left; reported in reading order, each type once.
+    const blockedBy = [...new Set([...blockers].reverse())]
     pieces.push(original.slice(0, cursor))
     let out = pieces.reverse().join('')
 
@@ -628,10 +638,10 @@ export function createGuard(options: GuardOptions): Guard {
     if (onAudit !== undefined) {
       // Built only when someone will receive it.
       const event: AuditEvent = {
-        schemaVersion: '1.1',
+        schemaVersion: '2.0',
         eventId: newEventId(startedAt),
         type: 'scan',
-        at: nowIso(),
+        timestamp: nowIso(),
         sessionId,
         ...(ref === undefined ? {} : { ref }),
         boundary,
@@ -645,9 +655,11 @@ export function createGuard(options: GuardOptions): Guard {
         },
         input: { chars: text.length },
         findings,
+        ...(Object.keys(belowThreshold).length === 0 ? {} : { belowThreshold }),
         skippedDetectors: detected.skippedDetectors,
         degradedDetectors: detected.degradedDetectors,
         outcome,
+        ...(outcome === 'blocked' ? { blockedBy } : {}),
         ...(rendered.length === 0 ? {} : { rendered }),
         durationMs: Date.now() - startedAt,
         prevHash: null,
@@ -664,7 +676,7 @@ export function createGuard(options: GuardOptions): Guard {
         text: '',
         findings,
         outcome,
-        blockedBy: [...new Set(blockers.reverse())],
+        blockedBy,
         skippedDetectors: detected.skippedDetectors,
       }
     }
@@ -679,7 +691,12 @@ export function createGuard(options: GuardOptions): Guard {
    * goes in — no text, no values, and no event at all when the boundary itself
    * was the mistake, since the event could not say where the call was made.
    */
-  function recordError(text: unknown, opts: ProcessOptions | undefined, startedAt: number): void {
+  function recordError(
+    text: unknown,
+    opts: ProcessOptions | undefined,
+    startedAt: number,
+    error: unknown,
+  ): void {
     if (onAudit === undefined) return
     let boundary: Boundary
     try {
@@ -693,10 +710,10 @@ export function createGuard(options: GuardOptions): Guard {
     } catch {}
     const given = opts?.sessionId
     const event: AuditEvent = {
-      schemaVersion: '1.1',
+      schemaVersion: '2.0',
       eventId: newEventId(startedAt),
       type: 'scan',
-      at: nowIso(),
+      timestamp: nowIso(),
       sessionId: typeof given === 'string' && given !== '' ? given : 'anonymous',
       ...(ref === undefined ? {} : { ref }),
       boundary,
@@ -712,6 +729,8 @@ export function createGuard(options: GuardOptions): Guard {
       skippedDetectors: [],
       degradedDetectors: [],
       outcome: 'error',
+      // The code only: an error's message may quote the input.
+      errorCode: error instanceof PdpaError ? error.code : 'unexpected',
       durationMs: Date.now() - startedAt,
       prevHash: null,
     }
@@ -852,7 +871,7 @@ export function createGuard(options: GuardOptions): Guard {
         }
         return driveSync(scan(text, opts))
       } catch (error) {
-        recordError(text, opts, startedAt)
+        recordError(text, opts, startedAt, error)
         throw error
       }
     },
@@ -862,7 +881,7 @@ export function createGuard(options: GuardOptions): Guard {
     process(text, opts): Promise<ProcessResult> {
       const startedAt = Date.now()
       return driveAsync(scan(text, opts)).catch((error: unknown) => {
-        recordError(text, opts, startedAt)
+        recordError(text, opts, startedAt, error)
         throw error
       })
     },

@@ -86,7 +86,7 @@ describe('process() — the same rules as processSync', () => {
       const a = build()
       const b = build()
       expect(await a.guard.process(text, opts)).toEqual(b.guard.processSync(text, opts))
-      const strip = (e: AuditEvent) => ({ ...e, eventId: '', at: '', durationMs: 0 })
+      const strip = (e: AuditEvent) => ({ ...e, eventId: '', timestamp: '', durationMs: 0 })
       expect(a.scans().map(strip)).toEqual(b.scans().map(strip))
     }
   })

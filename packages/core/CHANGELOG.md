@@ -12,7 +12,11 @@
 
 ### Audit
 
-- Audit events are now `schemaVersion: "1.1"`. The only change from 1.0 is `LICENSE_PLATE`, `DATE_OF_BIRTH` and `PASSPORT` in the entity list, but a log pipeline that validates against the 1.0 schema would reject an event naming one, so the version says so. Events that name none of them have the same shape as before; update a stored copy of `audit-event.schema.json` before upgrading.
+- **Breaking:** audit events are now `schemaVersion: "2.0"`. `at` is renamed `timestamp` on every event type (same value: UTC ISO 8601 with milliseconds) — update queries and any stored copy of `audit-event.schema.json` before upgrading.
+- Every finding has `result`: `applied`, `allowlisted`, `failed` (the action could not be carried out and the message was blocked) or `widened` (hidden over a span that grew to cover an overlapping value; `tokenise` became `redact`). `action` still names what the policy asked for; `allowlisted` and `failed` are kept as before.
+- A scan event has `belowThreshold` when a detector found something the threshold dropped: a count per type, only for types the policy acts on, e.g. `{ "PASSPORT": 2 }`. Use it to decide whether to lower `minConfidence`.
+- A `blocked` scan names the types that stopped it in `blockedBy`, as the result already did; an `error` scan has `errorCode`, the `PdpaError` code or `unexpected`, never the error message.
+- The entity list adds `LICENSE_PLATE`, `DATE_OF_BIRTH` and `PASSPORT`.
 
 ## 0.1.0
 

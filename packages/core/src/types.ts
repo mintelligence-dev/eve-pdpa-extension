@@ -1,3 +1,5 @@
+import type { PdpaErrorCode } from './errors.js'
+
 // erasableSyntaxOnly is on, so no enums: const arrays + derived unions instead.
 
 export const ENTITY_TYPES = [
@@ -124,6 +126,18 @@ export interface AuditFinding {
   readonly detector: string
   /** The action the policy names. Not applied when `allowlisted` is set. */
   readonly action: Action
+  /**
+   * What happened to the value, so a reader need not work it out from the
+   * other fields:
+   *
+   *   applied      the action was carried out (for flag: recorded, let through)
+   *   allowlisted  let through by the policy's allowlist; the text is as typed
+   *   failed       the action could not be carried out — the token store or
+   *                the random source refused — so the message was blocked
+   *   widened      carried out over a span that grew to cover overlapping
+   *                values; tokenise became redact and mask keeps nothing (D18)
+   */
+  readonly result: 'applied' | 'allowlisted' | 'failed' | 'widened'
   readonly unmapped?: true
   /** Found, but the policy allows this value through. The text was left as is. D1. */
   readonly allowlisted?: true
@@ -148,10 +162,11 @@ export interface AuditFinding {
 
 /** Carries positions and types. Never a real value. D2. */
 export interface AuditEvent {
-  readonly schemaVersion: '1.1'
+  readonly schemaVersion: '2.0'
   readonly eventId: string
   readonly type: 'scan'
-  readonly at: string
+  /** When the event was written: UTC, milliseconds, as Date.prototype.toISOString writes it. */
+  readonly timestamp: string
   readonly sessionId: string
   /**
    * The caller's own id for what this event is about — a message id, a tool-call
@@ -175,6 +190,24 @@ export interface AuditEvent {
   readonly skippedDetectors: readonly string[]
   readonly degradedDetectors: readonly string[]
   readonly outcome: 'processed' | 'blocked' | 'error'
+  /**
+   * `blocked` only: the types that stopped the message, in reading order —
+   * a `block` rule, or a value whose action failed. Types, never values.
+   */
+  readonly blockedBy?: readonly EntityType[]
+  /**
+   * `error` only: why the call threw. A `PdpaError` code, or `unexpected`
+   * for anything else. Never the error message, which could quote the input.
+   */
+  readonly errorCode?: PdpaErrorCode | 'unexpected'
+  /**
+   * How many candidates of each type a detector found and the threshold
+   * dropped, counted only for types the policy acts on. Present only when
+   * there were some. Counts, never positions: a reading too weak to act on is
+   * not a finding, but how often it happens is what tells you whether to
+   * lower `minConfidence`.
+   */
+  readonly belowThreshold?: Readonly<Partial<Record<EntityType, number>>>
   /**
    * `outbound` only, and only when something was rewritten: each token or hash
    * the model wrote into its reply, in reading order, and what the customer was
@@ -221,10 +254,11 @@ export type ResolveReason =
  * the token format, so a raw number passed by mistake cannot reach the log.
  */
 export interface TokenResolveEvent {
-  readonly schemaVersion: '1.1'
+  readonly schemaVersion: '2.0'
   readonly eventId: string
   readonly type: 'token.resolve'
-  readonly at: string
+  /** When the event was written: UTC, milliseconds, as Date.prototype.toISOString writes it. */
+  readonly timestamp: string
   readonly sessionId: string
   /**
    * The caller's own id for what this event is about — a message id, a tool-call
@@ -254,10 +288,11 @@ export interface TokenResolveEvent {
  * It does not hide a phone number from someone willing to try all of them.
  */
 export interface PolicyLoadedEvent {
-  readonly schemaVersion: '1.1'
+  readonly schemaVersion: '2.0'
   readonly eventId: string
   readonly type: 'policy.loaded'
-  readonly at: string
+  /** When the event was written: UTC, milliseconds, as Date.prototype.toISOString writes it. */
+  readonly timestamp: string
   readonly policy: {
     readonly hash: string
     readonly entitySet: string
