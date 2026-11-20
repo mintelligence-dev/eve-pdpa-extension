@@ -1,0 +1,459 @@
+{
+  "cases": [
+    {
+      "id": "ppcs-near-thai-honeymoon",
+      "text": "ฮันนีมูนมัลดีฟส์ค่ะ พาสปอร์ตเจ้าสาว [[PASSPORT:AB2203948]]",
+      "note": "[pp] [cue=near] [fmt=thai] tour"
+    },
+    {
+      "id": "ppcs-near-thai-visa-us",
+      "text": "นัดสัมภาษณ์วีซ่าอเมริกา หนังสือเดินทาง [[PASSPORT:AC3304857]] ค่ะ",
+      "note": "[pp] [cue=near] [fmt=thai] visa"
+    },
+    {
+      "id": "ppcs-near-thai-airline-name",
+      "text": "ชื่อในตั๋วไม่ตรงพาสค่ะ เลขพาสปอร์ต [[PASSPORT:AD4405766]]",
+      "note": "[pp] [cue=near] [fmt=thai] airline"
+    },
+    {
+      "id": "ppcs-near-thai-claim",
+      "text": "เคลมประกันเดินทาง กระเป๋าหาย passport [[PASSPORT:AE5506675]]",
+      "note": "[pp] [cue=near] [fmt=thai] insurance"
+    },
+    {
+      "id": "ppcs-near-thai-medical",
+      "text": "ทำนัดศัลยกรรมให้เพื่อนต่างชาติ พาสปอร์ต [[PASSPORT:AF6607584]] ค่ะ",
+      "note": "[pp] [cue=near] [fmt=thai] hospital"
+    },
+    {
+      "id": "ppcs-near-thai-bank-wire",
+      "text": "โอนเงินต่างประเทศค่ะ ใช้หนังสือเดินทาง [[PASSPORT:AG7708493]] ยืนยัน",
+      "note": "[pp] [cue=near] [fmt=thai] bank"
+    },
+    {
+      "id": "ppcs-near-thai-lekpas-after",
+      "text": "[[PASSPORT:AH8809302]] เลขพาสค่ะ",
+      "note": "[pp] [cue=near] [fmt=thai] cue after"
+    },
+    {
+      "id": "ppcs-near-thai-paspot-hostel",
+      "text": "พาสปอต [[PASSPORT:AJ9900211]] ค่ะ เตียงรวมยังว่างไหม",
+      "note": "[pp] [cue=near] [fmt=thai] hostel"
+    },
+    {
+      "id": "ppcs-near-thai-pas",
+      "text": "ขอบคุณค่ะ พาส [[PASSPORT:AK1001120]]",
+      "note": "[pp] [cue=near] [fmt=thai] พาส right before"
+    },
+    {
+      "id": "ppcs-near-thai-ppno",
+      "text": "PP No.[[PASSPORT:AL2102039]]",
+      "note": "[pp] [cue=near] [fmt=thai] glued"
+    },
+    {
+      "id": "ppcs-near-thai-cruise",
+      "text": "ล่องเรือสำราญค่ะ เลขหนังสือเดินทาง [[PASSPORT:AM3203948]]",
+      "note": "[pp] [cue=near] [fmt=thai] cruise"
+    },
+    {
+      "id": "ppcs-near-space-1",
+      "text": "พาสปอร์ต [[PASSPORT:AN 4304857]] นะครับ",
+      "note": "[pp] [cue=near] [fmt=thai-space]"
+    },
+    {
+      "id": "ppcs-near-space-2",
+      "text": "Passport no. [[PASSPORT:AP 5405766]]",
+      "note": "[pp] [cue=near] [fmt=thai-space]"
+    },
+    {
+      "id": "ppcs-near-space-3",
+      "text": "หนังสือเดินทาง [[PASSPORT:AR 6506675]] ค่ะ",
+      "note": "[pp] [cue=near] [fmt=thai-space]"
+    },
+    {
+      "id": "ppcs-near-dash-1",
+      "text": "เลขพาสปอร์ต [[PASSPORT:AS-7607584]]",
+      "note": "[pp] [cue=near] [fmt=thai-dash]"
+    },
+    {
+      "id": "ppcs-near-dash-2",
+      "text": "passport [[PASSPORT:AT-8708493]] ค่ะ",
+      "note": "[pp] [cue=near] [fmt=thai-dash]"
+    },
+    {
+      "id": "ppcs-near-lower-1",
+      "text": "พาสปอร์ต [[PASSPORT:au9809302]]",
+      "note": "[pp] [cue=near] [fmt=lower]"
+    },
+    {
+      "id": "ppcs-near-lower-2",
+      "text": "เลขพาส [[PASSPORT:av-1900211]] ค่ะ",
+      "note": "[pp] [cue=near] [fmt=lower]"
+    },
+    {
+      "id": "ppcs-near-foreign-china",
+      "text": "passport [[PASSPORT:E82019374]]",
+      "note": "[pp] [cue=near] [fmt=foreign] China"
+    },
+    {
+      "id": "ppcs-near-foreign-us",
+      "text": "Passport No: [[PASSPORT:720394815]]",
+      "note": "[pp] [cue=near] [fmt=foreign] US"
+    },
+    {
+      "id": "ppcs-near-foreign-korea",
+      "text": "พาสปอร์ต [[PASSPORT:M84019273]] ค่ะ",
+      "note": "[pp] [cue=near] [fmt=foreign] Korea"
+    },
+    {
+      "id": "ppcs-far-thai-1",
+      "text": "ข้อมูลหนังสือเดินทางคุณยายค่ะ อายุ 72 นั่งวีลแชร์ เลข [[PASSPORT:AW2001120]]",
+      "note": "[pp] [cue=far] [fmt=thai]"
+    },
+    {
+      "id": "ppcs-far-thai-2",
+      "text": "passport ของลูกชาย ชื่อ ปัณณวัฒน์ หมายเลข [[PASSPORT:AX3102039]]",
+      "note": "[pp] [cue=far] [fmt=thai]"
+    },
+    {
+      "id": "ppcs-far-thai-3",
+      "text": "พาสปอร์ตเล่มใหม่ได้แล้วค่ะ ช่วยอัปเดตในระบบด้วย [[PASSPORT:AB4203948]]",
+      "note": "[pp] [cue=far] [fmt=thai]"
+    },
+    {
+      "id": "ppcs-far-space",
+      "text": "เรื่องหนังสือเดินทาง ของดิฉันเลข [[PASSPORT:AC 5304857]] ค่ะ",
+      "note": "[pp] [cue=far] [fmt=thai-space]"
+    },
+    {
+      "id": "ppcs-far-lower",
+      "text": "แนบรูปพาสปอร์ตไม่ได้ค่ะ พิมพ์ให้แทนนะคะ [[PASSPORT:ad6405766]]",
+      "note": "[pp] [cue=far] [fmt=lower]"
+    },
+    {
+      "id": "ppcs-far-foreign",
+      "text": "passport ของเพื่อนเป็นจีนค่ะ เลข [[PASSPORT:E71920384]]",
+      "note": "[pp] [cue=far] [fmt=foreign] out of scope per README: foreign needs cue pressed against"
+    },
+    {
+      "id": "ppcs-ctx-thai-1",
+      "text": "[[PASSPORT:AE7506675]]",
+      "context": "แจ้งเลขพาสปอร์ตเพื่อออกตั๋วค่ะ",
+      "note": "[pp] [cue=context] [fmt=thai]"
+    },
+    {
+      "id": "ppcs-ctx-thai-2",
+      "text": "[[PASSPORT:AF8607584]] ค่า",
+      "context": "ขอเลขหนังสือเดินทางของคุณแม่ด้วยค่ะ",
+      "note": "[pp] [cue=context] [fmt=thai]"
+    },
+    {
+      "id": "ppcs-ctx-thai-3",
+      "text": "ได้ค่ะ [[PASSPORT:AG9708493]]",
+      "context": "Passport number please",
+      "note": "[pp] [cue=context] [fmt=thai]"
+    },
+    {
+      "id": "ppcs-ctx-space",
+      "text": "[[PASSPORT:AH 1809302]]",
+      "context": "ขอเลขพาสหน่อยครับ",
+      "note": "[pp] [cue=context] [fmt=thai-space]"
+    },
+    {
+      "id": "ppcs-ctx-dash",
+      "text": "[[PASSPORT:AJ-2900211]] ครับ",
+      "context": "เลขพาสปอร์ตครับ?",
+      "note": "[pp] [cue=context] [fmt=thai-dash]"
+    },
+    {
+      "id": "ppcs-ctx-lower",
+      "text": "[[PASSPORT:ak3001120]]",
+      "context": "ขอเลขหนังสือเดินทางค่ะ",
+      "note": "[pp] [cue=context] [fmt=lower]"
+    },
+    {
+      "id": "ppcs-ctx-two",
+      "text": "แม่ [[PASSPORT:AL4102039]] พ่อ [[PASSPORT:AL4102046]]",
+      "context": "ขอเลขพาสปอร์ตคุณพ่อคุณแม่ค่ะ",
+      "note": "[pp] [cue=context] [fmt=thai]"
+    },
+    {
+      "id": "ppcs-ctx-foreign",
+      "text": "[[PASSPORT:710293846]]",
+      "context": "Your passport number, please",
+      "note": "[pp] [cue=context] [fmt=foreign] out of scope per README: foreign needs cue pressed against"
+    },
+    {
+      "id": "ppcs-none-thai-1",
+      "text": "คุณวิภา [[PASSPORT:AM5203948]] ค่ะ",
+      "note": "[pp] [cue=none] [fmt=thai] out of scope per README: no cue"
+    },
+    {
+      "id": "ppcs-none-thai-2",
+      "text": "[[PASSPORT:AN6304857]]",
+      "note": "[pp] [cue=none] [fmt=thai] out of scope per README: no cue"
+    },
+    {
+      "id": "ppcs-none-thai-3",
+      "text": "MS. SUDARAT / [[PASSPORT:AP7405766]]",
+      "note": "[pp] [cue=none] [fmt=thai] out of scope per README: no cue"
+    },
+    {
+      "id": "ppcs-none-space",
+      "text": "นายธีรพงษ์ [[PASSPORT:AR 8506675]]",
+      "note": "[pp] [cue=none] [fmt=thai-space] out of scope per README: no cue"
+    },
+    {
+      "id": "ppcs-none-dash",
+      "text": "[[PASSPORT:AS-9607584]] ค่ะ",
+      "note": "[pp] [cue=none] [fmt=thai-dash] out of scope per README: no cue"
+    },
+    {
+      "id": "ppcs-none-lower",
+      "text": "ชื่อเล่นน้องฝน [[PASSPORT:at1708493]]",
+      "note": "[pp] [cue=none] [fmt=lower] out of scope per README: no cue"
+    },
+    {
+      "id": "ppcs-none-foreign-1",
+      "text": "Kim Minji [[PASSPORT:M29304817]]",
+      "note": "[pp] [cue=none] [fmt=foreign] out of scope per README: no cue"
+    },
+    {
+      "id": "ppcs-none-foreign-2",
+      "text": "Li Na, [[PASSPORT:E40192837]]",
+      "note": "[pp] [cue=none] [fmt=foreign] out of scope per README: no cue"
+    },
+    {
+      "id": "ppcs-none-thai-dob",
+      "text": "ด.ญ.แพรวา [[PASSPORT:AU2809302]] วันเกิด [[DATE_OF_BIRTH:15/08/2561]]",
+      "note": "[pp] [cue=none] [fmt=thai] out of scope per README: no passport cue"
+    },
+    {
+      "id": "ppcs-none-thai-phone",
+      "text": "อนันต์ [[PASSPORT:AV3900211]] [[PHONE:0861234598]]",
+      "note": "[pp] [cue=none] [fmt=thai] out of scope per README: no cue"
+    },
+
+    {
+      "id": "ppcs-not-parcel-1",
+      "text": "เลขพัสดุ [[~PARCEL:EE103948265TH]] ค่ะ",
+      "note": "[not-pp] [kind=parcel]"
+    },
+    {
+      "id": "ppcs-not-parcel-2",
+      "text": "Flash [[~PARCEL:TH2019C8KD71B]]",
+      "note": "[not-pp] [kind=parcel]"
+    },
+    {
+      "id": "ppcs-not-parcel-3",
+      "text": "เลขแทรค [[~PARCEL:KT5520183]] ส่งพาสปอร์ตไปสถานทูตค่ะ",
+      "note": "[not-pp] [kind=parcel] passport word after"
+    },
+    {
+      "id": "ppcs-not-parcel-4",
+      "text": "พัสดุ [[~PARCEL:ND3019284]] ค่ะ",
+      "note": "[not-pp] [kind=parcel] Thai shape"
+    },
+    {
+      "id": "ppcs-not-order-1",
+      "text": "ออเดอร์ [[~ORDER:SO5520184]] ค่ะ",
+      "note": "[not-pp] [kind=order]"
+    },
+    {
+      "id": "ppcs-not-order-2",
+      "text": "คำสั่งซื้อเลขที่ [[~ORDER:PO4401928]] ส่งช้าค่ะ",
+      "note": "[not-pp] [kind=order]"
+    },
+    {
+      "id": "ppcs-not-order-3",
+      "text": "order no [[~ORDER:or2209183]]",
+      "note": "[not-pp] [kind=order] lower"
+    },
+    {
+      "id": "ppcs-not-order-4",
+      "text": "สั่งซองพาสปอร์ต เลขออเดอร์ [[~ORDER:OD6620194]]",
+      "note": "[not-pp] [kind=order] passport word earlier"
+    },
+    {
+      "id": "ppcs-not-booking-1",
+      "text": "booking [[~BOOKING:HB8820194]] เปลี่ยนวันได้ไหมคะ",
+      "note": "[not-pp] [kind=booking]"
+    },
+    {
+      "id": "ppcs-not-booking-2",
+      "text": "รหัสการจอง [[~BOOKING:BK2209384]] ค่ะ",
+      "note": "[not-pp] [kind=booking]"
+    },
+    {
+      "id": "ppcs-not-booking-3",
+      "text": "เลขยืนยันการจอง [[~BOOKING:CF3381029]]",
+      "note": "[not-pp] [kind=booking]"
+    },
+    {
+      "id": "ppcs-not-booking-4",
+      "text": "แนบพาสปอร์ตแล้วค่ะ booking ref [[~BOOKING:BR5510293]]",
+      "note": "[not-pp] [kind=booking] passport word earlier"
+    },
+    {
+      "id": "ppcs-not-pnr",
+      "text": "รหัสการจองตั๋ว PNR [[~PNR:XB72QK]] ค่ะ",
+      "note": "[not-pp] [kind=pnr]"
+    },
+    {
+      "id": "ppcs-not-invoice-1",
+      "text": "Invoice no. [[~INVOICE:IV7720193]]",
+      "note": "[not-pp] [kind=invoice]"
+    },
+    {
+      "id": "ppcs-not-invoice-2",
+      "text": "ใบเสร็จ [[~INVOICE:RC3019284]] ค่าทำพาสด่วนค่ะ",
+      "note": "[not-pp] [kind=invoice] passport word after"
+    },
+    {
+      "id": "ppcs-not-invoice-3",
+      "text": "ใบกำกับภาษีเลขที่ [[~INVOICE:TX5520193]]",
+      "note": "[not-pp] [kind=invoice]"
+    },
+    {
+      "id": "ppcs-not-employee-1",
+      "text": "รหัสพนักงาน [[~EMPLOYEE:EM6620193]] ค่ะ",
+      "boundary": "outbound",
+      "note": "[not-pp] [kind=employee]"
+    },
+    {
+      "id": "ppcs-not-employee-2",
+      "text": "Staff no. [[~EMPLOYEE:SF2209183]]",
+      "note": "[not-pp] [kind=employee]"
+    },
+    {
+      "id": "ppcs-not-employee-3",
+      "text": "ไกด์ประจำกรุ๊ป รหัสพนักงาน [[~EMPLOYEE:GD4410293]] ดูแลเรื่องพาสปอร์ตค่ะ",
+      "boundary": "outbound",
+      "note": "[not-pp] [kind=employee] passport word after"
+    },
+    {
+      "id": "ppcs-not-member-1",
+      "text": "เลขสมาชิก [[~MEMBER:MB7720194]] ค่ะ",
+      "note": "[not-pp] [kind=member]"
+    },
+    {
+      "id": "ppcs-not-member-2",
+      "text": "สมาชิกสายการบิน [[~MEMBER:BL3019283]] สะสมไมล์ได้ไหม",
+      "note": "[not-pp] [kind=member]"
+    },
+    {
+      "id": "ppcs-not-member-3",
+      "text": "บัตรพาสสกีรีสอร์ต [[~MEMBER:SK5510284]] ค่ะ",
+      "note": "[not-pp] [kind=member] ski pass"
+    },
+    {
+      "id": "ppcs-not-sku-1",
+      "text": "รหัสสินค้า [[~SKU:BG2209184]] ค่ะ",
+      "note": "[not-pp] [kind=sku]"
+    },
+    { "id": "ppcs-not-sku-2", "text": "SKU: [[~SKU:TV4401827]]", "note": "[not-pp] [kind=sku]" },
+    {
+      "id": "ppcs-not-sku-3",
+      "text": "โค้ด [[~SKU:SUMMER2025]] ลดค่าทัวร์ได้ไหมคะ",
+      "note": "[not-pp] [kind=sku] promo word code"
+    },
+    {
+      "id": "ppcs-not-serial-1",
+      "text": "S/N: [[~SERIAL:SR7720193]] ค่ะ",
+      "note": "[not-pp] [kind=serial]"
+    },
+    {
+      "id": "ppcs-not-serial-2",
+      "text": "เลขกรมธรรม์ [[~SERIAL:PA6620184]] ค่ะ",
+      "note": "[not-pp] [kind=serial] policy no."
+    },
+    {
+      "id": "ppcs-not-serial-3",
+      "text": "HN [[~SERIAL:HN2201938]] ค่ะ",
+      "note": "[not-pp] [kind=serial] hospital no."
+    },
+    {
+      "id": "ppcs-not-flight-1",
+      "text": "ไฟลท์ [[~FLIGHT:TG622]] ค่ะ",
+      "note": "[not-pp] [kind=flight]"
+    },
+    {
+      "id": "ppcs-not-flight-2",
+      "text": "เที่ยวบิน [[~FLIGHT:DD 520]] พรุ่งนี้",
+      "note": "[not-pp] [kind=flight]"
+    },
+    {
+      "id": "ppcs-not-flight-3",
+      "text": "อย่าลืมพาสปอร์ตนะคะ ไฟลท์ [[~FLIGHT:VZ200]]",
+      "boundary": "outbound",
+      "note": "[not-pp] [kind=flight]"
+    },
+    {
+      "id": "ppcs-not-password-1",
+      "text": "รหัสไวไฟห้อง [[~PASSWORD:RM5520193]]",
+      "boundary": "outbound",
+      "note": "[not-pp] [kind=password]"
+    },
+    {
+      "id": "ppcs-not-password-2",
+      "text": "Password: [[~PASSWORD:KL7720184]]",
+      "boundary": "outbound",
+      "note": "[not-pp] [kind=password]"
+    },
+    {
+      "id": "ppcs-not-password-3",
+      "text": "พาสเวิร์ดไวไฟ [[~PASSWORD:PW2209183]] ค่ะ",
+      "boundary": "outbound",
+      "note": "[not-pp] [kind=password]"
+    },
+    {
+      "id": "ppcs-not-price-1",
+      "text": "ค่าพาสปอร์ต [[~AMOUNT:1,500]] บาทค่ะ",
+      "note": "[not-pp] [kind=price]"
+    },
+    {
+      "id": "ppcs-not-price-2",
+      "text": "ทำพาสเด็กกี่บาทคะ [[~AMOUNT:500]] ใช่ไหม",
+      "note": "[not-pp] [kind=price]"
+    },
+    {
+      "id": "ppcs-not-phone-1",
+      "text": "สถานทูตโทรมาเรื่องพาสปอร์ต เบอร์ [[PHONE:02-987-6543]]",
+      "note": "[not-pp] [kind=phone]"
+    },
+    {
+      "id": "ppcs-not-phone-2",
+      "text": "พาสปอร์ตอยู่กับไกด์ค่ะ ไกด์เบอร์ [[PHONE:0987654321]]",
+      "boundary": "outbound",
+      "note": "[not-pp] [kind=phone]"
+    },
+    {
+      "id": "ppcs-not-lookalike",
+      "text": "พาสปอร์ต [[~LOOKALIKE:AD3O47566]]",
+      "note": "[not-pp] [kind=lookalike] letter O"
+    },
+    {
+      "id": "ppcs-not-too-short",
+      "text": "รหัส [[~INVALID_ID:AC123456]] ค่ะ",
+      "note": "[not-pp] [kind=tooshort] no cue"
+    },
+    {
+      "id": "ppcs-not-ctx-parcel",
+      "text": "[[~PARCEL:EM4820197]]",
+      "context": "เลขพัสดุอะไรคะ",
+      "note": "[not-pp] [kind=parcel] answer to parcel question"
+    },
+    {
+      "id": "ppcs-not-ctx-booking",
+      "text": "[[~BOOKING:HB6610293]] ค่ะ",
+      "context": "ขอเลขการจองค่ะ",
+      "note": "[not-pp] [kind=booking] answer to booking question"
+    },
+    {
+      "id": "ppcs-not-plain",
+      "text": "ทำพาสปอร์ตต้องใช้อะไรบ้างคะ",
+      "note": "[not-pp] [kind=other] no value"
+    },
+    { "id": "ppcs-not-room", "text": "พาสอยู่ในเซฟห้อง 1507 ค่ะ", "note": "[not-pp] [kind=room]" }
+  ]
+}

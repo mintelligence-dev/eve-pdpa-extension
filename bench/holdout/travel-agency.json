@@ -1,0 +1,154 @@
+{
+  "business": "travel agency / hotel / visa service",
+  "conversations": [
+    {
+      "id": "c01",
+      "turns": [
+        { "from": "customer", "text": "สวัสดีค่ะ สนใจทัวร์ญี่ปุ่น 5 วัน 2 ท่านค่ะ" },
+        {
+          "from": "shop",
+          "text": "ได้ค่ะ ราคาท่านละ {AMOUNT:1} บาท รบกวนขอชื่อและเลขพาสปอร์ตของผู้เดินทางทั้ง 2 ท่านค่ะ"
+        },
+        {
+          "from": "customer",
+          "text": "{NAME:1} พาสปอร์ต {PASSPORT:1}\n{NAME:2} พาสปอร์ต {PASSPORT:2}"
+        },
+        { "from": "shop", "text": "รับข้อมูลแล้วค่ะ เลขการจอง {BOOKING_REF:1} นะคะ" }
+      ]
+    },
+    {
+      "id": "c02",
+      "turns": [
+        { "from": "customer", "text": "จะยื่นวีซ่าฝรั่งเศสค่ะ ต้องเตรียมอะไรบ้าง" },
+        {
+          "from": "shop",
+          "text": "เตรียมสเตทเมนต์ 6 เดือน รูปถ่าย และหนังสือเดินทางที่อายุเหลือเกิน 6 เดือนค่ะ ขอเลขหนังสือเดินทางเพื่อเปิดแฟ้มก่อนนะคะ"
+        },
+        { "from": "customer", "text": "{PASSPORT:1}" },
+        { "from": "shop", "text": "ขอบคุณค่ะ ค่าบริการ {AMOUNT:1} บาท ใบแจ้งหนี้เลขที่ {ORDER_NO:1} ค่ะ" }
+      ]
+    },
+    {
+      "id": "c03",
+      "turns": [
+        {
+          "from": "shop",
+          "text": "Welcome! For online check-in, may I have your full name and passport number?"
+        },
+        { "from": "customer", "text": "{NAME:1}, passport {PASSPORT:1}" },
+        {
+          "from": "shop",
+          "text": "Thank you. Your booking {BOOKING_REF:1} is confirmed for 2 nights, total {AMOUNT:1} THB."
+        }
+      ]
+    },
+    {
+      "id": "c04",
+      "turns": [
+        { "from": "customer", "text": "ทำประกันเดินทางไปเกาหลี 3 คนค่ะ พ่อแม่ลูก" },
+        { "from": "shop", "text": "ได้ค่ะ ขอชื่อ วันเกิด และเลขหนังสือเดินทางของทุกท่านค่ะ" },
+        {
+          "from": "customer",
+          "text": "1. {NAME:1} เกิด {DATE_OF_BIRTH:1} {PASSPORT:1}\n2. {NAME:2} เกิด {DATE_OF_BIRTH:2} {PASSPORT:2}\n3. {NAME:3} เกิด {DATE_OF_BIRTH:3} {PASSPORT:3}"
+        },
+        { "from": "shop", "text": "เบี้ยรวม {AMOUNT:1} บาทค่ะ ส่งกรมธรรม์ไปที่อีเมลไหนดีคะ" },
+        { "from": "customer", "text": "{EMAIL:1} ค่ะ" }
+      ]
+    },
+    {
+      "id": "c05",
+      "turns": [
+        { "from": "customer", "text": "จองตั๋วไปสิงคโปร์ ชื่อสะกดผิดค่ะ ต้องแก้ให้ตรงพาสปอร์ต" },
+        { "from": "shop", "text": "รบกวนขอเลขการจองและเลขพาสปอร์ตค่ะ" },
+        { "from": "customer", "text": "booking {BOOKING_REF:1} ค่ะ" },
+        { "from": "customer", "text": "พาส {PASSPORT:1}" },
+        { "from": "shop", "text": "แก้ไขแล้วค่ะ ค่าธรรมเนียม {AMOUNT:1} บาทค่ะ" }
+      ]
+    },
+    {
+      "id": "c06",
+      "turns": [
+        { "from": "customer", "text": "รับต่อพาสปอร์ตแทนไหมคะ ค่าบริการเท่าไหร่" },
+        { "from": "shop", "text": "รับค่ะ ค่าบริการ {AMOUNT:1} บาท รวมค่าส่งคืนทางไปรษณีย์ค่ะ" },
+        { "from": "customer", "text": "ตกลงค่ะ เล่มเก่าเลข {PASSPORT:1} ชื่อ {NAME:1} โทร {PHONE:1}" },
+        { "from": "shop", "text": "รับเรื่องแล้วค่ะ เลขงาน {ORDER_NO:1} จะแจ้งเลขพัสดุเมื่อส่งเล่มใหม่นะคะ" }
+      ]
+    },
+    {
+      "id": "c07",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "Hello, I want to book a health check for my father. He is a Chinese citizen."
+        },
+        {
+          "from": "shop",
+          "text": "Sure. Please send the patient's name, date of birth and passport number."
+        },
+        {
+          "from": "customer",
+          "text": "{NAME:1}, born {DATE_OF_BIRTH:1}, passport no. {PASSPORT:1}"
+        },
+        {
+          "from": "shop",
+          "text": "Booked. Your appointment number is {ORDER_NO:1}. The package is {AMOUNT:1} THB."
+        },
+        { "from": "customer", "text": "Please call me at {PHONE:1} if anything changes." }
+      ]
+    },
+    {
+      "id": "c08",
+      "turns": [
+        { "from": "customer", "text": "สมัครเรียนภาษาที่ออสเตรเลียค่ะ ส่งเอกสารครบแล้ว" },
+        { "from": "shop", "text": "ได้รับแล้วค่ะ ขาดแค่เลขพาสปอร์ตค่ะ" },
+        { "from": "customer", "text": "{PASSPORT:1} ค่ะ" },
+        { "from": "shop", "text": "เรียบร้อยค่ะ ใบเสนอราคาเลขที่ {ORDER_NO:1} ยอด {AMOUNT:1} บาทค่ะ" }
+      ]
+    },
+    {
+      "id": "c09",
+      "turns": [
+        {
+          "from": "shop",
+          "text": "กรุ๊ปเวียดนามเดือนหน้า รบกวนหัวหน้ากรุ๊ปส่งรายชื่อและเลขหนังสือเดินทางของลูกทัวร์ค่ะ"
+        },
+        {
+          "from": "customer",
+          "text": "รายชื่อค่ะ\n- {NAME:1} {PASSPORT:1}\n- {NAME:2} {PASSPORT:2}\n- {NAME:3} {PASSPORT:3}\n- {NAME:4} {PASSPORT:4}"
+        },
+        { "from": "shop", "text": "รับครบ 4 ท่านค่ะ มัดจำ {AMOUNT:1} บาท เลขจอง {BOOKING_REF:1}" }
+      ]
+    },
+    {
+      "id": "c10",
+      "turns": [
+        { "from": "customer", "text": "เช็คอินแล้วค่ะ ขอพาสไวไฟหน่อย" },
+        { "from": "shop", "text": "รหัสไวไฟอยู่บนการ์ดในห้องค่ะ ยืนยันการจอง {BOOKING_REF:1} นะคะ" },
+        { "from": "customer", "text": "ขอบคุณค่ะ ขอใบกำกับภาษีด้วยนะคะ ส่งมาที่ {EMAIL:1}" },
+        { "from": "shop", "text": "ส่งแล้วค่ะ ใบกำกับภาษีเลขที่ {ORDER_NO:1} ยอด {AMOUNT:1} บาท" }
+      ]
+    },
+    {
+      "id": "c11",
+      "turns": [
+        { "from": "customer", "text": "ทำวีซ่าจีนด่วนค่ะ {NAME:1} หนังสือเดินทาง {PASSPORT:1}" },
+        {
+          "from": "shop",
+          "text": "ขอทวนข้อมูลนะคะ คุณ{NAME:1} เลขพาสปอร์ต {PASSPORT:1} วันเกิด {DATE_OF_BIRTH:1} ถูกต้องไหมคะ"
+        },
+        { "from": "customer", "text": "ถูกต้องค่ะ เบอร์ติดต่อ {PHONE:1}" },
+        { "from": "shop", "text": "ค่าบริการด่วน {AMOUNT:1} บาท เลขคำร้อง {ORDER_NO:1} ค่ะ" }
+      ]
+    },
+    {
+      "id": "c12",
+      "turns": [
+        { "from": "customer", "text": "จะแลกเงินเยนที่สาขาค่ะ ต้องใช้อะไรบ้าง" },
+        { "from": "shop", "text": "ใช้พาสปอร์ตตัวจริงค่ะ กรอกข้อมูลล่วงหน้าในไลน์ได้เลย ขอเลขหนังสือเดินทางค่ะ" },
+        { "from": "customer", "text": "{PASSPORT:1}" },
+        { "from": "customer", "text": "ชื่อ {NAME:1} แลก {AMOUNT:1} บาทค่ะ" },
+        { "from": "shop", "text": "รับเรื่องแล้วค่ะ เลขคิว {ORDER_NO:1}" }
+      ]
+    }
+  ]
+}
