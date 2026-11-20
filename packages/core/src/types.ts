@@ -187,7 +187,6 @@ export interface AuditEvent {
   }
   readonly input: { readonly chars: number }
   readonly findings: readonly AuditFinding[]
-  readonly skippedDetectors: readonly string[]
   readonly degradedDetectors: readonly string[]
   readonly outcome: 'processed' | 'blocked' | 'error'
   /**
@@ -215,7 +214,6 @@ export interface AuditEvent {
    */
   readonly rendered?: readonly RenderedItem[]
   readonly durationMs: number
-  readonly prevHash: string | null
 }
 
 /**
@@ -274,7 +272,6 @@ export interface TokenResolveEvent {
   readonly caller: string | null
   readonly outcome: 'allowed' | 'denied'
   readonly reason?: ResolveReason
-  readonly prevHash: string | null
 }
 
 /**
@@ -316,7 +313,6 @@ export interface PolicyLoadedEvent {
     readonly entitiesSupported: readonly EntityType[]
     readonly nerAvailable: false
   }
-  readonly prevHash: string | null
 }
 
 /** Everything that leaves core through `onAudit`. Switch on `type`. */

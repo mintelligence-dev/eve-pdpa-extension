@@ -342,7 +342,6 @@ export function createGuard(options: GuardOptions): Guard {
         entitiesSupported: engine.entitiesSupported,
         nerAvailable: false,
       },
-      prevHash: null,
     }
     emit(loaded)
   }
@@ -385,7 +384,6 @@ export function createGuard(options: GuardOptions): Guard {
         caller: opts.caller ?? null,
         outcome: reason === null ? 'allowed' : 'denied',
         ...(reason === null ? {} : { reason }),
-        prevHash: null,
       }
       emit(event)
     }
@@ -656,13 +654,11 @@ export function createGuard(options: GuardOptions): Guard {
         input: { chars: text.length },
         findings,
         ...(Object.keys(belowThreshold).length === 0 ? {} : { belowThreshold }),
-        skippedDetectors: detected.skippedDetectors,
         degradedDetectors: detected.degradedDetectors,
         outcome,
         ...(outcome === 'blocked' ? { blockedBy } : {}),
         ...(rendered.length === 0 ? {} : { rendered }),
         durationMs: Date.now() - startedAt,
-        prevHash: null,
       }
       emit(event)
     }
@@ -726,13 +722,11 @@ export function createGuard(options: GuardOptions): Guard {
       },
       input: { chars: typeof text === 'string' ? text.length : 0 },
       findings: [],
-      skippedDetectors: [],
       degradedDetectors: [],
       outcome: 'error',
       // The code only: an error's message may quote the input.
       errorCode: error instanceof PdpaError ? error.code : 'unexpected',
       durationMs: Date.now() - startedAt,
-      prevHash: null,
     }
     emit(event)
   }

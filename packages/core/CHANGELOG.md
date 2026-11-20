@@ -12,7 +12,7 @@
 
 ### Audit
 
-- **Breaking:** audit events are now `schemaVersion: "2.0"`. `at` is renamed `timestamp` on every event type (same value: UTC ISO 8601 with milliseconds) — update queries and any stored copy of `audit-event.schema.json` before upgrading.
+- **Breaking:** audit events are now `schemaVersion: "2.0"`. `at` is renamed `timestamp` on every event type (same value: UTC ISO 8601 with milliseconds) — update queries and any stored copy of `audit-event.schema.json` before upgrading. `skippedDetectors` is dropped from the scan event: no built-in detector is async, so it was always empty; the result of `processSync` still lists them. It may come back in a later schema version once an async detector ships. `prevHash`, reserved for a hash chain and always `null`, is dropped from every event type; a chain, if one is built, will come with its own schema version.
 - Every finding has `result`: `applied`, `allowlisted`, `failed` (the action could not be carried out and the message was blocked) or `widened` (hidden over a span that grew to cover an overlapping value; `tokenise` became `redact`). `action` still names what the policy asked for; `allowlisted` and `failed` are kept as before.
 - A scan event has `belowThreshold` when a detector found something the threshold dropped: a count per type, only for types the policy acts on, e.g. `{ "PASSPORT": 2 }`. Use it to decide whether to lower `minConfidence`.
 - A `blocked` scan names the types that stopped it in `blockedBy`, as the result already did; an `error` scan has `errorCode`, the `PdpaError` code or `unexpected`, never the error message.
