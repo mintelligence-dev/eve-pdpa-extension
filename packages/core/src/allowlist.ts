@@ -41,9 +41,10 @@ const LINE_USER_ID_SHAPE = /^U[0-9a-f]{32}$/
  * an `@` means email, U + 32 hex a LINE id, letters and digits in the shape of a
  * plate (กข 1234) a license plate, a whole date with a four-digit year
  * (12/05/2530, 12 พ.ค. 2530) a date of birth, two letters and seven digits
- * (AA1234567) a passport, anything else a number — and every
- * numeric entity canonicalises the way PHONE does (separators out, +66 → 0),
- * since none of the others can start with +66. The rule is written out in
+ * (AA1234567) a passport, 000201… a PromptPay QR payload, an address label
+ * (ซอย, Soi, Road …) an address, letters with no digit a name, anything else a
+ * number. Every numeric entity canonicalises the way PHONE does (separators
+ * out, +66 → 0), since none of the others can start with +66. The rule is written out in
  * audit-event.schema.json; change one and the other must follow.
  */
 export function allowlistDigestForm(entry: string): string {
@@ -71,8 +72,25 @@ function digestEntity(folded: string): EntityType {
 
   // Passport.
 
+  // PromptPay. A QR payload is the one PromptPay value that is not a number: it
+  // starts 000201 and is kept as written, since its CRC covers every character.
+  // A proxy (a phone number, an ID, an e-wallet ID) is a number, read below.
+  if (folded.startsWith('000201')) return 'PROMPTPAY'
+
+  // Address. A label the post office prints, in Thai or English.
+  if (ADDRESS_LABEL.test(folded)) return 'ADDRESS'
+
+  // Person name. Letters, spaces, a dot or a hyphen, and no digit: nothing else
+  // an entry can be is written that way.
+  if (NAME_SHAPE.test(folded)) return 'PERSON_NAME'
+
   return 'PHONE'
 }
+
+const ADDRESS_LABEL =
+  /บ้านเลขที่|หมู่|ซอย|ถนน|ตำบล|แขวง|อำเภอ|เขต|จังหวัด|\b(?:soi|moo|road|rd|tambon|amphoe|khet|district|subdistrict|province)\b/i
+
+const NAME_SHAPE = /^[^\d@]*[\p{L}][^\d@]*$/u
 
 /**
  * Compiles the allowlist once, at load, so a scan never parses a pattern.
