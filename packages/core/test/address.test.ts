@@ -75,6 +75,46 @@ describe('finds a whole address', () => {
   })
 })
 
+describe('a romanised address', () => {
+  it('house, soi, province and postcode', () => {
+    const full = '99/9 Soi Sukhumvit 101, Bangkok 10260'
+    expect(hidden(`Ship it to ${full} please`)).toEqual([full])
+  })
+
+  it('with moo, subdistrict and district spelt out', () => {
+    const full =
+      '99/9 Moo 5, Soi Sukhumvit 101, Bang Chak Subdistrict, Phra Khanong District, Bangkok 10260'
+    expect(hidden(`Address: ${full}`)).toEqual([full])
+  })
+
+  it('with a district between the road and the province, no label on it', () => {
+    const full = 'No. 55 Phahonyothin Road, Chatuchak, Bangkok 10900'
+    expect(hidden(full)).toEqual([full])
+  })
+
+  it('in lower case, as it is typed in a chat', () => {
+    expect(hidden('please send to 12 sukhumvit road bangkok 10110')).toEqual([
+      '12 sukhumvit road bangkok 10110',
+    ])
+    expect(hidden('ship to 77 soi ari 1 phaya thai bangkok')).toEqual([
+      '77 soi ari 1 phaya thai bangkok',
+    ])
+  })
+
+  it('a condo, a room and a soi', () => {
+    const full = 'Room 1205, The Line Condo, Soi Sukhumvit 50, Bangkok 10110'
+    expect(hidden(full)).toEqual([full])
+  })
+
+  it('Thai and English labels in one address', () => {
+    expect(hidden('ที่อยู่ 99 หมู่ 5 Soi Ari Bangkok 10400')).toHaveLength(1)
+  })
+
+  it('the Thai spellings: Tambon, Tumbon, Amphoe, Amphur', () => {
+    expect(hidden('12 Moo 3 Tumbon Bang Phli Amphur Bang Phli Samut Prakan 10540')).toHaveLength(1)
+  })
+})
+
 describe('two kinds of part', () => {
   it('are reported under the default threshold when nothing says it is an address', () => {
     const [hit] = detect('อ.เมือง จ.เชียงใหม่')
@@ -117,8 +157,22 @@ describe('does not find', () => {
     expect(found('เลขที่ 123456 ลงวันที่ 5 มกราคม')).toEqual([])
   })
 
-  it('romanised addresses (a known limit)', () => {
-    expect(found('99/9 Soi Sukhumvit 101, Bangkok 10260')).toEqual([])
+  it('English that holds one of the labels', () => {
+    for (const text of [
+      'the road was closed',
+      'Soi 5 is blocked',
+      'Order No. 12 arrived in Bangkok',
+      'I live near Abbey Road',
+      'I bought 2 red road bikes',
+      'we waited 5 minutes the road was closed',
+    ]) {
+      expect(hidden(text), text).toEqual([])
+    }
+  })
+
+  it('a romanised province or district with no cue, which is under the threshold', () => {
+    expect(hidden('Chiang Mai Province, Mueang District')).toEqual([])
+    expect(hidden('We flew to Phuket and Krabi')).toEqual([])
   })
 })
 

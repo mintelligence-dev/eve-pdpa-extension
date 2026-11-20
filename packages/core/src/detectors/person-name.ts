@@ -1,5 +1,6 @@
 import type { Candidate, DetectContext, Detector, NormalisedText } from '../types.js'
 import { isAnswer, previousHasCue } from './context.js'
+import { squeezing } from './squeeze.js'
 
 /**
  * A person's name, found from what stands in front of it.
@@ -72,6 +73,15 @@ const TOKEN_STOPS: readonly string[] = [
   'เลข',
   'ขอ',
   'อยาก',
+  'อยู่',
+  'ใน',
+  'โปรด',
+  'กรุณา',
+  'จัดส่ง',
+  'กำลัง',
+  'ต้อง',
+  'ยัง',
+  'เป็น',
   'ต้องการ',
   'และ',
   'แล้ว',
@@ -166,19 +176,22 @@ const LATIN_NAME = `(${LATIN_FIRST}(?: ${LATIN_NEXT}){0,2})`
 const LATIN_TITLED = `(${LATIN_NEXT}(?: ${LATIN_NEXT}){0,2})`
 
 /**
- * Titles that name a person and nothing else. The longest first, so นางสาว is
+ * Titles that name a person and nothing else: นาย and นาง, the doctors and the
+ * ranks of the army, navy, air force and police (พันตำรวจโท, พ.ต.ท.). The longest first, so นางสาว is
  * read before นาง. A written-out title, not an abbreviation, is also the start
  * of other words (นายก, นางฟ้า), which `NOT_A_NAME` takes back.
  */
 const TITLES =
-  'นางสาว|นายแพทย์|แพทย์หญิง|เด็กชาย|เด็กหญิง|นาย|นาง|(?<![ก-๛A-Za-z])(?:น\\.ส\\.|นส\\.|ด\\.ช\\.|ด\\.ญ\\.|ดช\\.|ดญ\\.|ดร\\.|นพ\\.|พญ\\.|ทพ\\.|ภก\\.|ภญ\\.|ผศ\\.|รศ\\.)'
+  'ร้อยตำรวจเอก|ร้อยตำรวจตรี|หม่อมราชวงศ์|พันตำรวจเอก|พันตำรวจตรี|ร้อยตำรวจโท|จ่าสิบตำรวจ|สิบตำรวจเอก|สิบตำรวจตรี|พลอากาศเอก|พลอากาศตรี|พลตำรวจเอก|พลตำรวจตรี|พันตำรวจโท|สิบตำรวจโท|แพทย์หญิง|พลเรือเอก|พลเรือตรี|พลอากาศโท|พลตำรวจโท|จ่าสิบเอก|จ่าสิบตรี|หม่อมหลวง|หม่อมเจ้า|นายแพทย์|เด็กหญิง|พลเรือโท|ดาบตำรวจ|จ่าสิบโท|เด็กชาย|ร้อยเอก|ร้อยตรี|คุณหญิง|นางสาว|พันเอก|พันตรี|ร้อยโท|สิบเอก|สิบตรี|พลเอก|พลตรี|พันโท|สิบโท|พลโท|นาย|นาง|(?<![ก-๛A-Za-z])(?:พล\\.ร\\.อ\\.|พล\\.ร\\.ท\\.|พล\\.ร\\.ต\\.|พล\\.อ\\.อ\\.|พล\\.อ\\.ท\\.|พล\\.อ\\.ต\\.|พล\\.ต\\.อ\\.|พล\\.ต\\.ท\\.|พล\\.ต\\.ต\\.|พ\\.ต\\.อ\\.|พ\\.ต\\.ท\\.|พ\\.ต\\.ต\\.|ร\\.ต\\.อ\\.|ร\\.ต\\.ท\\.|ร\\.ต\\.ต\\.|จ\\.ส\\.อ\\.|จ\\.ส\\.ต\\.|จ\\.ส\\.ท\\.|ส\\.ต\\.อ\\.|ส\\.ต\\.ท\\.|ส\\.ต\\.ต\\.|ม\\.ร\\.ว\\.|พล\\.อ\\.|พล\\.ท\\.|พล\\.ต\\.|น\\.ส\\.|ด\\.ช\\.|ด\\.ญ\\.|พ\\.อ\\.|พ\\.ท\\.|พ\\.ต\\.|ร\\.อ\\.|ร\\.ท\\.|ร\\.ต\\.|ด\\.ต\\.|ส\\.อ\\.|ส\\.ท\\.|ส\\.ต\\.|ม\\.ล\\.|ม\\.จ\\.|นส\\.|ดช\\.|ดญ\\.|ดร\\.|นพ\\.|พญ\\.|ทพ\\.|ภก\\.|ภญ\\.|ผศ\\.|รศ\\.)'
 
-const TITLE = new RegExp(`(${TITLES})[ ]?`, 'gu')
+const TITLE = new RegExp(`(${TITLES}(?:หญิง)?)[ ]?`, 'gu')
 
 /** What follows นาย, นาง or คุณ when it is a word of its own and not a name. */
 const NOT_A_NAME: readonly RegExp[] = [
   // นายก (and นายกรัฐมนตรี), นายจ้าง, นายหน้า, นายทุน, นายแบบ, นายท้าย, นายอำเภอ …
   /^(?:ก(?:ฯ|รัฐมนตรี|เทศมนตรี|อบต|อบจ|สมาคม|(?![ก-๛]))|จ้าง|หน้า|ทุน|แบบ|ท้าย|อำเภอ|ตำรวจ|ทหาร|สถานี|ช่าง)/,
+  // เด็กชาย อายุ 3 ขวบ: an age, not a name
+  /^(?:อายุ|ขวบ)/,
   // นางฟ้า, นางงาม, นางแบบ, นางเอก, นางรำ, นางใน, นางพยาบาล …
   /^(?:ฟ้า|งาม|แบบ|เอก|รำ|ใน|พยาบาล|พญา|ร้าย|นวล|ละคร|สงกรานต์|ไม้)/,
 ]
@@ -223,6 +236,11 @@ const CONFIDENCE_KHUN = 0.96
  * name and a surname are, it is read as a name (`CONFIDENCE_KHUN`).
  */
 const CONFIDENCE_KHUN_GLUED = 0.9
+/**
+ * A greeting right before คุณ: "สวัสดีค่ะคุณสมชาย" is a name, where "you" does not
+ * follow a greeting and go straight on to a verb.
+ */
+const GREETING_BEFORE = /(?:สวัสดี|เรียน|ถึง)(?:ค่ะ|ครับ|คะ|ครับผม)?\s?$/u
 const CONFIDENCE_INTRO = 0.96
 const CONFIDENCE_LABEL_TWO = 0.96
 const CONFIDENCE_LABEL_ONE = 0.85
@@ -234,7 +252,7 @@ const ASKED_NAME = ['ชื่อ', 'นามสกุล', 'name', 'ผู้�
 /** A message that is only a name, or a title and a name. */
 const ONLY_A_NAME = new RegExp(`^(?:${TITLES})?[${THAI}]{2,}(?: [${THAI}]{2,}){0,2}$`, 'u')
 
-export const personNameDetector: Detector = {
+const personNameDetectorImpl: Detector = {
   id: 'person-name',
   entities: ['PERSON_NAME'],
 
@@ -260,22 +278,28 @@ export const personNameDetector: Detector = {
 
     // Mr. Smith, Dr. Jane Doe.
     for (const m of text.matchAll(
-      new RegExp(`\\b(?:Mr|Mrs|Ms|Miss|Dr)\\.?[ ]${LATIN_TITLED}`, 'g'),
+      new RegExp(`\\b(?:Mr|MR|Mrs|MRS|Ms|MS|Miss|MISS|Dr|DR)\\.?[ ]${LATIN_TITLED}`, 'g'),
     )) {
       add(m.index, m.index + m[0].length, CONFIDENCE_TITLE)
     }
 
     // คุณ, then a name. After a space it is a name nearly always; glued it can be
     // the front of คุณภาพ, คุณสมบัติ, คุณครู.
-    for (const m of text.matchAll(/(?:(?<![ก-๛])|(?<=สวัสดี|ค่ะ|ครับ|คะ|นะ))คุณ( ?)/gu)) {
+    for (const m of text.matchAll(/(?:(?<![ก-๛])|(?<=สวัสดี|ค่ะ|ครับ|คะ|นะ|เรียน|ถึง))คุณ( ?)/gu)) {
       const from = m.index + m[0].length
       if (isNotAKhunName(text, from)) continue
       const name = readName(text, from, 2)
       if (name === null) continue
+      // A given name is short; "ส่งสติกเกอร์" (sent a sticker) is not, and a second
+      // word after it is just the next thing the customer says.
+      const firstShort = (/^\S*/u.exec(text.slice(from)) as RegExpExecArray)[0].length <= 9
+      const greeted = GREETING_BEFORE.test(text.slice(Math.max(0, m.index - 14), m.index))
       add(
         m.index,
         name.end,
-        m[1] === ' ' || name.tokens === 2 ? CONFIDENCE_KHUN : CONFIDENCE_KHUN_GLUED,
+        m[1] === ' ' || (name.tokens === 2 && firstShort) || greeted
+          ? CONFIDENCE_KHUN
+          : CONFIDENCE_KHUN_GLUED,
       )
     }
 
@@ -324,3 +348,5 @@ export const personNameDetector: Detector = {
     return found
   },
 }
+
+export const personNameDetector: Detector = squeezing(personNameDetectorImpl)

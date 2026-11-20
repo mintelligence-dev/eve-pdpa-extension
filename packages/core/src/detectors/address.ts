@@ -1,6 +1,7 @@
 import type { Candidate, DetectContext, Detector, NormalisedText } from '../types.js'
 import { containsAny, previousHasCue } from './context.js'
 import { PROVINCES } from './license-plate.js'
+import { squeezing } from './squeeze.js'
 
 /**
  * A Thai postal address: "99/9 หมู่ 5 ซอยสุขุมวิท 101 ต.บางจาก อ.พระโขนง
@@ -31,8 +32,13 @@ import { PROVINCES } from './license-plate.js'
  * or comma, or after 24 characters. There is no word segmenter here and none
  * is needed: the labels are the boundaries.
  *
- * Only Thai-written addresses are read. A romanised address ("Soi 5, Sukhumvit
- * Rd.") is not (README, known limitations).
+ * A romanised address is read the same way, from the labels the post office
+ * prints in English: "99/9 Moo 5, Soi Sukhumvit 101, Bang Chak Subdistrict,
+ * Phra Khanong District, Bangkok 10260". Spellings of Thai words vary (Tambon,
+ * Tumbon; Amphoe, Amphur), so each label lists the ones in use. Customers type
+ * in lower case, so a name after a *prefix* label (Soi, Thanon, Tambon …) may be
+ * lower case; a name *before* a word that is also ordinary English (Road,
+ * District, Province) must be capitalised, or "the road" would be a street.
  */
 
 type Kind =
@@ -64,20 +70,182 @@ const NAME = `(?:(?!${LABELS}|\\d{5}(?!\\d))[ก-๛A-Za-z0-9/\\-]){1,24}`
 /** A label written as an abbreviation must not be the tail of a longer word. */
 const NOT_AFTER_LETTER = '(?<![ก-๛A-Za-z])'
 
-const HOUSE_LABELLED = /(บ้านเลขที่|เลขที่|ที่อยู่)[\s:：]*(\d{1,4}(?:\/\d{1,4}){0,2}(?:-\d{1,4})?)(?!\d)/dg
+const HOUSE_LABELLED =
+  /(บ้านเลขที่|เลขที่|ที่อยู่|[Aa]ddress|House No\.?|No\.)[\s:：]*(\d{1,4}(?:\/\d{1,4}){0,2}(?:-\d{1,4})?)(?!\d)/dg
 /** A house number with no label, taken only when a label of the next part follows it. */
 const HOUSE_BARE =
-  /(?<![\d/.\-])(\d{1,4}(?:\/\d{1,4})?)(?=[\s,]*(?:หมู่|ม\.|ซอย|ซ\.|ถนน|ถ\.|ตำบล|ต\.|แขวง))/dg
+  /(?<![\d/.\-])(\d{1,4}(?:\/\d{1,4})?)(?=[\s,]*(?:หมู่|ม\.|ซอย|ซ\.|ถนน|ถ\.|ตำบล|ต\.|แขวง|[Mm]oo\b|MOO\b|[Ss]oi\b|SOI\b|[Tt]hanon\b|[Tt]ambon\b|[Tt]ambol\b|[Tt]umbon\b|[Tt]umbol\b|[Kk]hwaeng\b)|[\s,]+[A-Z][A-Za-z'\-]*(?: [A-Z][A-Za-z'\-]*){0,2}\s+(?:Road|ROAD|Rd|RD)\b)/dg
 const MOO = new RegExp(`(?:หมู่ที่|หมู่|${NOT_AFTER_LETTER}ม\\.)\\s*(\\d{1,2})(?!\\d)`, 'gd')
 const BUILDING = new RegExp(`(?:หมู่บ้าน|คอนโดมิเนียม|คอนโด|อาคาร|ตึก)\\s*(${NAME})`, 'gd')
 const ROOM = /(?:ห้อง|ชั้น)\s*(\d{1,4}[A-Za-z]?)(?![\dก-๛])/dg
 const NAMED: ReadonlyArray<readonly [Kind, RegExp]> = [
-  ['SOI', new RegExp(`(?:ซอย|${NOT_AFTER_LETTER}ซ\\.)\\s*(${NAME}(?: \\d{1,3}(?!\\d))?)`, 'gd')],
-  ['ROAD', new RegExp(`(?:ถนน|${NOT_AFTER_LETTER}ถ\\.)\\s*(${NAME}(?: \\d{1,3}(?!\\d))?)`, 'gd')],
+  ['SOI', new RegExp(`(?:ซอย|${NOT_AFTER_LETTER}ซ\\.)\\s*(${NAME}(?:\\s\\d{1,3}(?!\\d))?)`, 'gd')],
+  ['ROAD', new RegExp(`(?:ถนน|${NOT_AFTER_LETTER}ถ\\.)\\s*(${NAME}(?:\\s\\d{1,3}(?!\\d))?)`, 'gd')],
   ['TAMBON', new RegExp(`(?:ตำบล|แขวง|${NOT_AFTER_LETTER}ต\\.)\\s*(${NAME})`, 'gd')],
   ['AMPHOE', new RegExp(`(?:อำเภอ|เขต|${NOT_AFTER_LETTER}อ\\.)\\s*(${NAME})`, 'gd')],
 ]
 const PROVINCE_LABEL = new RegExp(`(?:จังหวัด|${NOT_AFTER_LETTER}จ\\.)\\s*`, 'gd')
+
+// ---- romanised --------------------------------------------------------------
+
+/** One word and a number ("sukhumvit 101"), or two or three capitalised words ("Lat Phrao 101"). */
+const EN_NAME =
+  "(?:[A-Z][A-Za-z'\\-]*(?: [A-Z][A-Za-z'\\-]*){1,2}(?:\\s\\d{1,3}(?!\\d))?|[A-Za-z][A-Za-z'\\-]*(?:\\s\\d{1,3}(?!\\d))?)"
+/** Capitalised, for a name that stands before Road, District or Province. */
+const EN_NAME_CAP = "[A-Z][A-Za-z'\\-]*(?: [A-Z][A-Za-z'\\-]*)?(?: \\d{1,3}(?!\\d))?"
+const EN_B = '(?<![A-Za-z])'
+
+/**
+ * "12 sukhumvit road", typed in lower case. A number in front says it is a street,
+ * and what follows must be the end, a number or a province ("2 red road bikes" is
+ * not an address). The house number is read with it.
+ */
+const EN_LOWER_ROAD =
+  /(?<![\d/.\-])(\d{1,4}(?:\/\d{1,4})?)[\s,]+(?!(?:the|a|an|this|that|my|your|our|his|her|its)\s)([a-z][a-z'\-]*(?:\s\d{1,3}(?!\d))?)\s+(?:road|rd)\b\.?/dgi
+
+const EN_MOO = new RegExp(`${EN_B}(?:[Mm]oo|MOO|[Vv]illage No\\.?)\\.?\\s*(\\d{1,2})(?!\\d)`, 'gd')
+const EN_ROOM = new RegExp(
+  `${EN_B}(?:[Rr]oom|[Rr]m\\.?|[Ff]loor|[Ff]l\\.?|[Uu]nit)\\s*(\\d{1,4}[A-Za-z]?)(?![\\dA-Za-z])`,
+  'gd',
+)
+const EN_BUILDING = new RegExp(
+  `${EN_B}(?:[Cc]ondominium|[Cc]ondo|[Tt]ower|[Bb]uilding|[Bb]ldg\\.?|[Aa]partment|[Vv]illage|[Mm]ansion|[Rr]esidence)\\s+(${EN_NAME_CAP})`,
+  'gd',
+)
+const EN_NAMED: ReadonlyArray<readonly [Kind, RegExp]> = [
+  ['SOI', new RegExp(`${EN_B}(?:[Ss]oi|SOI)\\.?\\s+(${EN_NAME})`, 'gd')],
+  ['ROAD', new RegExp(`${EN_B}(?:[Tt]hanon|THANON)\\s+(${EN_NAME})`, 'gd')],
+  ['ROAD', new RegExp(`${EN_B}(${EN_NAME_CAP})\\s+(?:Road|ROAD|Rd|RD)\\b\\.?`, 'gd')],
+  [
+    'TAMBON',
+    new RegExp(
+      `${EN_B}(?:[Tt]ambon|[Tt]ambol|[Tt]umbon|[Tt]umbol|[Kk]hwaeng|[Kk]waeng)\\s+(${EN_NAME})`,
+      'gd',
+    ),
+  ],
+  ['TAMBON', new RegExp(`${EN_B}(${EN_NAME_CAP})\\s+(?:Sub-?district|SUB-?DISTRICT)\\b`, 'gd')],
+  [
+    'AMPHOE',
+    new RegExp(`${EN_B}(?:[Aa]mphoe|[Aa]mphur|[Aa]umphur|[Aa]mpher|[Kk]het)\\s+(${EN_NAME})`, 'gd'),
+  ],
+  ['AMPHOE', new RegExp(`${EN_B}(${EN_NAME_CAP})\\s+(?:District|DISTRICT)\\b`, 'gd')],
+  ['PROVINCE', new RegExp(`${EN_B}(?:[Cc]hangwat)\\s+(${EN_NAME})`, 'gd')],
+  ['PROVINCE', new RegExp(`${EN_B}(${EN_NAME_CAP})\\s+(?:Province|PROVINCE)\\b`, 'gd')],
+]
+
+/**
+ * The provinces in the spelling the Royal Thai General System, road signs and
+ * airlines use, with the common variants. Taken only right after another part
+ * (see `bareProvinces`), as the Thai names are, since Tak, Trat and Nan are
+ * also ordinary words. Written from general knowledge; no list was copied.
+ */
+const PROVINCES_EN: readonly string[] = [
+  'Bangkok',
+  'Krung Thep',
+  'Krung Thep Maha Nakhon',
+  'Amnat Charoen',
+  'Ang Thong',
+  'Bueng Kan',
+  'Buriram',
+  'Buri Ram',
+  'Chachoengsao',
+  'Chai Nat',
+  'Chainat',
+  'Chaiyaphum',
+  'Chanthaburi',
+  'Chiang Mai',
+  'Chiang Rai',
+  'Chonburi',
+  'Chon Buri',
+  'Chumphon',
+  'Kalasin',
+  'Kamphaeng Phet',
+  'Kanchanaburi',
+  'Khon Kaen',
+  'Krabi',
+  'Lampang',
+  'Lamphun',
+  'Loei',
+  'Lopburi',
+  'Lop Buri',
+  'Mae Hong Son',
+  'Maha Sarakham',
+  'Mukdahan',
+  'Nakhon Nayok',
+  'Nakhon Pathom',
+  'Nakhon Phanom',
+  'Nakhon Ratchasima',
+  'Korat',
+  'Nakhon Sawan',
+  'Nakhon Si Thammarat',
+  'Nan',
+  'Narathiwat',
+  'Nong Bua Lamphu',
+  'Nong Khai',
+  'Nonthaburi',
+  'Pathum Thani',
+  'Pattani',
+  'Phang Nga',
+  'Phangnga',
+  'Phatthalung',
+  'Phayao',
+  'Phetchabun',
+  'Phetchaburi',
+  'Phichit',
+  'Phitsanulok',
+  'Phra Nakhon Si Ayutthaya',
+  'Ayutthaya',
+  'Phrae',
+  'Phuket',
+  'Prachinburi',
+  'Prachin Buri',
+  'Prachuap Khiri Khan',
+  'Ranong',
+  'Ratchaburi',
+  'Rayong',
+  'Roi Et',
+  'Sa Kaeo',
+  'Sakon Nakhon',
+  'Samut Prakan',
+  'Samut Sakhon',
+  'Samut Songkhram',
+  'Saraburi',
+  'Satun',
+  'Si Sa Ket',
+  'Sisaket',
+  'Sing Buri',
+  'Singburi',
+  'Songkhla',
+  'Sukhothai',
+  'Suphan Buri',
+  'Suphanburi',
+  'Surat Thani',
+  'Surin',
+  'Tak',
+  'Trang',
+  'Trat',
+  'Ubon Ratchathani',
+  'Udon Thani',
+  'Uthai Thani',
+  'Uttaradit',
+  'Yala',
+  'Yasothon',
+].sort((a, b) => b.length - a.length)
+
+/** Nothing, or one or two unlabelled words (a district), between a part and a province. */
+const EN_BETWEEN = /^(?:[\s,]{0,3}|[\s,]*[A-Za-z'-]+(?:[\s,]+[A-Za-z'-]+)?[\s,]*)$/
+
+/** A province name straight after some spaces and commas. */
+const EN_PROVINCE_AT = new RegExp(
+  `^[\\s,.]*(?:${PROVINCES_EN.map((n) => n.replace(/ /g, '\\s+')).join('|')})(?![A-Za-z])`,
+  'i',
+)
+
+const EN_PROVINCE = new RegExp(
+  `${EN_B}(${PROVINCES_EN.map((n) => n.replace(/ /g, '\\s+')).join('|')})(?![A-Za-z])`,
+  'gi',
+)
+
 const POSTCODE = /(?<!\d)([1-9]\d{4})(?!\d)/g
 
 /** "เลย" is also "at all": a province only after its label, never bare. */
@@ -97,6 +265,10 @@ const ADDRESS_CUES = [
   'address',
   'ship to',
   'deliver',
+  'send to',
+  'mail to',
+  'lives at',
+  'located at',
 ]
 
 const POSTCODE_WORDS = /(?:รหัสไปรษณีย์|ไปรษณีย์|zip ?code|zip|postcode)[\s:.,]*$/i
@@ -155,10 +327,10 @@ function labelled(text: string): Part[] {
     const label = m[1] as string
     const value = (m.indices as RegExpIndicesArray)[2] as [number, number]
     // "ที่อยู่ 12" keeps the label readable: only the number is claimed.
-    const says = label !== 'เลขที่'
+    const says = label !== 'เลขที่' && label !== 'No.'
     parts.push({
       kind: 'HOUSE',
-      start: label === 'ที่อยู่' ? value[0] : m.index,
+      start: label === 'ที่อยู่' || /^address$/i.test(label) ? value[0] : m.index,
       end: value[1],
       says,
     })
@@ -181,6 +353,29 @@ function labelled(text: string): Part[] {
       const end = pastDigits(text, m.index + m[0].length)
       parts.push({ kind, start: m.index, end, says: false })
     }
+  }
+  for (const m of text.matchAll(EN_MOO)) {
+    parts.push({ kind: 'MOO', start: m.index, end: m.index + m[0].length, says: false })
+  }
+  for (const re of [EN_BUILDING, EN_ROOM]) {
+    for (const m of text.matchAll(re)) {
+      const end = pastDigits(text, m.index + m[0].length)
+      parts.push({ kind: 'BUILDING', start: m.index, end, says: false })
+    }
+  }
+  for (const [kind, re] of EN_NAMED) {
+    for (const m of text.matchAll(re)) {
+      const end = pastDigits(text, m.index + m[0].length)
+      parts.push({ kind, start: m.index, end, says: false })
+    }
+  }
+  for (const m of text.matchAll(EN_LOWER_ROAD)) {
+    const end = m.index + m[0].length
+    if (!/^[\s,.]*(?:$|\d|\n)/.test(text.slice(end)) && !EN_PROVINCE_AT.test(text.slice(end)))
+      continue
+    const house = (m.indices as RegExpIndicesArray)[1] as [number, number]
+    parts.push({ kind: 'HOUSE', start: house[0], end: house[1], says: false })
+    parts.push({ kind: 'ROAD', start: house[1], end, says: false })
   }
   for (const m of text.matchAll(PROVINCE_LABEL)) {
     const from = m.index + m[0].length
@@ -207,6 +402,14 @@ function bareProvinces(text: string, parts: readonly Part[]): Part[] {
       if (partBefore(parts, text, at, /^[\s,]{0,3}$/) === null) continue
       found.push({ kind: 'PROVINCE', start: at, end, says: false })
     }
+  }
+  for (const m of text.matchAll(EN_PROVINCE)) {
+    const at = m.index
+    const end = at + m[0].length
+    if (overlaps(parts, at, end) || overlaps(found, at, end)) continue
+    // A district with no label may stand between: "Phahonyothin Road, Chatuchak, Bangkok".
+    if (partBefore(parts, text, at, EN_BETWEEN) === null) continue
+    found.push({ kind: 'PROVINCE', start: at, end, says: false })
   }
   return found
 }
@@ -249,7 +452,7 @@ function cluster(parts: readonly Part[], text: string): Part[][] {
   return groups
 }
 
-export const addressDetector: Detector = {
+const addressDetectorImpl: Detector = {
   id: 'address',
   entities: ['ADDRESS'],
 
@@ -283,3 +486,5 @@ export const addressDetector: Detector = {
     return found
   },
 }
+
+export const addressDetector: Detector = squeezing(addressDetectorImpl)

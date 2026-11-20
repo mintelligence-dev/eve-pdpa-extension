@@ -69,11 +69,15 @@ describe('คุณ', () => {
     expect(hidden('สวัสดีค่ะ คุณ สมชาย ใจดี')).toEqual(['คุณ สมชาย ใจดี'])
   })
 
-  it('คุณ against one word is the weaker reading, under the default threshold', () => {
+  it('คุณ against one word is the weaker reading, unless a greeting comes right before', () => {
     // It is also the pronoun "you": "คุณส่งสติกเกอร์".
-    expect(found('สวัสดีค่ะคุณสมชาย')).toEqual(['คุณสมชาย'])
-    expect(hidden('สวัสดีค่ะคุณสมชาย')).toEqual([])
     expect(hidden('คุณส่งสติกเกอร์')).toEqual([])
+    expect(hidden('ขอบคุณค่ะคุณส่งสติกเกอร์')).toEqual([])
+    expect(found('ขอบคุณค่ะคุณสมชาย')).toEqual(['คุณสมชาย'])
+    expect(hidden('ขอบคุณค่ะคุณสมชาย')).toEqual([])
+    // After a greeting it is a name.
+    expect(hidden('สวัสดีค่ะคุณสมชาย')).toEqual(['คุณสมชาย'])
+    expect(hidden('เรียนคุณมาลี')).toEqual(['คุณมาลี'])
   })
 
   it('คุณ against a first name and a surname is a name', () => {
@@ -145,6 +149,36 @@ describe('the answer to a question that asked for a name', () => {
   })
 })
 
+describe('found by measuring public text (Wisesight, ThaiNER)', () => {
+  it('an age after เด็กชาย is not a name', () => {
+    expect(found('พบผู้เสียชีวิต 2 รายเป็นเด็กหญิง อายุ 3 ขวบ')).toEqual([])
+  })
+
+  it('please, after a name, is the next thing said', () => {
+    // The second word is not read as a surname, so it is one word against คุณ: reported, under the threshold.
+    expect(found('คุณจั้ม โปรดพกบัตรตัวจริง')).toEqual(['คุณจั้ม'])
+    expect(found('คุณสมชาย กรุณาโอนเงิน')).toEqual(['คุณสมชาย'])
+  })
+})
+
+describe('ranks', () => {
+  it('written out, and as abbreviations', () => {
+    expect(hidden('พลตำรวจโท สมชาย ใจดี สั่งซื้อ')).toEqual(['พลตำรวจโท สมชาย ใจดี'])
+    expect(hidden('พ.ต.ท.สุรชัย มั่นคง โทรมา')).toEqual(['พ.ต.ท.สุรชัย มั่นคง'])
+    expect(hidden('จ.ส.ต. สมชาย ใจดี')).toEqual(['จ.ส.ต. สมชาย ใจดี'])
+    expect(hidden('สิบเอกมานะ อดทน')).toEqual(['สิบเอกมานะ อดทน'])
+    expect(hidden('คุณหญิงสมศรี ศรีสุข')).toEqual(['คุณหญิงสมศรี ศรีสุข'])
+  })
+
+  it('a woman officer: หญิง is part of the rank, not of the name', () => {
+    expect(hidden('ร.ต.อ.หญิง วิภา แก้วใส')).toEqual(['ร.ต.อ.หญิง วิภา แก้วใส'])
+  })
+
+  it('not a word that starts like a rank', () => {
+    expect(found('พันธุ์ไม้ขายดี')).toEqual([])
+  })
+})
+
 describe('given names that look like words', () => {
   it('สมบัติ and ธรรม… are names after นาย and นาง, and words after คุณ', () => {
     expect(hidden('นายสมบัติ รุ่งเรือง ครับ')).toEqual(['นายสมบัติ รุ่งเรือง'])
@@ -213,7 +247,6 @@ describe('known limits: a name nothing introduces is not found', () => {
     ['a nickname on its own', 'พี่หนุ่มโทรมา'],
     ['a name in Latin with no introduction', 'Somchai Jaidee called yesterday'],
     ['a name in a list', 'สมชาย ใจดี, สุดา รักไทย, มาลี ศรีสุข'],
-    ['a rank written out', 'พลตำรวจโท สมชาย ใจดี'],
     ['a monk title', 'พระสมชาย ธัมมโชติ'],
   ]
   for (const [what, message] of unseen) {

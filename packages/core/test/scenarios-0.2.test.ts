@@ -64,6 +64,23 @@ describe('hidden', () => {
       'สแกนอันนี้ค่ะ [พร้อมเพย์]',
     ],
     ['an e-wallet id', 'e-wallet 004999012345678 ค่ะ', 'e-wallet [พร้อมเพย์] ค่ะ'],
+    [
+      'a romanised address',
+      'Ship to 99/9 Soi Sukhumvit 101, Bangkok 10260 please',
+      'Ship to [ที่อยู่] please',
+    ],
+    [
+      'an id with a typo, beside the PromptPay word',
+      'พร้อมเพย์ 3-1005-00123-45-1',
+      'พร้อมเพย์ [พร้อมเพย์]',
+    ],
+    ['a name typed with doubled spaces', 'ชื่อ-นามสกุล:  กานดา  เรืองสุข ค่ะ', 'ชื่อ-นามสกุล:  [ชื่อ] ค่ะ'],
+    ['a PromptPay number pasted with tabs', 'พร้อมเพย์\t081\t433\t1673', 'พร้อมเพย์\t[พร้อมเพย์]'],
+    [
+      'an English address in capitals',
+      'SHIP TO 153 SUKHUMVIT ROAD SAMUT PRAKAN 11696',
+      'SHIP TO [ที่อยู่]',
+    ],
     ['a name given as the answer to the bot', 'สมชาย ใจดี', '[ชื่อ]'],
   ]
   for (const [what, message, expected] of hiddenCases) {
@@ -80,7 +97,6 @@ describe('not hidden: where the guard stops', () => {
   const limits: ReadonlyArray<readonly [string, string]> = [
     ['a name nothing introduces', 'สมชาย ใจดี โทรมาแล้ว'],
     ['a name in the middle of a sentence', 'ได้คุยกับสมชายใจดีเมื่อวานแล้ว'],
-    ['a romanised address', '99/9 Soi Sukhumvit 101, Bangkok 10260'],
     ['a place with no labels: a district and a province only, said in passing', 'อยู่บางนา กรุงเทพ'],
     ['a province or a district on its own', 'บ้านอยู่เชียงใหม่ค่ะ'],
     ['a name that is a product', 'ชื่อสินค้า เสื้อยืดสีขาว'],

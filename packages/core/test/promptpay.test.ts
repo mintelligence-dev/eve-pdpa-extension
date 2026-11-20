@@ -88,9 +88,15 @@ describe('does not find', () => {
     expect(found('พร้อมเพย์ 02-123-4567')).toEqual([])
   })
 
-  it('thirteen digits that fail the check digit', () => {
+  it('thirteen digits that fail the check digit are found beside the cue, as a typo', () => {
     const bad = `${VALID_ID.slice(0, 12)}${(Number(VALID_ID[12]) + 1) % 10}`
-    expect(found(`พร้อมเพย์ ${bad}`)).toEqual([])
+    expect(found(`พร้อมเพย์ ${bad}`)).toEqual([bad])
+  })
+
+  it('and not without it, nor when the first digit no ID starts with', () => {
+    const bad = `${VALID_ID.slice(0, 12)}${(Number(VALID_ID[12]) + 1) % 10}`
+    expect(found(`เลขที่ ${bad}`)).toEqual([])
+    expect(found('พร้อมเพย์ 0123456789012')).toEqual([])
   })
 
   it('a number that is part of a longer one', () => {

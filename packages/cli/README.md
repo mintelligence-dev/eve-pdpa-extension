@@ -231,7 +231,7 @@ esac
 
 ## Limitations
 
-- Names and addresses are found only when something points to them: a name needs a title (นาย, นางสาว, Mr, Dr …), an introduction ("ผมชื่อ", "my name is"), a form label ("ชื่อ-นามสกุล"), or to be the answer to a question that asked for one · an address must be in Thai and hold three kinds of part (house number, soi, tambon, amphoe, province, postcode), or two with a word such as "ที่อยู่" · a bare name in the middle of a sentence, a nickname, and a romanised address are not found (that needs NER)
+- Names and addresses are found only when something points to them: a name needs a title (นาย, นางสาว, a rank, Mr, Dr …), an introduction ("ผมชื่อ", "my name is"), a form label ("ชื่อ-นามสกุล"), or to be the answer to a question that asked for one · an address, in Thai or in English (Soi, Road, Moo, Subdistrict, District, Bangkok …), must hold three kinds of part (house number, soi, tambon, amphoe, province, postcode), or two with a word such as "ที่อยู่" or "address" · a bare name in the middle of a sentence, a nickname, and a place named with no labels are not found (that needs NER)
 - Every detector limitation of core applies here, such as bank accounts needing a cue word · see [Known limitations](https://www.npmjs.com/package/@eve-pdpa-extension/core#known-limitations)
 - One file at a time · does not read .zip
 - The LINE OA format comes from a Thai-language export seen in 2025 · if LINE changes it, the CLI stops and says it cannot find the column, rather than scanning the wrong one in silence

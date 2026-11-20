@@ -10,6 +10,7 @@ import {
 } from './context.js'
 import { DIGIT_RUN, type Group, opensValue, readingEnd, splitRun } from './digit-run.js'
 import { toNationalForm } from './phone.js'
+import { squeezing } from './squeeze.js'
 
 /**
  * A PromptPay identifier: the thing a customer types to say where money goes.
@@ -50,6 +51,8 @@ const PROMPTPAY_CUES = [
 /** Passes the check digit, or a mobile number, beside a cue. */
 const CONFIDENCE_ID = 0.98
 /** The country code written out (+66, 66), or the leading 0 dropped. */
+/** A thirteen-digit number beside the cue whose check digit is wrong. */
+const CONFIDENCE_ID_UNCHECKED = 0.96
 const CONFIDENCE_BARE_PHONE = 0.96
 /** Fifteen digits beside a cue: no check digit is published to test it against. */
 const CONFIDENCE_EWALLET = 0.96
@@ -84,7 +87,10 @@ function scoreProxy(digits: string, plus: boolean): number | null {
     case 15:
       return CONFIDENCE_EWALLET
     case 13:
-      return isValidThaiNationalId(digits) ? CONFIDENCE_ID : null
+      // Beside พร้อมเพย์ a thirteen-digit number is an ID with a typo in it, which
+      // is still the person's ID: the check digit is not asked for here.
+      if (isValidThaiNationalId(digits)) return CONFIDENCE_ID
+      return /^[1-8]/.test(digits) ? CONFIDENCE_ID_UNCHECKED : null
     case 11:
       // 66 and a nine-digit national number, with or without the plus.
       return digits.startsWith('66') && isMobile(toNationalForm(plus ? `+${digits}` : digits))
@@ -185,7 +191,7 @@ function findPayloads(text: string): Candidate[] {
   return found
 }
 
-export const promptpayDetector: Detector = {
+const promptpayDetectorImpl: Detector = {
   id: 'promptpay',
   entities: ['PROMPTPAY'],
 
@@ -248,3 +254,5 @@ export const promptpayDetector: Detector = {
     return found
   },
 }
+
+export const promptpayDetector: Detector = squeezing(promptpayDetectorImpl)
