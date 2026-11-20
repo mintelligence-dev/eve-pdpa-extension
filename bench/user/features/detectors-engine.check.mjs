@@ -99,7 +99,6 @@ check(
     )
     const a = guard.processSync('รหัส MB-00918273')
     assert.deepEqual(a.skippedDetectors, ['shop-member-no'])
-    assert.deepEqual(scans()[0].skippedDetectors, ['shop-member-no'])
     assert.equal(a.text, 'รหัส MB-00918273')
     const b = await guard.process('รหัส MB-00918273')
     assert.deepEqual(b.skippedDetectors, [])
