@@ -41,6 +41,7 @@ describe('public surface', () => {
       'LICENSE_PLATE',
       'DATE_OF_BIRTH',
       'PASSPORT',
+      'PROMPTPAY',
     ])
   })
 })

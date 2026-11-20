@@ -45,6 +45,14 @@ export function canonicalValue(entity: EntityType, folded: string): string {
 
     // Passport.
 
+    // PromptPay.
+    case 'PROMPTPAY':
+      // A QR payload is kept as written: its CRC covers every character. A proxy
+      // is a phone number or an id, and reads as one: 081-888-7777 and
+      // +66 81 888 7777 are one.
+      if (folded.startsWith('000201')) return folded
+      return toNationalForm(folded.replace(SEPARATORS, ''))
+
     case 'PHONE':
       // +66 91 888 7777 and 091-888-7777 are one number.
       return toNationalForm(folded.replace(SEPARATORS, ''))

@@ -55,6 +55,7 @@ const PLACEHOLDER_TH: Readonly<Record<EntityType, string>> = {
   LICENSE_PLATE: '[ทะเบียนรถ]',
   DATE_OF_BIRTH: '[วันเกิด]',
   PASSPORT: '[พาสปอร์ต]',
+  PROMPTPAY: '[พร้อมเพย์]',
 }
 
 const PLACEHOLDER_EN: Readonly<Record<EntityType, string>> = {
@@ -67,6 +68,7 @@ const PLACEHOLDER_EN: Readonly<Record<EntityType, string>> = {
   LICENSE_PLATE: '[license-plate]',
   DATE_OF_BIRTH: '[date-of-birth]',
   PASSPORT: '[passport]',
+  PROMPTPAY: '[promptpay]',
 }
 
 /** For a token the guard cannot vouch for: not issued here, or not to this session. */

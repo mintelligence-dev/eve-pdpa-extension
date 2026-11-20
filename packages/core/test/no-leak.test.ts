@@ -63,6 +63,8 @@ describe('no real value ever leaves the guard', () => {
       'LICENSE_PLATE',
       // Date of birth.
       // Passport.
+      // PromptPay.
+      'PROMPTPAY',
     ])
   })
 })

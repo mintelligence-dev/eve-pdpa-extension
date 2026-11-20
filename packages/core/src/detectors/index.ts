@@ -5,6 +5,7 @@ import { emailDetector } from './email.js'
 import { licensePlateDetector } from './license-plate.js'
 import { lineUserIdDetector } from './line-user-id.js'
 import { phoneDetector } from './phone.js'
+import { promptpayDetector } from './promptpay.js'
 import { thaiNationalIdDetector } from './thai-national-id.js'
 
 /**
@@ -28,6 +29,8 @@ export const BUILTIN_DETECTORS: readonly Detector[] = [
   licensePlateDetector,
   // Date of birth.
   // Passport.
+  // PromptPay.
+  promptpayDetector,
 ]
 
 export {
@@ -37,5 +40,6 @@ export {
   licensePlateDetector,
   lineUserIdDetector,
   phoneDetector,
+  promptpayDetector,
   thaiNationalIdDetector,
 }

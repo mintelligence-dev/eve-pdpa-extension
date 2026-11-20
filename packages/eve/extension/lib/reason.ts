@@ -13,6 +13,7 @@ const NAMES_TH: Readonly<Record<EntityType, string>> = {
   LICENSE_PLATE: 'ทะเบียนรถ',
   DATE_OF_BIRTH: 'วันเกิด',
   PASSPORT: 'เลขพาสปอร์ต',
+  PROMPTPAY: 'พร้อมเพย์',
 }
 
 const NAMES_EN: Readonly<Record<EntityType, string>> = {
@@ -25,6 +26,7 @@ const NAMES_EN: Readonly<Record<EntityType, string>> = {
   LICENSE_PLATE: 'a license plate',
   DATE_OF_BIRTH: 'a date of birth',
   PASSPORT: 'a passport number',
+  PROMPTPAY: 'a PromptPay ID',
 }
 
 export type Language = 'th' | 'en'
