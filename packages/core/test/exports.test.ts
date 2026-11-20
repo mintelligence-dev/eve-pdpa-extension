@@ -42,6 +42,7 @@ describe('public surface', () => {
       'DATE_OF_BIRTH',
       'PASSPORT',
       'PROMPTPAY',
+      'ADDRESS',
     ])
   })
 })

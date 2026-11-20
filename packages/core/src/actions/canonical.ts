@@ -45,6 +45,11 @@ export function canonicalValue(entity: EntityType, folded: string): string {
 
     // Passport.
 
+    // Address.
+    case 'ADDRESS':
+      // Spacing and commas are how it was typed, not what it says.
+      return folded.replace(/[\s,]+/g, '')
+
     // PromptPay.
     case 'PROMPTPAY':
       // A QR payload is kept as written: its CRC covers every character. A proxy

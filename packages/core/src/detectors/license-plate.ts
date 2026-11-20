@@ -34,7 +34,7 @@ const PLATE = /[1-9]?(?:[ก-ฮ]{1,3}|[ก-ฮ]\s[ก-ฮ])[\s\p{Cf}\-‐-―�
  * customer who writes "กข 1234 เลยค่ะ" means the second. A Loei plate keeps its
  * province showing; the number is still hidden.
  */
-const PROVINCES: readonly string[] = [
+export const PROVINCES: readonly string[] = [
   'กระบี่',
   'กรุงเทพมหานคร',
   'กรุงเทพฯ',

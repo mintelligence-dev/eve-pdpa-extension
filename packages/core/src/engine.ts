@@ -28,6 +28,8 @@ const MERGE_PRIORITY: readonly EntityType[] = [
   // policy that wants PromptPay treated harder still gets it, because the stricter
   // action speaks for a shared span (settle.ts), whatever the rank.
   'PROMPTPAY',
+  // The longest and loosest claim: it wins a span on length, and this only breaks a tie.
+  'ADDRESS',
 ]
 
 function priorityOf(entity: EntityType): number {

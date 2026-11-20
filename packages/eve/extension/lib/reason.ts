@@ -14,6 +14,7 @@ const NAMES_TH: Readonly<Record<EntityType, string>> = {
   DATE_OF_BIRTH: 'วันเกิด',
   PASSPORT: 'เลขพาสปอร์ต',
   PROMPTPAY: 'พร้อมเพย์',
+  ADDRESS: 'ที่อยู่',
 }
 
 const NAMES_EN: Readonly<Record<EntityType, string>> = {
@@ -27,6 +28,7 @@ const NAMES_EN: Readonly<Record<EntityType, string>> = {
   DATE_OF_BIRTH: 'a date of birth',
   PASSPORT: 'a passport number',
   PROMPTPAY: 'a PromptPay ID',
+  ADDRESS: 'an address',
 }
 
 export type Language = 'th' | 'en'

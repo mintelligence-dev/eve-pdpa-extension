@@ -1,4 +1,5 @@
 import type { Detector } from '../types.js'
+import { addressDetector } from './address.js'
 import { bankAccountDetector } from './bank-account.js'
 import { creditCardDetector } from './credit-card.js'
 import { emailDetector } from './email.js'
@@ -31,9 +32,12 @@ export const BUILTIN_DETECTORS: readonly Detector[] = [
   // Passport.
   // PromptPay.
   promptpayDetector,
+  // Address.
+  addressDetector,
 ]
 
 export {
+  addressDetector,
   bankAccountDetector,
   creditCardDetector,
   emailDetector,
