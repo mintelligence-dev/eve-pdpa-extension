@@ -251,7 +251,7 @@ check(
     )
     await guard.process('เบอร์ ๐๙๑-๘๘๘-๗๗๗๗ ค่ะ', { sessionId: 'conv_8f2a', ref: 'msg_10293' })
     const e = scans()[0]
-    assert.equal(e.schemaVersion, '1.1')
+    assert.equal(e.schemaVersion, '2.0')
     assert.deepEqual(
       [e.type, e.sessionId, e.ref, e.boundary, e.outcome],
       ['scan', 'conv_8f2a', 'msg_10293', 'inbound', 'processed'],
@@ -305,7 +305,7 @@ check(
           `eventId ${id} shared by: ${list.map((e) => `${e.type}${e.type === 'scan' ? `(${e.boundary}, ${e.outcome})` : ''}`).join(' | ')}`,
         )
     for (const e of events) {
-      assert.match(e.at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+      assert.match(e.timestamp, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
       assert.equal(e.prevHash, null)
       if (e.type === 'scan') assert.ok(e.durationMs >= 0)
     }
