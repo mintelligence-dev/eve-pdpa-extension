@@ -182,20 +182,25 @@ Every time the guard runs, it calls `onAudit` with one event:
 
 ```json
 {
-  "schemaVersion": "1.1",
+  "schemaVersion": "2.0",
   "type": "scan",
+  "timestamp": "2026-11-20T04:20:10.339Z",
   "sessionId": "conv_8f2a",
   "ref": "msg_10293",
   "boundary": "inbound",
   "policy": { "hash": "fnv1a64:ee142dc8b1111706", "entitySet": "0.1" },
   "findings": [
     { "entity": "PHONE", "start": 6, "end": 18, "confidence": 0.99, "detector": "phone",
-      "action": "tokenise", "tokenId": "rfdbkfrtnsmbvpsh", "ttlSec": 300, "allowedPurposes": ["otp_send"] }
+      "action": "tokenise", "result": "applied", "tokenId": "rfdbkfrtnsmbvpsh", "ttlSec": 300, "allowedPurposes": ["otp_send"] }
   ],
   "outcome": "processed"
 }
 ```
 (Some fields left out for brevity · the full shape is in `@eve-pdpa-extension/core/schema/audit-event.schema.json`, which you can use to validate events in your log pipeline)
+
+- `action` is what the policy asked for · `result` is what happened: `applied` · `allowlisted` (let through, text as typed) · `failed` (could not be carried out, so the message was blocked) · `widened` (hidden together with an overlapping value; `tokenise` became `redact`)
+- `belowThreshold` (scan, when there were some): how many readings of each type were too weak to act on, e.g. `{ "PASSPORT": 2 }` — counts only, for deciding whether to lower `minConfidence`
+- `blockedBy` (blocked scans): the types that stopped the message · `errorCode` (error scans): the `PdpaError` code or `unexpected`, never the message
 
 - Write events as NDJSON (one event per line) as they are
 - `onAudit` is sync · if your destination is async, buffer first · if `onAudit` throws, the message still goes through, but it is counted in `guard.stats.auditSinkErrors` and passed to `onError(error, { source: 'audit_sink' })`

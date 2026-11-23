@@ -2,12 +2,14 @@ import { readFileSync } from 'node:fs'
 import Ajv2020 from 'ajv/dist/2020.js'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { BUILTIN_DETECTORS } from '../src/detectors/index.js'
+import { PdpaError } from '../src/errors.js'
 import { createGuard } from '../src/guard.js'
 import { definePolicy } from '../src/policy.js'
 import { createMemoryTokenStore } from '../src/tokens/memory-store.js'
 import type {
   Action,
   AuditRecord,
+  Candidate,
   Detector,
   EntityRule,
   EntityType,
@@ -237,6 +239,43 @@ describe('every event the guard emits passes the schema', () => {
     expect(out?.type === 'scan' && out.boundary).toBe('outbound')
   })
 
+  it('readings too weak to act on, a widened span, and a call that throws', () => {
+    // A national id failing its checksum (0.2) and a Luhn-valid card from no
+    // known issuer (0.6): both found, both under the default threshold.
+    build({ entitySet: '0.1', entities: {} }).guard.processSync(
+      'บัตร 3-1005-00123-45-9 บัตรเครดิต 9111 1111 1111 1110',
+    )
+    const script: Candidate[] = [
+      { entity: 'PHONE', start: 0, end: 10, confidence: 0.99, detector: '' },
+      { entity: 'BANK_ACCOUNT', start: 5, end: 15, confidence: 0.99, detector: '' },
+    ]
+    const scripted: Detector = {
+      id: 'scripted',
+      entities: ['PHONE', 'BANK_ACCOUNT'],
+      detect: () => script,
+    }
+    build(
+      {
+        entitySet: '0.1',
+        entities: { PHONE: ruleFor('tokenise'), BANK_ACCOUNT: ruleFor('redact') },
+      },
+      { detectors: [scripted] },
+    ).guard.processSync('x'.repeat(20), { sessionId: 'conv_a' })
+    const { guard } = build(
+      { entitySet: '0.1', entities: { PHONE: ruleFor('tokenise') } },
+      {
+        tokenStore: {
+          sync: false,
+          set: async () => {},
+          get: async () => undefined,
+          delete: async () => {},
+          clearSession: async () => {},
+        },
+      },
+    )
+    expect(() => guard.processSync('เบอร์ 0918887777')).toThrow(PdpaError)
+  })
+
   it('every way a resolve can end', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     const { guard } = build({
@@ -282,17 +321,17 @@ describe('the schema describes nothing the guard never writes', () => {
     expect(keysOf(scans.flatMap((s) => s.rendered ?? []))).toEqual(propsOf('rendered'))
   })
 
-  it('every resolve reason and every scan outcome but error appears', () => {
+  it('every resolve reason, every scan outcome and every finding result appears', () => {
     const reasons = new Set(
       seen.flatMap((e) => (e.type === 'token.resolve' && e.reason ? [e.reason] : [])),
     )
     expect(reasons).toEqual(new Set(schema.$defs.tokenResolve.properties.reason.enum))
-    // 'error' is reserved: today a failure the guard cannot handle throws (D4)
-    // and writes no event. Listed so a later release can without a new version.
     const outcomes = new Set(seen.flatMap((e) => (e.type === 'scan' ? [e.outcome] : [])))
-    expect([...outcomes, 'error'].sort()).toEqual(
-      [...schema.$defs.scan.properties.outcome.enum].sort(),
+    expect(outcomes).toEqual(new Set(schema.$defs.scan.properties.outcome.enum))
+    const results = new Set(
+      seen.flatMap((e) => (e.type === 'scan' ? e.findings.map((f) => f.result) : [])),
     )
+    expect(results).toEqual(new Set(schema.$defs.finding.properties.result.enum))
   })
 })
 

@@ -182,20 +182,25 @@ await guard.process('123-4-56789-0', { sessionId: 'conv_8f2a', context: 'รบ�
 
 ```json
 {
-  "schemaVersion": "1.1",
+  "schemaVersion": "2.0",
   "type": "scan",
+  "timestamp": "2026-11-20T04:20:10.339Z",
   "sessionId": "conv_8f2a",
   "ref": "msg_10293",
   "boundary": "inbound",
   "policy": { "hash": "fnv1a64:ee142dc8b1111706", "entitySet": "0.1" },
   "findings": [
     { "entity": "PHONE", "start": 6, "end": 18, "confidence": 0.99, "detector": "phone",
-      "action": "tokenise", "tokenId": "rfdbkfrtnsmbvpsh", "ttlSec": 300, "allowedPurposes": ["otp_send"] }
+      "action": "tokenise", "result": "applied", "tokenId": "rfdbkfrtnsmbvpsh", "ttlSec": 300, "allowedPurposes": ["otp_send"] }
   ],
   "outcome": "processed"
 }
 ```
 (ตัดบางช่องออกให้สั้น · หน้าตาเต็มอยู่ใน `@eve-pdpa-extension/core/schema/audit-event.schema.json` ใช้ตรวจ event ในระบบ log ของคุณได้)
+
+- `action` คือสิ่งที่ policy สั่ง · `result` คือสิ่งที่เกิดขึ้นจริง: `applied` ทำแล้ว · `allowlisted` ปล่อยผ่านตาม allowlist ข้อความเหมือนเดิม · `failed` ทำไม่ได้ ข้อความจึงถูกบล็อก · `widened` ปิดรวมกับค่าที่ซ้อนกัน `tokenise` ถูกลดเป็น `redact`
+- `belowThreshold` (ใน scan เมื่อมี) จำนวนค่าที่อ่านได้แต่คะแนนไม่ถึงเกณฑ์ แยกตามประเภท เช่น `{ "PASSPORT": 2 }` มีแค่ตัวเลข ใช้ดูว่าควรลด `minConfidence` ไหม
+- `blockedBy` (scan ที่ถูกบล็อก) ประเภทที่ทำให้ข้อความถูกบล็อก · `errorCode` (scan ที่ error) รหัสของ `PdpaError` หรือ `unexpected` ไม่มีข้อความ error
 
 - เขียนเป็น NDJSON (1 event ต่อ 1 บรรทัด) ได้เลย
 - `onAudit` เป็นแบบ sync · ถ้าปลายทางเป็น async ให้เก็บเข้า buffer ก่อน · ถ้า `onAudit` พัง ข้อความยังผ่าน แต่ถูกนับใน `guard.stats.auditSinkErrors` และส่งให้ `onError(error, { source: 'audit_sink' })`
