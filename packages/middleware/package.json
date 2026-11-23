@@ -1,0 +1,61 @@
+{
+  "name": "@eve-pdpa-extension/middleware",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Express, Hono and Next.js middleware that protects Thai personal data in chat request bodies before your handler, and in JSON replies on the way out.",
+  "keywords": [
+    "pdpa",
+    "thai",
+    "pii",
+    "privacy",
+    "personal-data",
+    "redact",
+    "middleware",
+    "express",
+    "hono",
+    "nextjs"
+  ],
+  "bugs": {
+    "email": "kunlachat@m-intelligence.tech"
+  },
+  "license": "Apache-2.0",
+  "author": "M Intelligence",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mintelligence-dev/eve-pdpa-extension.git",
+    "directory": "packages/middleware"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@eve-pdpa-extension/core": "workspace:^"
+  },
+  "scripts": {
+    "prepack": "node ../../scripts/copy-legal.mjs",
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "tsdown": "0.23.0",
+    "typescript": "5.9.3"
+  }
+}

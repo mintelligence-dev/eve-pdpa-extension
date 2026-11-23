@@ -388,6 +388,19 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
 
+  packages/middleware:
+    dependencies:
+      '@eve-pdpa-extension/core':
+        specifier: workspace:^
+        version: link:../core
+    devDependencies:
+      tsdown:
+        specifier: 0.23.0
+        version: 0.23.0(@arethetypeswrong/core@0.18.5)(publint@0.3.24)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
 packages:
 
   '@ai-sdk/gateway@4.0.116':
