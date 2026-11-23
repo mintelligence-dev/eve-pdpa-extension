@@ -5,6 +5,9 @@ import {
   containsAny,
   contextWindow,
   continuesList,
+  cueDistance,
+  cuesIn,
+  inLink,
   keyedAsTime,
   previousHasCue,
 } from './context.js'
@@ -45,6 +48,23 @@ const CARD_GROUPING = '1-4-5-2-1'
 const ID_CUES = ['บัตรประชาชน', 'ประชาชน', 'ปชช', 'เลขบัตร', 'id card', 'citizen', 'national id']
 
 /**
+ * Words that say a thirteen-digit number is something else: a post, a product,
+ * a barcode, an order, a parcel. "เลขโพสต์ 9610000015570" passed the checksum
+ * at 0.99 (issue, 20 Nov). Read in the number's own window and weighed against
+ * the id cues by distance: the nearer word names the number, and a tie stays
+ * an id. Not a reference or a bill: a Thai bill payment's Ref1 is the payer's
+ * national id more often than not.
+ */
+const NOT_AN_ID_CUES = ['โพสต์', 'รหัสสินค้า', 'สินค้า', 'บาร์โค้ด', 'ออเดอร์', 'คำสั่งซื้อ', 'พัสดุ']
+const NOT_AN_ID_CUE_WORDS = ['post', 'sku', 'barcode', 'order', 'tracking']
+
+/** True when a word for something else names the number and no id cue is as near. */
+function namedAsSomethingElse(text: string, start: number, end: number): boolean {
+  const other = cueDistance(text, start, end, (w) => cuesIn(w, NOT_AN_ID_CUES, NOT_AN_ID_CUE_WORDS))
+  return other < cueDistance(text, start, end, (w) => cuesIn(w, ID_CUES))
+}
+
+/**
  * One line break somewhere inside the thirteen digits, from a PDF, an email or
  * a form that wrapped the id where it ran out of room — not where the card
  * groups it, and with no cue word to go on. Taken when neither line could be a
@@ -64,17 +84,25 @@ function belongsToRun(ch: string): boolean {
   return isAsciiDigit(ch)
 }
 
-/** Passes the mod-11 check digit. */
-const CONFIDENCE_CHECKSUM = 0.99
+/**
+ * Evidence in points out of 100, as the 0.2 detectors keep it. The check digit
+ * is the evidence, so the base is high and no cue is needed; what stands round
+ * the number only takes points off when it says the number is something else.
+ */
+
+/** Base: passes the mod-11 check digit. */
+const CHECKSUM = 99
 /** Passes it, spaced in a way the card is not: beside a cue word, or wrapped onto two lines. */
-const CONFIDENCE_LOOSE = 0.97
+const LOOSE = 97
 /**
  * Right shape, wrong check digit — or right check digit under a key that names
  * a time (`keyedAsTime`): a LINE webhook's `"timestamp"` is
  * thirteen digits in milliseconds and passes the checksum one time in eleven
  * (user benchmark, 14 Oct, D20). Kept so a policy can ask to see near misses.
  */
-const CONFIDENCE_SHAPE_ONLY = 0.2
+const SHAPE_ONLY = 20
+/** Part of a link (`inLink`), or named as a post, a product or an order. */
+const NOT_AN_ID = 20
 
 export const thaiNationalIdDetector: Detector = {
   id: 'th-national-id',
@@ -115,17 +143,22 @@ export const thaiNationalIdDetector: Detector = {
             containsAny(contextWindow(input.text, start, end), ID_CUES) ||
             continuesList(input.text, start, listed))
         if (!asCard && !loosely) continue
-        if (valid) listed = end
+
+        let points = loosely ? LOOSE : valid ? CHECKSUM : SHAPE_ONLY
+        if (
+          points > NOT_AN_ID &&
+          (inLink(input.text, start, end) || namedAsSomethingElse(input.text, start, end))
+        ) {
+          points = NOT_AN_ID
+        }
+        // Only an id that stands may open a list for the next line to borrow.
+        if (points > NOT_AN_ID) listed = end
 
         found.push({
           entity: 'TH_NATIONAL_ID',
           start,
           end,
-          confidence: loosely
-            ? CONFIDENCE_LOOSE
-            : valid
-              ? CONFIDENCE_CHECKSUM
-              : CONFIDENCE_SHAPE_ONLY,
+          confidence: points / 100,
           detector: 'th-national-id',
         })
         from = to - 1
