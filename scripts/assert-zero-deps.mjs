@@ -118,7 +118,12 @@ try {
   // Raised to 1000 KB on 2026-11-05: 854,329 → 926,516 bytes, only dist/ and
   // its maps — the DATE_OF_BIRTH detector (0.2) and its Thai and English month
   // names. The front-page READMEs had already taken 800 KB worth to 854 KB.
-  const MAX_UNPACKED = 1000 * 1024
+  //
+  // Raised to 1100 KB on 2026-11-23: 1,038,716 bytes with PASSPORT, audit
+  // schema 2.0 and the link fixes for cards, ids and emails merged, only dist/
+  // and its maps. Shipping the maps is what quadruples every comment; whether
+  // to keep shipping them is the lead's call.
+  const MAX_UNPACKED = 1100 * 1024
   if (meta.unpackedSize > MAX_UNPACKED) {
     note(`tarball: unpacked ${meta.unpackedSize} bytes exceeds the ${MAX_UNPACKED} byte tripwire`)
   }
