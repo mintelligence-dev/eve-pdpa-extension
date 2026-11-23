@@ -23,6 +23,7 @@
    · เลขบัญชี
    · วันเกิด (ต้องมีคำบอกใบ้)
    · บัตรเครดิต · LINE user ID
+   · เลขพาสปอร์ต (ต้องมีคำบอกใบ้)
    ทั้งเลขไทยและเลขอารบิก
 2. **ปิดตาม policy** เลือกได้ต่อประเภท `redact` · `mask` · `tokenise` · `hash` · `flag` · `block` เช่น AI เห็น `[tok:…]` แต่ tool ส่ง OTP ได้เบอร์จริง และลูกค้าเห็น `xxx-xxx-7777`
 3. **บันทึก audit** ทุกครั้งที่ตรวจ โดยไม่มีค่าจริงอยู่ใน audit
@@ -120,6 +121,7 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
    · bank account
    · date of birth (with a cue word)
    · credit card · LINE user ID
+   · passport number (with a cue word)
    — in Thai or Arabic digits.
 2. **Protects them per your policy:** `redact` · `mask` · `tokenise` · `hash` · `flag` · `block`, chosen per type. For example, the AI sees `[tok:…]`, the OTP tool gets the real number, and the customer sees `xxx-xxx-7777`.
 3. **Audits every scan**, and an audit event never contains the real value.

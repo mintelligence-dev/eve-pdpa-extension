@@ -64,6 +64,7 @@ describe('no real value ever leaves the guard', () => {
       // Date of birth.
       'DATE_OF_BIRTH',
       // Passport.
+      'PASSPORT',
     ])
   })
 })

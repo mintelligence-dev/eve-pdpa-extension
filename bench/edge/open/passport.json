@@ -1,0 +1,365 @@
+{
+  "cases": [
+    {
+      "id": "pp-baseline-thai-cue-near",
+      "text": "เลขพาสปอร์ต [[PASSPORT:AC2847193]] ค่ะ",
+      "note": "baseline: Thai cue + AA1234567"
+    },
+    {
+      "id": "pp-fmt-space-after-letters",
+      "text": "หนังสือเดินทางเลขที่ [[PASSPORT:AD 7712048]] ครับ",
+      "note": "space between letters and digits (README shape)"
+    },
+    {
+      "id": "pp-fmt-dash-lower",
+      "text": "passport [[PASSPORT:ae-3365190]] นะคะ",
+      "note": "lower case with dash (README shape)"
+    },
+    {
+      "id": "pp-fmt-mixed-case",
+      "text": "พาสปอร์ต [[PASSPORT:Af9021836]] ค่ะ พิมพ์จากมือถือ",
+      "note": "auto-capitalised first letter only"
+    },
+    {
+      "id": "pp-fmt-thai-digits",
+      "text": "เลขหนังสือเดินทาง [[PASSPORT:AG๔๔๐๘๑๗๒]] ค่ะ",
+      "note": "Thai digits; README top says Thai or Arabic digits"
+    },
+    {
+      "id": "pp-fmt-fullwidth",
+      "text": "พาสปอร์ต [[PASSPORT:ＡＨ１１８７３６４]] ค่ะ",
+      "note": "full-width letters and digits (copied from a PDF form); README silent"
+    },
+    {
+      "id": "pp-fmt-en-dash",
+      "text": "passport no. [[PASSPORT:AJ–6650291]]",
+      "note": "en dash from iPhone smart punctuation; README lists dash only"
+    },
+    {
+      "id": "pp-fmt-dot-sep",
+      "text": "เลขพาสปอร์ต [[PASSPORT:AK.2219807]] ครับ",
+      "note": "dot between letters and digits; README lists space/dash only"
+    },
+    {
+      "id": "pp-fmt-double-space",
+      "text": "พาสปอร์ต [[PASSPORT:AL  8834012]] ค่ะ",
+      "note": "double space between letters and digits"
+    },
+    {
+      "id": "pp-fmt-digits-split",
+      "text": "เลขพาส [[PASSPORT:AM 557 0936]] ค่ะ",
+      "note": "out of scope per README: only AA1234567 / AA 1234567 / aa-1234567 are read; digits split 3+4 as read aloud"
+    },
+    {
+      "id": "pp-fmt-newline-after-cue",
+      "text": "เลขพาสปอร์ตค่ะ\n[[PASSPORT:AN3301758]]",
+      "note": "cue and value on separate lines (two bubbles pasted)"
+    },
+    {
+      "id": "pp-fmt-glued-thai",
+      "text": "พาสปอร์ต[[PASSPORT:AP7126489]]ค่ะ",
+      "note": "Thai glued on both sides, no spaces"
+    },
+
+    {
+      "id": "pp-cue-paspot-misspelt",
+      "text": "เลขพาสปอต [[PASSPORT:AR9947205]] ค่ะ",
+      "note": "common spelling พาสปอต"
+    },
+    {
+      "id": "pp-cue-lek-pas",
+      "text": "เลขพาส [[PASSPORT:AS2083617]] นะครับ",
+      "note": "short cue เลขพาส"
+    },
+    {
+      "id": "pp-cue-pas-right-before",
+      "text": "ส่งให้แล้วค่ะ พาส [[PASSPORT:AT6619340]]",
+      "note": "พาส right before the number (README: counts)"
+    },
+    { "id": "pp-cue-pp-no", "text": "PP No: [[PASSPORT:AU4472813]]", "note": "abbreviation PP No" },
+    {
+      "id": "pp-cue-passport-hash",
+      "text": "Passport# [[PASSPORT:AV1305926]] thx",
+      "note": "hash glued to cue"
+    },
+    {
+      "id": "pp-cue-after-number",
+      "text": "[[PASSPORT:AW8851074]] เลขพาสปอร์ตของแม่ค่ะ",
+      "note": "cue after the number"
+    },
+    {
+      "id": "pp-cue-far-earlier",
+      "text": "สวัสดีค่ะ จะส่งข้อมูลหนังสือเดินทางสำหรับทัวร์ญี่ปุ่นเดือนหน้านะคะ คุณพ่อชื่อสมชาย ใจดี เลขที่ [[PASSPORT:AX3726580]] ค่ะ",
+      "note": "cue far earlier in the same message"
+    },
+    {
+      "id": "pp-cue-typo-paspot-tho",
+      "text": "พาสปอท [[PASSPORT:AB5093721]] ค่ะ",
+      "note": "typo พาสปอท; README says 'such as'"
+    },
+    {
+      "id": "pp-cue-typo-english-pasport",
+      "text": "pasport [[PASSPORT:AC6604183]]",
+      "note": "English typo pasport"
+    },
+    {
+      "id": "pp-cue-lem-pas",
+      "text": "เล่มพาสใหม่เลข [[PASSPORT:AD1938274]] ค่ะ เล่มเก่าหมดอายุ",
+      "note": "เล่มพาส + เลข"
+    },
+    {
+      "id": "pp-cue-english-sentence",
+      "text": "Hi, my passport number is [[PASSPORT:AE5517320]], arriving on the 14th.",
+      "note": "English sentence, cue several words before"
+    },
+    {
+      "id": "pp-cue-hnangsue-full",
+      "text": "หมายเลขหนังสือเดินทาง: [[PASSPORT:AF2290471]]",
+      "note": "formal cue with colon"
+    },
+
+    {
+      "id": "pp-ctx-answer-only",
+      "text": "[[PASSPORT:AG7340915]]",
+      "context": "รบกวนขอเลขพาสปอร์ตของผู้เดินทางด้วยค่ะ",
+      "note": "answer-only turn"
+    },
+    {
+      "id": "pp-ctx-answer-with-particle",
+      "text": "[[PASSPORT:AH4061829]] ค่ะ",
+      "context": "ขอเลขหนังสือเดินทางเพื่อทำประกันการเดินทางนะคะ",
+      "note": "answer with particle"
+    },
+    {
+      "id": "pp-ctx-english-question",
+      "text": "[[PASSPORT:aj8812307]]",
+      "context": "Could you send your passport number for check-in?",
+      "note": "lower case answer to English question"
+    },
+    {
+      "id": "pp-ctx-asked-but-sent-booking",
+      "text": "ยังไม่ได้ทำพาสเลยค่ะ ตอนนี้มีแค่ booking [[~BOOKING:BK4820193]]",
+      "context": "ขอเลขพาสปอร์ตด้วยค่ะ",
+      "note": "context asks passport, customer gives booking ref"
+    },
+    {
+      "id": "pp-ctx-asked-parcel",
+      "text": "[[~PARCEL:EF4820193]] ค่ะ",
+      "context": "ขอเลขพัสดุที่ส่งเอกสารมาด้วยค่ะ",
+      "note": "Thai-shaped value answering a parcel question"
+    },
+    {
+      "id": "pp-ctx-outbound-confirm",
+      "text": "ยืนยันเลขหนังสือเดินทาง [[PASSPORT:AK3058126]] ถูกต้องไหมคะ",
+      "boundary": "outbound",
+      "note": "staff reads the number back"
+    },
+
+    {
+      "id": "pp-next-name-dob-phone",
+      "text": "ชื่อ นางสาวพิมพ์ชนก แสงทอง พาสปอร์ต [[PASSPORT:AL6172093]] วันเกิด [[DATE_OF_BIRTH:12/05/2533]] โทร [[PHONE:0891234567]]",
+      "note": "passport beside name, DOB and phone"
+    },
+    {
+      "id": "pp-next-email",
+      "text": "หนังสือเดินทาง [[PASSPORT:AM2948015]] อีเมล [[EMAIL:pimchanok.st@example.com]] ค่ะ",
+      "note": "passport then email"
+    },
+    {
+      "id": "pp-next-amount",
+      "text": "โอนค่าทัวร์ 25,900 บาทแล้วค่ะ พาสปอร์ต [[PASSPORT:AN8820461]]",
+      "note": "amount earlier in message"
+    },
+    {
+      "id": "pp-list-travellers",
+      "text": "เลขพาสปอร์ตผู้เดินทางค่ะ\n1. นายวิชัย [[PASSPORT:AP1047382]]\n2. นางมาลี [[PASSPORT:AP1047399]]\n3. ด.ญ.ใบเตย [[PASSPORT:AR5520178]]",
+      "note": "numbered list of three travellers, cue on header line"
+    },
+    {
+      "id": "pp-list-inline-comma",
+      "text": "พาสปอร์ต 2 ท่าน [[PASSPORT:AS3391028]], [[PASSPORT:AS3391035]] ค่ะ",
+      "note": "two numbers comma-separated after a count"
+    },
+    {
+      "id": "pp-json-blob",
+      "text": "{\"name\":\"Somsak\",\"passport_no\":\"[[PASSPORT:AT2264817]]\",\"nationality\":\"THA\"}",
+      "note": "JSON from a booking form webhook"
+    },
+    {
+      "id": "pp-emoji-after",
+      "text": "พาสปอร์ต [[PASSPORT:AU7731904]]🙏🏻 ฝากด้วยนะคะ",
+      "note": "emoji glued after value"
+    },
+    {
+      "id": "pp-parentheses",
+      "text": "แนบสำเนาหนังสือเดินทาง (เลข [[PASSPORT:AV4419206]]) แล้วค่ะ",
+      "note": "inside parentheses"
+    },
+    {
+      "id": "pp-with-national-id",
+      "text": "บัตรประชาชน [[TH_NATIONAL_ID:1101700203450]] พาสปอร์ต [[PASSPORT:AW6028173]] ค่ะ",
+      "note": "national id and passport side by side"
+    },
+    {
+      "id": "pp-url-after",
+      "text": "พาสปอร์ต [[PASSPORT:AX9013746]] รูปสแกนอยู่ในลิงก์นี้ค่ะ https://drive.example.com/f/9xQ2",
+      "note": "URL in same message"
+    },
+
+    {
+      "id": "pp-foreign-china-e8",
+      "text": "护照 passport [[PASSPORT:E73520418]] 谢谢",
+      "note": "Chinese E + 8 digits, English cue pressed against"
+    },
+    {
+      "id": "pp-foreign-us-9digits",
+      "text": "Passport No. [[PASSPORT:547382916]]",
+      "note": "US 9 digits with cue"
+    },
+    {
+      "id": "pp-foreign-japan-2l7d",
+      "text": "Japanese passport: [[PASSPORT:TK4829157]]",
+      "note": "Japanese 2 letters + 7 digits"
+    },
+    {
+      "id": "pp-foreign-korea-m8",
+      "text": "เลขพาสปอร์ตเกาหลี [[PASSPORT:M38472915]] ค่ะ",
+      "note": "Korean M + 8 digits, cue pressed against? (country word between)"
+    },
+    {
+      "id": "pp-foreign-india-l7",
+      "text": "passport [[PASSPORT:K4829173]] ครับ",
+      "note": "Indian letter + 7 digits"
+    },
+    {
+      "id": "pp-foreign-germany-alnum",
+      "text": "Reisepass / passport [[PASSPORT:C4J9R7TX2]]",
+      "note": "German 9 alphanumeric"
+    },
+    {
+      "id": "pp-foreign-france-2d2l5d",
+      "text": "passport no: [[PASSPORT:18FV42731]]",
+      "note": "French 2 digits + 2 letters + 5 digits"
+    },
+    {
+      "id": "pp-foreign-myanmar-2l6d",
+      "text": "พาสปอร์ตแรงงาน [[PASSPORT:MC482917]] ค่ะ",
+      "note": "Myanmar worker 2 letters + 6 digits"
+    },
+    {
+      "id": "pp-foreign-china-chinese-cue",
+      "text": "护照号码 [[PASSPORT:E59031746]]",
+      "note": "out of scope per README: cue in Chinese only, not a listed cue"
+    },
+    {
+      "id": "pp-foreign-answer-only-ctx",
+      "text": "[[PASSPORT:E61204837]]",
+      "context": "Please send your passport number",
+      "note": "out of scope per README: foreign passport read only with the cue pressed against it, not via context"
+    },
+    {
+      "id": "pp-foreign-no-cue",
+      "text": "Guest: Mr. John Carter, [[PASSPORT:563019284]]",
+      "note": "out of scope per README: foreign passport with no cue"
+    },
+
+    {
+      "id": "pp-decoy-wifi-pas-before",
+      "text": "ไวไฟห้อง ชื่อ HotelGuest พาส [[~PASSWORD:RM4820173]] ค่ะ",
+      "boundary": "outbound",
+      "note": "พาส means Wi-Fi password, right before a Thai-shaped value"
+    },
+    {
+      "id": "pp-decoy-password-colon",
+      "text": "password: [[~PASSWORD:QW8810372]]",
+      "note": "password never a cue"
+    },
+    {
+      "id": "pp-decoy-paswerd",
+      "text": "พาสเวิร์ดเข้าระบบ [[~PASSWORD:KB2290481]] ค่ะ ลืมบ่อย",
+      "note": "พาสเวิร์ด never a cue"
+    },
+    {
+      "id": "pp-decoy-pas-means-pass",
+      "text": "สอบพาสแล้วค่ะ รหัสใบประกาศ [[~SERIAL:CT4401827]]",
+      "note": "พาส meaning passed an exam"
+    },
+    {
+      "id": "pp-decoy-price-near-cue",
+      "text": "ค่าทำพาสปอร์ต [[~AMOUNT:1,000]] บาท เล่ม 10 ปี [[~AMOUNT:1,500]] บาทค่ะ",
+      "note": "prices right after the cue word"
+    },
+    {
+      "id": "pp-decoy-thaipost-after-cue",
+      "text": "ส่งพาสปอร์ตทางไปรษณีย์แล้วค่ะ เลขพัสดุ [[~PARCEL:EF482019375TH]]",
+      "note": "Thailand Post tracking after passport cue"
+    },
+    {
+      "id": "pp-decoy-booking-after-cue",
+      "text": "ส่งสำเนาพาสปอร์ตไปแล้วนะคะ booking no. [[~BOOKING:HB3048172]]",
+      "note": "booking ref with passport cue earlier"
+    },
+    {
+      "id": "pp-decoy-booking-and-real",
+      "text": "booking [[~BOOKING:BK7720461]] พาสปอร์ต [[PASSPORT:AB3361902]] ค่ะ",
+      "note": "booking ref and real passport in one line"
+    },
+    {
+      "id": "pp-decoy-order-no",
+      "text": "เลขออเดอร์ [[~ORDER:SO2048173]] ซองใส่พาสปอร์ตสีชมพูค่ะ",
+      "note": "order no. for a passport cover product"
+    },
+    {
+      "id": "pp-decoy-invoice",
+      "text": "ใบแจ้งหนี้เลขที่ [[~INVOICE:IV5530918]] ค่าวีซ่าและหนังสือเดินทาง",
+      "note": "invoice no. with passport word after"
+    },
+    {
+      "id": "pp-decoy-staff-id",
+      "text": "เจ้าหน้าที่ที่ดูแลเรื่องพาสปอร์ตของคุณ รหัสพนักงาน [[~EMPLOYEE:EM4820713]] ค่ะ",
+      "boundary": "outbound",
+      "note": "staff id after passport cue"
+    },
+    {
+      "id": "pp-decoy-sku-passport-cover",
+      "text": "ปกพาสปอร์ตหนังแท้ SKU [[~SKU:PC2041187]] เหลือกี่ชิ้นคะ",
+      "note": "SKU of a passport-cover product"
+    },
+    {
+      "id": "pp-decoy-serial-scanner",
+      "text": "เครื่องสแกนพาสปอร์ตเสีย S/N [[~SERIAL:SN4820193]] ค่ะ",
+      "note": "serial number of a passport scanner"
+    },
+    {
+      "id": "pp-decoy-pnr-after-cue",
+      "text": "เช็คอินต้องใช้พาสปอร์ตไหมคะ PNR [[~PNR:K7XQ2M]]",
+      "note": "6-char PNR after passport cue"
+    },
+    {
+      "id": "pp-decoy-flight",
+      "text": "พกพาสปอร์ตขึ้นเครื่อง [[~FLIGHT:TG628]] ด้วยนะคะ",
+      "boundary": "outbound",
+      "note": "flight number after passport cue"
+    },
+    {
+      "id": "pp-decoy-letter-o",
+      "text": "พาสปอร์ต [[~LOOKALIKE:AB12O4567]] ค่ะ",
+      "note": "letter O for 0; README says not corrected"
+    },
+    {
+      "id": "pp-decoy-too-long",
+      "text": "ลูกค้าพิมพ์เลขมาว่า พาสปอร์ต [[~INVALID_ID:AC284719305]] ค่ะ",
+      "note": "11 chars, longer than any passport shape"
+    },
+    {
+      "id": "pp-decoy-negated-member",
+      "text": "อันนี้ไม่ใช่เลขพาสปอร์ตนะคะ เป็นรหัสสมาชิก [[~MEMBER:MB4820193]]",
+      "note": "negated cue, then member code"
+    },
+    {
+      "id": "pp-decoy-no-cue-thai-shape",
+      "text": "รหัสโปรโมชั่น [[~SKU:TR2025118]] ใช้ได้ถึงสิ้นเดือนค่ะ",
+      "note": "Thai-shaped promo code, no cue"
+    }
+  ]
+}

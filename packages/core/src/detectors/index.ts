@@ -5,6 +5,7 @@ import { dateOfBirthDetector } from './date-of-birth.js'
 import { emailDetector } from './email.js'
 import { licensePlateDetector } from './license-plate.js'
 import { lineUserIdDetector } from './line-user-id.js'
+import { passportDetector } from './passport.js'
 import { phoneDetector } from './phone.js'
 import { thaiNationalIdDetector } from './thai-national-id.js'
 
@@ -30,6 +31,7 @@ export const BUILTIN_DETECTORS: readonly Detector[] = [
   // Date of birth.
   dateOfBirthDetector,
   // Passport.
+  passportDetector,
 ]
 
 export {
@@ -39,6 +41,7 @@ export {
   emailDetector,
   licensePlateDetector,
   lineUserIdDetector,
+  passportDetector,
   phoneDetector,
   thaiNationalIdDetector,
 }

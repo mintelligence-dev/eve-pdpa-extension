@@ -49,6 +49,9 @@ export function canonicalValue(entity: EntityType, folded: string): string {
       return dateOfBirthCanonical(folded) ?? folded.replace(/\s/g, '')
 
     // Passport.
+    case 'PASSPORT':
+      // aa 1234567 and AA-1234567 are one number. Letters are half of it and stay.
+      return folded.replace(/[^A-Za-z0-9]/g, '').toUpperCase()
 
     case 'PHONE':
       // +66 91 888 7777 and 091-888-7777 are one number.

@@ -1,0 +1,186 @@
+{
+  "business": "เอเจนซี่ทัวร์ วีซ่า และโรงแรม",
+  "conversations": [
+    {
+      "id": "th01",
+      "turns": [
+        {
+          "from": "shop",
+          "text": "ยืนยันการจองทัวร์ญี่ปุ่นค่ะ เลขที่จอง {BOOKING_REF:1} รบกวนส่งชื่อ+เลขหนังสือเดินทางของผู้เดินทางทุกท่านนะคะ"
+        },
+        {
+          "from": "customer",
+          "text": "1. {NAME:1} {PASSPORT:1}\n2. {NAME:2} {PASSPORT:2}\n3. {NAME:3} {PASSPORT:3}"
+        },
+        { "from": "shop", "text": "ได้รับแล้วค่ะ ยอดมัดจำ {AMOUNT:1} บาท โอนภายใน {DATE_DOTS:1} นะคะ" },
+        { "from": "customer", "text": "โอนแล้วค่ะ อ้างอิงเลขจอง {BOOKING_REF:1} นะคะ" }
+      ]
+    },
+    {
+      "id": "th02",
+      "turns": [
+        { "from": "shop", "text": "ขอเลขพาสปอร์ตคุณ{NAME:1}ด้วยค่ะ" },
+        { "from": "customer", "text": "แป๊บนะคะ หาเล่มอยู่ 555" },
+        { "from": "shop", "text": "ได้ค่ะ ไม่รีบนะคะ" },
+        { "from": "customer", "text": "{PASSPORT:1} ค่ะ" },
+        { "from": "customer", "text": "อ๊ะ เลขผิดค่ะ อันใหม่คือ {PASSPORT:2} อันเมื่อกี้เล่มเก่าหมดอายุไปแล้ว" }
+      ]
+    },
+    {
+      "id": "th03",
+      "turns": [
+        { "from": "customer", "text": "สวัสดีค่ะ สั่งทำวีซ่าเชงเก้นไว้ order {ORDER_NO:1} ค่ะ อยากถามสถานะ" },
+        { "from": "shop", "text": "เช็คให้นะคะ รบกวนขอเบอร์ติดต่อด้วยค่ะ" },
+        { "from": "customer", "text": "{PHONE:1} ค่ะ ส่วน pp no. {PASSPORT:1} เผื่อต้องใช้นะคะ" },
+        {
+          "from": "shop",
+          "text": "ยื่นสถานทูตแล้วค่ะ เลขติดตามคำร้อง {SHORT_CODE:1} นัดรับเล่มคืน {DATE_DOTS:1}"
+        },
+        { "from": "customer", "text": "ok ค่ะ ค่าบริการ {AMOUNT:1} โอนแล้วนะคะ" }
+      ]
+    },
+    {
+      "id": "th04",
+      "turns": [
+        { "from": "shop", "text": "ขอข้อมูลผู้เข้าพักเพื่อลงทะเบียนเช็คอินค่ะ" },
+        {
+          "from": "customer",
+          "text": "พาสปอต {PASSPORT:1} ของสามีค่ะ ของเรา หนังสือเดินทง {PASSPORT:2}"
+        },
+        { "from": "shop", "text": "ขอบคุณค่ะ ห้อง Deluxe {SHORT_CODE:1} ราคา {AMOUNT:1} ต่อคืนนะคะ" },
+        { "from": "customer", "text": "พาสสปอร์ทลูก {PASSPORT:3} ค่ะ ลืมส่ง" }
+      ]
+    },
+    {
+      "id": "th05",
+      "turns": [
+        {
+          "from": "customer",
+          "text": "จองห้องผ่าน agoda ค่ะ booking {BOOKING_REF:1} เช็คอิน {DATE_DOTS:1} ต้องใช้พาสปอร์ตตอนเช็คอินไหมคะ"
+        },
+        { "from": "shop", "text": "ใช้บัตรประชาชนหรือพาสปอร์ตตัวจริงค่ะ ไม่ต้องส่งเลขมาล่วงหน้านะคะ" },
+        { "from": "customer", "text": "โอเคค่ะ แล้วอีกห้องของเพื่อน {BOOKING_REF:2} รวมบิลกันได้ไหมคะ" },
+        { "from": "shop", "text": "ได้ค่ะ ยอดรวม {AMOUNT:1} บาทค่ะ" }
+      ]
+    },
+    {
+      "id": "th06",
+      "turns": [
+        {
+          "from": "shop",
+          "text": "Hi, for the visa extension please send your passport, phone and email ka"
+        },
+        {
+          "from": "customer",
+          "text": "Hi! here: {NAME:1}, {PASSPORT:1}, {PHONE:1}, {EMAIL:1}. My wife too: {NAME:2} {PASSPORT:2}"
+        },
+        {
+          "from": "shop",
+          "text": "Thank you ka. Fee is {AMOUNT:1} THB per person, appointment {DATE_DOTS:1}"
+        },
+        { "from": "customer", "text": "Great, our flight {SHORT_CODE:1} lands that morning" }
+      ]
+    },
+    {
+      "id": "th07",
+      "turns": [
+        { "from": "shop", "text": "รบกวนขอข้อมูลคุณแม่สำหรับทำวีซ่าค่ะ" },
+        {
+          "from": "customer",
+          "text": "ฟอร์เวิร์ดจากน้องสาวนะคะ\n---\nชื่อ: {NAME:1}\nเลขบัตร ปชช: {TH_NATIONAL_ID:1}\nวันเกิด: {DATE_OF_BIRTH:1}\nPassport No.: {PASSPORT:1}\nหมดอายุ: {DATE_DOTS:1}\n---"
+        },
+        { "from": "shop", "text": "ได้รับครบค่ะ" }
+      ]
+    },
+    {
+      "id": "th08",
+      "turns": [
+        { "from": "shop", "text": "ทัวร์เกาหลี {DATE_DOTS:1} ยังว่าง 4 ที่ค่ะ ส่งรายชื่อผู้เดินทางมาได้เลยค่ะ" },
+        { "from": "customer", "text": "{NAME:1}\n{PASSPORT:1}\n\n{NAME:2}\n{PASSPORT:2}" },
+        { "from": "shop", "text": "รับทราบค่ะ {AMOUNT:1} บาท/ท่าน เลขที่ใบจอง {ORDER_NO:1}" },
+        { "from": "customer", "text": "ขอใบเสร็จแยกคนนะคะ {ORDER_NO:1} ไม่ต้องรวม" }
+      ]
+    },
+    {
+      "id": "th09",
+      "turns": [
+        { "from": "shop", "text": "ช่วยพิมพ์เลขพาสอีกทีได้ไหมคะ รูปเบลอค่ะ" },
+        { "from": "customer", "text": "{PASSPORT:1} ค่ะ ของน้องด้วย {PASSPORT:2}" },
+        { "from": "shop", "text": "ได้ค่ะ ขอเบอร์ผู้ติดต่อฉุกเฉินด้วยค่ะ" },
+        { "from": "customer", "text": "{PHONE:1} พ่อค่ะ" }
+      ]
+    },
+    {
+      "id": "th10",
+      "turns": [
+        { "from": "shop", "text": "ขอเลขพาสปอร์ตเพื่อออกตั๋วค่ะ" },
+        {
+          "from": "customer",
+          "text": "ตอนนี้มีแค่เลขจอง {BOOKING_REF:1} ค่ะ พาสยังอยู่ที่บ้าน เดี๋ยวกลับไปถ่ายให้"
+        },
+        { "from": "customer", "text": "ได้แล้วค่ะ {PASSPORT:1}" },
+        { "from": "shop", "text": "ออกตั๋วแล้วค่ะ PNR {SHORT_CODE:1} ยอด {AMOUNT:1} บาท" }
+      ]
+    },
+    {
+      "id": "th11",
+      "turns": [
+        { "from": "customer", "text": "พาสหมดอายุ {DATE_DOTS:1} ยังจองทัวร์ได้ไหมคะ" },
+        { "from": "shop", "text": "ต้องเหลืออายุเกิน 6 เดือนค่ะ ถ้าต่อเล่มใหม่แล้วส่งเลขเล่มใหม่มานะคะ" },
+        {
+          "from": "customer",
+          "text": "ต่อแล้วค่ะ เล่มเก่า {PASSPORT:1} เล่มใหม่ {PASSPORT:2} ใช้อันใหม่นะคะ"
+        },
+        { "from": "shop", "text": "รับทราบค่ะ คำสั่งซื้อ {ORDER_NO:1} อัปเดตแล้วค่ะ" }
+      ]
+    },
+    {
+      "id": "th12",
+      "turns": [
+        { "from": "shop", "text": "สวัสดีค่ะ มีอะไรให้ช่วยคะ" },
+        { "from": "customer", "text": "{PASSPORT:1}" },
+        { "from": "customer", "text": "อันบนคือเลขพาสปอร์ตค่ะ จะจองแพ็กเกจภูเก็ต {DATE_DOTS:1}" },
+        { "from": "shop", "text": "ได้ค่ะ แพ็กเกจละ {AMOUNT:1} บาท ขอเบอร์ด้วยค่ะ" },
+        { "from": "customer", "text": "{PHONE:1}" }
+      ]
+    },
+    {
+      "id": "th13",
+      "turns": [
+        {
+          "from": "shop",
+          "text": "หัวหน้ากรุ๊ปรบกวนสรุปรายชื่อ+เลขหนังสือเดินทางลูกทัวร์ทั้งหมดค่ะ กรุ๊ป {BOOKING_REF:1}"
+        },
+        {
+          "from": "customer",
+          "text": "สรุปให้ค่ะ\n{NAME:1} - {PASSPORT:1}\n{NAME:2} - {PASSPORT:2}\n{NAME:3} - {PASSPORT:3}\n{NAME:4} - {PASSPORT:4} (เด็ก)\nขอห้องติดกับ {SHORT_CODE:1} นะคะ"
+        },
+        { "from": "shop", "text": "ครบค่ะ ยอดรวม {AMOUNT:1} บาท" }
+      ]
+    },
+    {
+      "id": "th14",
+      "turns": [
+        { "from": "customer", "text": "ขอเช็คข้อมูลที่ยื่นวีซ่าหน่อยค่ะ เลขคำร้อง {ORDER_NO:1}" },
+        {
+          "from": "shop",
+          "text": "ข้อมูลในระบบ: {NAME:1} พาสปอร์ต {PASSPORT:1} วันเกิด {DATE_OF_BIRTH:1} ถูกต้องไหมคะ"
+        },
+        { "from": "customer", "text": "ผิดค่ะ ที่ถูกคือ {PASSPORT:2} ตัวสุดท้ายพิมพ์ผิด" },
+        { "from": "shop", "text": "แก้ให้แล้วค่ะ ค่าแก้ไข {AMOUNT:1} บาทนะคะ" }
+      ]
+    },
+    {
+      "id": "th15",
+      "turns": [
+        { "from": "customer", "text": "ถึงโรงแรมแล้วค่ะ ไวไฟพาสอะไรคะ" },
+        { "from": "shop", "text": "รหัสไวไฟ {SHORT_CODE:1} ค่ะ รบกวนขอพาสปอร์ตแขกต่างชาติที่มาด้วยค่ะ" },
+        {
+          "from": "customer",
+          "text": "เพื่อนชื่อ {NAME:1} เลข {PASSPORT:1} ค่ะ ส่วนเราคนไทยใช้บัตร {TH_NATIONAL_ID:1}"
+        },
+        { "from": "shop", "text": "ขอบคุณค่ะ เลขที่ใบเสร็จ {ORDER_NO:1}" }
+      ]
+    }
+  ]
+}

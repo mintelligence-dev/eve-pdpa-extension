@@ -116,6 +116,8 @@ const MONTHS = [
   'ธ.ค.',
 ]
 
+const upper = () => 'ABCDEFGHJKLMNPRSTUVWXYZ'[Math.floor(rand() * 23)]
+
 /** A canonical value for one slot. The same {X:n} in a conversation reuses it. */
 function makeValue(entity) {
   switch (entity) {
@@ -147,6 +149,9 @@ function makeValue(entity) {
       return chance(0.5)
         ? `${1 + Math.floor(rand() * 28)} ${pick(MONTHS)} ${2500 + Math.floor(rand() * 50)}`
         : `${String(1 + Math.floor(rand() * 28)).padStart(2, '0')}/${String(1 + Math.floor(rand() * 12)).padStart(2, '0')}/${1960 + Math.floor(rand() * 45)}`
+    case 'PASSPORT':
+      // Two letters and seven digits, the evidenced Thai format. Made up, never a real number.
+      return `${upper()}${upper()}${digits(7)}`
     // Decoys: not personal data, labelled so a find there counts as an FP (D17).
     case 'ORDER_NO':
       // Nine digits from 6, 8 or 9: a mobile number that lost its 0, to the eye.
@@ -155,6 +160,9 @@ function makeValue(entity) {
       return `${1 + Math.floor(rand() * 9)}.${digits(3)}.${digits(3)}`
     case 'DATE_DOTS':
       return `${String(1 + Math.floor(rand() * 28)).padStart(2, '0')}.${String(1 + Math.floor(rand() * 12)).padStart(2, '0')}.${2560 + Math.floor(rand() * 10)}`
+    case 'BOOKING_REF':
+      // The passport's shape, as a hotel or an airline writes a booking code.
+      return `${upper()}${upper()}${digits(7)}`
     case 'SHORT_CODE':
       return pick(SHORT_CODES)
     default:
@@ -275,7 +283,7 @@ function disguise(entity, s) {
 
 const SLOT = /\{([A-Z_]+)(?::(\d+))?\}/g
 /** Slots that look like personal data and are not. Labelled DECOY, never measured. */
-const DECOYS = ['ORDER_NO', 'AMOUNT', 'DATE_DOTS', 'SHORT_CODE']
+const DECOYS = ['ORDER_NO', 'AMOUNT', 'DATE_DOTS', 'SHORT_CODE', 'BOOKING_REF']
 const KNOWN = new Set([
   'PHONE',
   'TH_NATIONAL_ID',
@@ -287,6 +295,7 @@ const KNOWN = new Set([
   'ADDRESS',
   'LICENSE_PLATE',
   'DATE_OF_BIRTH',
+  'PASSPORT',
   ...DECOYS,
 ])
 

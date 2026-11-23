@@ -1,0 +1,156 @@
+{
+  "cases": [
+    {
+      "id": "pps-baseline-hnangsue",
+      "text": "หนังสือเดินทาง [[PASSPORT:AB8016274]] ค่ะ ต่ออายุวีซ่าได้ไหม",
+      "note": "baseline Thai cue"
+    },
+    {
+      "id": "pps-fmt-dash-upper",
+      "text": "เลขพาสปอร์ต [[PASSPORT:AC-4471930]] ครับ",
+      "note": "dash, upper case"
+    },
+    {
+      "id": "pps-fmt-lower-space",
+      "text": "passport [[PASSPORT:ad 2093817]]",
+      "note": "lower case with space"
+    },
+    {
+      "id": "pps-fmt-thai-digits-space",
+      "text": "พาสปอร์ต [[PASSPORT:AE ๗๗๐๑๓๘๒]] ค่ะ",
+      "note": "Thai digits after space"
+    },
+    {
+      "id": "pps-fmt-slash",
+      "text": "เลขพาส [[PASSPORT:AF/3348201]] ค่ะ",
+      "note": "slash between letters and digits"
+    },
+    {
+      "id": "pps-fmt-newline-list",
+      "text": "ข้อมูลหนังสือเดินทาง\nชื่อ: ธนพล\nเลข:\n[[PASSPORT:AG9102837]]",
+      "note": "form-style lines, value on its own line"
+    },
+    {
+      "id": "pps-cue-paspot-colon",
+      "text": "พาสปอต: [[PASSPORT:AH5528103]]",
+      "note": "พาสปอต with colon"
+    },
+    {
+      "id": "pps-cue-pas-before-lower",
+      "text": "อ่อ ลืมค่ะ พาส [[PASSPORT:aj7710294]]",
+      "note": "พาส right before, lower case"
+    },
+    {
+      "id": "pps-cue-after-english",
+      "text": "[[PASSPORT:AK1184027]] is my passport no.",
+      "note": "English cue after the value"
+    },
+    {
+      "id": "pps-cue-far-hospital",
+      "text": "จองตรวจสุขภาพก่อนไปเรียนต่อค่ะ โรงพยาบาลขอหนังสือเดินทางด้วย ของหนูคือ [[PASSPORT:AL3059182]] ค่ะ",
+      "note": "cue far earlier, hospital"
+    },
+    {
+      "id": "pps-cue-typo-paspoth",
+      "text": "พาสพอร์ต [[PASSPORT:AM6640217]] ค่ะ",
+      "note": "typo พาสพอร์ต"
+    },
+    { "id": "pps-cue-ppt", "text": "PPT no. [[PASSPORT:AN2275019]]", "note": "abbreviation PPT" },
+    {
+      "id": "pps-ctx-answer-only-insurance",
+      "text": "[[PASSPORT:AP9036142]]",
+      "context": "เพื่อออกกรมธรรม์ประกันเดินทาง รบกวนขอเลขหนังสือเดินทางค่ะ",
+      "note": "answer-only, insurance"
+    },
+    {
+      "id": "pps-ctx-answer-two",
+      "text": "ของผม [[PASSPORT:AR4418207]] ของแฟน [[PASSPORT:AR4418214]]",
+      "context": "ขอเลขพาสปอร์ตทั้งสองท่านค่ะ",
+      "note": "two answers, context cue"
+    },
+    {
+      "id": "pps-ctx-asked-staff-no",
+      "text": "[[~EMPLOYEE:ST2049183]]",
+      "context": "ขอรหัสพนักงานของคุณด้วยค่ะ",
+      "note": "Thai-shaped staff id as answer"
+    },
+    {
+      "id": "pps-next-dob-email",
+      "text": "พาสปอร์ต [[PASSPORT:AS7120394]] เกิด [[DATE_OF_BIRTH:03/11/1991]] เมล [[EMAIL:thanapol.k@example.com]]",
+      "note": "passport, DOB, email"
+    },
+    {
+      "id": "pps-list-dash-bullets",
+      "text": "เลขหนังสือเดินทางค่ะ\n- คุณยาย [[PASSPORT:AT5503821]]\n- คุณตา [[PASSPORT:AT5503838]]",
+      "note": "bulleted list"
+    },
+    {
+      "id": "pps-emoji-before",
+      "text": "พาสปอร์ต👉[[PASSPORT:AU2817406]]",
+      "note": "emoji between cue and value"
+    },
+    {
+      "id": "pps-foreign-china-ea7",
+      "text": "passport [[PASSPORT:EA4920183]]",
+      "note": "Chinese e-passport EA + 7 digits"
+    },
+    {
+      "id": "pps-foreign-uk-9d",
+      "text": "UK passport number [[PASSPORT:128463095]]",
+      "note": "UK 9 digits"
+    },
+    {
+      "id": "pps-foreign-malaysia",
+      "text": "Malaysian passport: [[PASSPORT:A48291735]]",
+      "note": "Malaysia A + 8 digits"
+    },
+    {
+      "id": "pps-foreign-no-cue-list",
+      "text": "Guests: Ms. Lee [[PASSPORT:M50293817]]",
+      "note": "out of scope per README: foreign passport with no cue"
+    },
+    {
+      "id": "pps-decoy-wifi-password-thai",
+      "text": "รหัสไวไฟ (พาสเวิร์ด) [[~PASSWORD:GH5520871]] ค่ะ",
+      "boundary": "outbound",
+      "note": "password"
+    },
+    {
+      "id": "pps-decoy-kerry-after-cue",
+      "text": "ส่งเล่มพาสปอร์ตคืนทาง Kerry เลขพัสดุ [[~PARCEL:KEX4820193751]] ค่ะ",
+      "boundary": "outbound",
+      "note": "Kerry tracking after cue"
+    },
+    {
+      "id": "pps-decoy-order-after-cue",
+      "text": "สั่งกระเป๋าใส่พาสปอร์ต ออเดอร์ [[~ORDER:OD3381027]] ยังไม่ได้ของค่ะ",
+      "note": "order no. after passport cue"
+    },
+    {
+      "id": "pps-decoy-price-renewal",
+      "text": "ต่อพาสปอร์ตเด็ก [[~AMOUNT:500]] บาทใช่ไหมคะ",
+      "note": "price right after cue"
+    },
+    {
+      "id": "pps-decoy-flight-thai",
+      "text": "บิน [[~FLIGHT:FD3104]] เช้าพรุ่งนี้ อย่าลืมพาสปอร์ตนะคะ",
+      "boundary": "outbound",
+      "note": "flight number"
+    },
+    {
+      "id": "pps-decoy-lookalike-l-for-1",
+      "text": "พาสปอร์ต [[~LOOKALIKE:ACl284719]] ค่ะ",
+      "note": "lower-case L for 1"
+    },
+    {
+      "id": "pps-decoy-pass-annual",
+      "text": "บัตรพาสรายปีสวนสนุก เลขบัตร [[~MEMBER:AP3018274]] หมดอายุแล้วค่ะ",
+      "note": "theme-park annual pass card"
+    },
+    {
+      "id": "pps-decoy-too-short",
+      "text": "เลขสมาชิกสายการบิน [[~MEMBER:TG48201]] ค่ะ",
+      "note": "short frequent-flyer code"
+    }
+  ]
+}
