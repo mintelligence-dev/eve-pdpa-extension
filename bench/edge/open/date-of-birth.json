@@ -1,0 +1,245 @@
+{
+  "cases": [
+    {
+      "id": "dob-slash-be",
+      "text": "วันเกิด [[DATE_OF_BIRTH:12/05/2530]] ค่ะ",
+      "note": "baseline: cue + dd/mm/BE"
+    },
+    {
+      "id": "dob-dash-ce",
+      "text": "วันเกิด [[DATE_OF_BIRTH:03-11-1990]] ครับ",
+      "note": "dash separator, CE year"
+    },
+    {
+      "id": "dob-dot-be-single-digits",
+      "text": "วันเกิด [[DATE_OF_BIRTH:7.8.2528]] นะคะ",
+      "note": "dot separator, 1-digit day and month"
+    },
+    { "id": "dob-slash-single-digit-day-month", "text": "เกิด [[DATE_OF_BIRTH:5/1/2535]] ครับ" },
+    { "id": "dob-thai-month-full", "text": "เกิดวันที่ [[DATE_OF_BIRTH:21 มิถุนายน 2533]] ค่ะ" },
+    {
+      "id": "dob-thai-month-short-no-dots",
+      "text": "วันเกิด [[DATE_OF_BIRTH:9 กพ 2529]] ค่ะ",
+      "note": "abbreviation typed without dots"
+    },
+    {
+      "id": "dob-thai-month-colloquial-mina",
+      "text": "เกิด [[DATE_OF_BIRTH:14 มีนา 2534]] จ้า",
+      "note": "colloquial month มีนา"
+    },
+    {
+      "id": "dob-thai-month-colloquial-2digit-year",
+      "text": "วันเกิด [[DATE_OF_BIRTH:2 พฤษภา 36]] ค่ะ",
+      "note": "colloquial month + 2-digit year, cue pressed against it"
+    },
+    {
+      "id": "dob-duean-before-month-name",
+      "text": "เกิดวันที่ [[DATE_OF_BIRTH:18 เดือนตุลาคม 2527]] ค่ะ",
+      "note": "เดือน before the month name"
+    },
+    {
+      "id": "dob-numeric-month-with-duean-pi-words",
+      "text": "เกิดวันที่ [[DATE_OF_BIRTH:12 เดือน 5 ปี 2530]] ค่ะ",
+      "note": "spelled out: day, เดือน + number, ปี + year"
+    },
+    { "id": "dob-pho-so-dotted", "text": "วันเกิด [[DATE_OF_BIRTH:4 ก.ค. พ.ศ. 2525]] ค่ะ" },
+    {
+      "id": "dob-pho-so-no-dots-glued",
+      "text": "เกิด [[DATE_OF_BIRTH:30 กันยายน พศ2531]] ครับ",
+      "note": "พศ without dots glued to the year"
+    },
+    { "id": "dob-kho-so-ce", "text": "วันเกิด [[DATE_OF_BIRTH:15 ม.ค. ค.ศ. 1992]] ค่ะ" },
+    { "id": "dob-en-month-first", "text": "DOB: [[DATE_OF_BIRTH:May 12, 1987]]" },
+    { "id": "dob-en-day-first-abbr", "text": "birthday [[DATE_OF_BIRTH:3 Dec 1990]] ka" },
+    { "id": "dob-en-ordinal-day-first", "text": "born on [[DATE_OF_BIRTH:12th May 1987]]" },
+    {
+      "id": "dob-en-ordinal-month-first",
+      "text": "my birthday is [[DATE_OF_BIRTH:August 1st, 1995]] :)"
+    },
+    { "id": "dob-iso", "text": "DOB [[DATE_OF_BIRTH:1987-05-12]]" },
+    {
+      "id": "dob-ymd-slash",
+      "text": "วันเกิด [[DATE_OF_BIRTH:1991/10/07]] ค่ะ",
+      "note": "year-first with slashes"
+    },
+    { "id": "dob-thai-digits-numeric", "text": "เกิด [[DATE_OF_BIRTH:๑๒/๐๕/๒๕๓๐]] ค่ะ" },
+    { "id": "dob-thai-digits-thai-month", "text": "วันเกิด [[DATE_OF_BIRTH:๒๕ ธ.ค. ๒๕๓๘]] ค่ะ" },
+    { "id": "dob-fullwidth-digits", "text": "วันเกิด [[DATE_OF_BIRTH:１２/０５/２５３０]]" },
+    {
+      "id": "dob-fullwidth-slash",
+      "text": "วันเกิด [[DATE_OF_BIRTH:０８／０９／１９８９]]",
+      "note": "full-width digits and full-width slash"
+    },
+    {
+      "id": "dob-no-space-thai-month-glued-cue",
+      "text": "เกิด[[DATE_OF_BIRTH:12พ.ค.2530]]ค่ะ",
+      "note": "no spaces anywhere"
+    },
+    { "id": "dob-line-break-after-cue", "text": "วันเกิดค่ะ\n[[DATE_OF_BIRTH:19/04/2532]]" },
+    {
+      "id": "dob-line-break-inside",
+      "text": "วันเกิด [[DATE_OF_BIRTH:27\nเมษายน\n2532]]",
+      "note": "each part on its own line"
+    },
+    { "id": "dob-double-spaces", "text": "วันเกิด [[DATE_OF_BIRTH:6  มี.ค.  2531]] ค่ะ" },
+    { "id": "dob-spaces-around-slashes", "text": "วันเกิด [[DATE_OF_BIRTH:12 / 05 / 2530]] ค่ะ" },
+    {
+      "id": "dob-leap-day-be-valid",
+      "text": "เกิด [[DATE_OF_BIRTH:29/02/2531]] ค่ะ เกิดปีอธิกสุรทิน",
+      "note": "2531 = 1988, leap year"
+    },
+    {
+      "id": "dob-invalid-29feb-nonleap",
+      "text": "วันเกิด [[~INVALID_DATE:29/02/2530]] ค่ะ",
+      "note": "2530 = 1987, not leap; README says only real dates"
+    },
+    {
+      "id": "dob-invalid-31-april",
+      "text": "วันเกิด [[~INVALID_DATE:31 เม.ย. 2533]] ค่ะ",
+      "note": "README: no 31 April"
+    },
+    {
+      "id": "dob-us-order-month-first",
+      "text": "DOB [[DATE_OF_BIRTH:12/31/1988]]",
+      "note": "out of scope per README: day before month only; 12/31 is a US-style birthday"
+    },
+    { "id": "dob-cue-kerd-meua", "text": "ลูกสาวเกิดเมื่อ [[DATE_OF_BIRTH:8 ส.ค. 2561]] ค่ะ" },
+    { "id": "dob-cue-wdp-slash", "text": "ว/ด/ป เกิด [[DATE_OF_BIRTH:23/06/2529]]" },
+    { "id": "dob-cue-wdp-no-slash-dot", "text": "วดป.เกิด [[DATE_OF_BIRTH:06/06/2526]]" },
+    {
+      "id": "dob-cue-hbd-earlier",
+      "text": "เป็นลูกค้า HBD เดือนนี้ค่ะ [[DATE_OF_BIRTH:17/11/2535]] ขอรับคูปองด้วยค่ะ",
+      "note": "HBD as the only cue, a few words before"
+    },
+    { "id": "dob-cue-after-date", "text": "[[DATE_OF_BIRTH:02/02/2540]] วันเกิดหนูเองค่ะ" },
+    {
+      "id": "dob-cue-far-earlier",
+      "text": "ขอแจ้งวันเกิดเพื่อสมัครบัตรสมาชิกนะคะ ชื่อปรางค์ทิพย์ ชอบโทนสีครีม ไซซ์ M ไม่แพ้อะไร ส่วนวันที่ก็ [[DATE_OF_BIRTH:16/07/2534]] ค่ะ"
+    },
+    {
+      "id": "dob-context-answer-only",
+      "text": "[[DATE_OF_BIRTH:12/05/2530]] ค่ะ",
+      "context": "รบกวนขอวัน/เดือน/ปีเกิดเพื่อลงทะเบียนสมาชิกค่ะ"
+    },
+    {
+      "id": "dob-context-answer-2digit-year",
+      "text": "[[DATE_OF_BIRTH:12 พ.ค. 30]] ค่ะ",
+      "context": "ขอวันเกิดด้วยค่ะ",
+      "note": "README unclear whether a cue in context counts as 'pressed against' a 2-digit year"
+    },
+    {
+      "id": "dob-context-english",
+      "text": "[[DATE_OF_BIRTH:March 3, 1993]]",
+      "context": "May I have your date of birth please?"
+    },
+    {
+      "id": "dob-family-list-inline",
+      "text": "วันเกิดทุกคนนะคะ พ่อ [[DATE_OF_BIRTH:3/7/2501]] แม่ [[DATE_OF_BIRTH:15/1/2504]] น้อง [[DATE_OF_BIRTH:22/9/2555]]"
+    },
+    {
+      "id": "dob-family-list-numbered-lines",
+      "text": "ขอแจ้งวันเกิดผู้เอาประกันค่ะ\n1. นายสมชาย [[DATE_OF_BIRTH:11/11/2510]]\n2. นางสมศรี [[DATE_OF_BIRTH:04/03/2513]]\n3. ด.ญ.ใบเตย [[DATE_OF_BIRTH:30/12/2560]]",
+      "note": "list numbers before each name"
+    },
+    { "id": "dob-age-before", "text": "อายุ 38 ปี เกิด [[DATE_OF_BIRTH:12/05/2531]] ค่ะ" },
+    {
+      "id": "dob-after-national-id",
+      "text": "เลขบัตร [[TH_NATIONAL_ID:3100500123458]] วันเกิด [[DATE_OF_BIRTH:01/01/2525]]"
+    },
+    {
+      "id": "dob-outbound-confirm",
+      "text": "ยืนยันข้อมูลนะคะ วันเกิด [[DATE_OF_BIRTH:12/05/2530]] ถูกต้องไหมคะ",
+      "boundary": "outbound"
+    },
+    {
+      "id": "dob-birth-time-after",
+      "text": "ลูกเกิด [[DATE_OF_BIRTH:9 ม.ค. 2566]] เวลา 08.45 น. ค่ะ อยากผูกดวงตั้งชื่อ",
+      "note": "README: a time after counts against, but this is a birth time with the cue pressed on"
+    },
+    {
+      "id": "dob-insurance-with-policy-dates",
+      "text": "ผู้เอาประกัน วันเกิด [[DATE_OF_BIRTH:20/08/2528]] เริ่มคุ้มครอง [[~POLICY_START:01/12/2569]] ถึง [[~POLICY_END:01/12/2570]]",
+      "note": "a cue early in the message must not spread to policy dates"
+    },
+    {
+      "id": "dob-then-delivery-date",
+      "text": "วันเกิดลูก [[DATE_OF_BIRTH:5 ธ.ค. 2563]] อยากได้เค้กส่ง [[~DELIVERY_DATE:4 ธ.ค. 2569]] ค่ะ"
+    },
+    { "id": "dob-neg-delivery", "text": "ส่งของวันที่ [[~DELIVERY_DATE:12/05/2569]] ได้ไหมคะ" },
+    {
+      "id": "dob-neg-accident-kerd-wanthi",
+      "text": "อุบัติเหตุเกิดวันที่ [[~INCIDENT_DATE:3/10/2569]] ค่ะ เคลมได้ไหม",
+      "note": "README: เกิด meaning happened is not a cue"
+    },
+    { "id": "dob-neg-kerd-het", "text": "เกิดเหตุวันที่ [[~INCIDENT_DATE:15 ต.ค. 2569]] หน้าปากซอยค่ะ" },
+    {
+      "id": "dob-neg-transaction-date",
+      "text": "วันที่เกิดรายการ [[~TRANSACTION_DATE:28/10/2569]] ยอด 1,250 บาท"
+    },
+    {
+      "id": "dob-neg-kerd-meua-happened",
+      "text": "รายการนี้เกิดเมื่อ [[~TRANSACTION_DATE:2/11/2569]] แต่ยังไม่ได้ของเลยค่ะ"
+    },
+    {
+      "id": "dob-neg-shop-birthday",
+      "text": "วันเกิดร้านปีที่ 5 [[~SHOP_ANNIVERSARY:12/05/2569]] ลด 50% ทั้งร้าน",
+      "note": "decision: a shop's 'birthday' is an anniversary, not personal data"
+    },
+    {
+      "id": "dob-neg-year-only",
+      "text": "เกิดปี [[~YEAR_ONLY:2530]] ค่ะ",
+      "note": "README: a year on its own is not read"
+    },
+    { "id": "dob-neg-card-expiry", "text": "บัตรหมดอายุ [[~EXPIRY_DATE:11/05/2572]] ค่ะ" },
+    { "id": "dob-neg-issue-date", "text": "วันออกบัตร [[~ISSUE_DATE:12/05/2565]] ค่ะ" },
+    {
+      "id": "dob-neg-birthday-promo-range",
+      "text": "โปรวันเกิด ลูกค้าเกิดเดือนพฤษภาคมใช้โค้ดได้ [[~DATE_RANGE:1-31 พ.ค. 2569]]",
+      "note": "birthday words, but the date is a promotion range"
+    },
+    { "id": "dob-neg-appointment-time", "text": "นัดตรวจ [[~APPOINTMENT:20/11/2569]] 10:30 น. ค่ะ" },
+    { "id": "dob-neg-version", "text": "อัปเดตแอปเป็น v[[~VERSION:12.5.30]] แล้วค่ะ" },
+    {
+      "id": "dob-neg-box-dimensions",
+      "text": "ขนาดกล่อง [[~DIMENSIONS:20/10/15]] ซม. ค่ะ",
+      "note": "could read as 20 Oct 15"
+    },
+    {
+      "id": "dob-neg-cue-refused-phone",
+      "text": "เบอร์ [[PHONE:089-123-4567]] ค่ะ วันเกิดไม่สะดวกบอกนะคะ",
+      "note": "cue present, no date, phone with dashes"
+    },
+    {
+      "id": "dob-neg-negated-cue",
+      "text": "ไม่ใช่วันเกิดนะคะ [[~DELIVERY_DATE:12/05/2569]] คือวันที่อยากให้ของถึง"
+    },
+    {
+      "id": "dob-neg-birthday-gift-delivery",
+      "text": "ของขวัญวันเกิดแฟน ส่งถึง [[~DELIVERY_DATE:14/11/2569]] ทันไหมคะ"
+    },
+    {
+      "id": "dob-neg-context-delivery-answer",
+      "text": "[[~DELIVERY_DATE:12/05/2569]] ค่ะ",
+      "context": "สะดวกรับของวันไหนคะ"
+    },
+    { "id": "dob-neg-payment-due", "text": "ครบกำหนดชำระ [[~DUE_DATE:25/11/2569]] นะคะ" },
+    {
+      "id": "dob-typo-wan-ked",
+      "text": "วันเกด [[DATE_OF_BIRTH:10/10/2533]] ค่ะ",
+      "note": "typo วันเกด (missing vowel)"
+    },
+    { "id": "dob-space-inside-cue", "text": "วัน เกิด [[DATE_OF_BIRTH:25/03/2536]] ค่ะ" },
+    { "id": "dob-emoji-between-cue-and-date", "text": "วันเกิด 🎂 [[DATE_OF_BIRTH:07/07/2537]] ค่ะ" },
+    {
+      "id": "dob-mixed-en-cue-thai-date",
+      "text": "birthday หนู [[DATE_OF_BIRTH:13 ก.พ. 2539]] นะคะ"
+    },
+    { "id": "dob-cue-d-o-b-dotted", "text": "D.O.B. [[DATE_OF_BIRTH:21/01/1994]]" },
+    { "id": "dob-cue-date-of-birth-en", "text": "Date of birth: [[DATE_OF_BIRTH:9 Sep 1989]]" },
+    {
+      "id": "dob-evasion-spaced-digits",
+      "text": "วันเกิด [[DATE_OF_BIRTH:1 2 / 0 5 / 2 5 3 0]] ค่ะ",
+      "note": "evasion: a space between every digit"
+    }
+  ]
+}

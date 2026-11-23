@@ -1,6 +1,7 @@
 import type { Detector } from '../types.js'
 import { bankAccountDetector } from './bank-account.js'
 import { creditCardDetector } from './credit-card.js'
+import { dateOfBirthDetector } from './date-of-birth.js'
 import { emailDetector } from './email.js'
 import { licensePlateDetector } from './license-plate.js'
 import { lineUserIdDetector } from './line-user-id.js'
@@ -27,12 +28,14 @@ export const BUILTIN_DETECTORS: readonly Detector[] = [
   // License plate.
   licensePlateDetector,
   // Date of birth.
+  dateOfBirthDetector,
   // Passport.
 ]
 
 export {
   bankAccountDetector,
   creditCardDetector,
+  dateOfBirthDetector,
   emailDetector,
   licensePlateDetector,
   lineUserIdDetector,

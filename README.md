@@ -21,6 +21,7 @@
 1. **ตรวจ** เลขบัตรประชาชน · เบอร์โทร · อีเมล
    · ทะเบียนรถ (ต้องมีคำบอกใบ้)
    · เลขบัญชี
+   · วันเกิด (ต้องมีคำบอกใบ้)
    · บัตรเครดิต · LINE user ID
    ทั้งเลขไทยและเลขอารบิก
 2. **ปิดตาม policy** เลือกได้ต่อประเภท `redact` · `mask` · `tokenise` · `hash` · `flag` · `block` เช่น AI เห็น `[tok:…]` แต่ tool ส่ง OTP ได้เบอร์จริง และลูกค้าเห็น `xxx-xxx-7777`
@@ -117,6 +118,7 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
 1. **Detects:** Thai national ID · phone number · email
    · license plate (with a cue word)
    · bank account
+   · date of birth (with a cue word)
    · credit card · LINE user ID
    — in Thai or Arabic digits.
 2. **Protects them per your policy:** `redact` · `mask` · `tokenise` · `hash` · `flag` · `block`, chosen per type. For example, the AI sees `[tok:…]`, the OTP tool gets the real number, and the customer sees `xxx-xxx-7777`.

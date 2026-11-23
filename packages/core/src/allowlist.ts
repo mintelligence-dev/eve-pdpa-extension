@@ -1,5 +1,6 @@
 import { canonicalValue } from './actions/canonical.js'
 import { SEPARATORS } from './actions/separators.js'
+import { dateOfBirthCanonical } from './detectors/date-of-birth.js'
 import { PdpaError } from './errors.js'
 import { normalise } from './normalise.js'
 import type { EntityType, PolicyInput } from './types.js'
@@ -70,6 +71,8 @@ function digestEntity(folded: string): EntityType {
   if (/^[1-9]?[ก-ฮ]{1,3}[0-9]{1,4}$/.test(bare(folded))) return 'LICENSE_PLATE'
 
   // Date of birth.
+  // A date the detector would read whole, with its year in four digits.
+  if (dateOfBirthCanonical(folded) !== null && /\d{4}/.test(folded)) return 'DATE_OF_BIRTH'
 
   // Passport.
 
