@@ -3,6 +3,8 @@
 // node: builtins or Node-only globals. http claims the same web-standard
 // runtimes (D24): `node scripts/assert-no-node-builtins.mjs http`. It may
 // import core and call fetch — forwarding is its job — and nothing else.
+// middleware runs on the same runtimes and imports core only: it never calls
+// fetch, it rewrites the Request it is handed.
 //
 // This closes the two gaps the build cannot: tsdown's dependency check does not
 // inspect require() in the CJS output, and no bundler check sees a global that
@@ -19,11 +21,12 @@ const ROOT = resolve(import.meta.dirname, '..')
 const PACKAGES = {
   core: { imports: [], fetch: false },
   http: { imports: ['@eve-pdpa-extension/core'], fetch: true },
+  middleware: { imports: ['@eve-pdpa-extension/core'], fetch: false },
 }
 const PKG = process.argv[2] ?? 'core'
 const allowed = PACKAGES[PKG]
 if (allowed === undefined) {
-  process.stderr.write(`assert-no-node-builtins: no package "${PKG}" (core or http)\n`)
+  process.stderr.write(`assert-no-node-builtins: no package "${PKG}" (core, http or middleware)\n`)
   process.exit(1)
 }
 const DIST = resolve(ROOT, `packages/${PKG}/dist`)
