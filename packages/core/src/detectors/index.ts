@@ -2,6 +2,7 @@ import type { Detector } from '../types.js'
 import { bankAccountDetector } from './bank-account.js'
 import { creditCardDetector } from './credit-card.js'
 import { emailDetector } from './email.js'
+import { licensePlateDetector } from './license-plate.js'
 import { lineUserIdDetector } from './line-user-id.js'
 import { phoneDetector } from './phone.js'
 import { thaiNationalIdDetector } from './thai-national-id.js'
@@ -24,6 +25,7 @@ export const BUILTIN_DETECTORS: readonly Detector[] = [
   // The 0.2 detectors, one line each under its own heading, so the branch that
   // adds one merges in any order.
   // License plate.
+  licensePlateDetector,
   // Date of birth.
   // Passport.
 ]
@@ -32,6 +34,7 @@ export {
   bankAccountDetector,
   creditCardDetector,
   emailDetector,
+  licensePlateDetector,
   lineUserIdDetector,
   phoneDetector,
   thaiNationalIdDetector,

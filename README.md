@@ -19,6 +19,7 @@
 ### ทำอะไรได้
 
 1. **ตรวจ** เลขบัตรประชาชน · เบอร์โทร · อีเมล
+   · ทะเบียนรถ (ต้องมีคำบอกใบ้)
    · เลขบัญชี
    · บัตรเครดิต · LINE user ID
    ทั้งเลขไทยและเลขอารบิก
@@ -114,6 +115,7 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
 ### What it does
 
 1. **Detects:** Thai national ID · phone number · email
+   · license plate (with a cue word)
    · bank account
    · credit card · LINE user ID
    — in Thai or Arabic digits.

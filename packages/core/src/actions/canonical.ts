@@ -36,6 +36,10 @@ export function canonicalValue(entity: EntityType, folded: string): string {
     // to the default below.
 
     // License plate.
+    case 'LICENSE_PLATE':
+      // Series digit, letters and number with the separator taken off: กข 1234
+      // and กข-1234 are one plate. The letters stay; they are half the value.
+      return folded.replace(SEPARATORS, '')
 
     // Date of birth.
 
