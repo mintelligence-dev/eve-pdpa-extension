@@ -4,6 +4,7 @@
 
 ### Detection
 
+- An `@` in a link's path is no longer read as an address: `https://line.me/R/ti/p/@shop.com` and `instagram.com/@handle.name` were spanned from `//` as emails. A slash now ends the local part, as a space does, which also finds an address written right before one (`somchai@example.com/…`), missed until now.
 <!-- License plate -->
 - New entity type `LICENSE_PLATE`: a series digit, one to three Thai consonants and up to four digits, with the province printed under it when one follows (76 of the 77, without เลย). Every run of that shape is kept as a candidate and scored from what stands round it — a cue word, the other side's question, a province after it, a series digit and four digits for it; a count word after a small number, an amount, a room or table in front, an everyday word as the letters, house and other registrations against it — and the score is the confidence, so `minConfidence` is the dial: at the default 0.95 a plate is hidden only with a cue, at 0.7 also by its province and digits. `canonical` form is the plate without separators, so `hash` and allowlist entries match however it was written.
 <!-- Date of birth -->
