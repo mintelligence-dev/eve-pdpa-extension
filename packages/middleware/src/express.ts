@@ -1,11 +1,12 @@
-import type { EntityType } from '@eve-pdpa-extension/core'
-import { type AdapterOptions, BLOCKED_STATUS, blockedBody } from './options.js'
+import type { Boundary, EntityType } from '@eve-pdpa-extension/core'
+import { type AdapterOptions, blockedBody, blockedStatus, namesJson } from './options.js'
 import { protectBody } from './protect.js'
 
 /** The parts of Express's request and response this needs, so the package does not depend on Express. */
 export interface ExpressRequestLike {
   /** `any`, as express.json() gives it, so `req.body.chatId` reads as it does in Express. */
   body?: any
+  readonly headers?: Readonly<Record<string, string | string[] | undefined>>
 }
 export interface ExpressResponseLike {
   status(code: number): this
@@ -15,12 +16,26 @@ export type ExpressNext = (error?: unknown) => void
 
 export interface ExpressOptions<Req extends ExpressRequestLike = ExpressRequestLike>
   extends AdapterOptions<Req> {
-  /** The answer when the policy blocks a message. Default 422 with `blockedBy`. */
+  /**
+   * The answer when the policy blocks a message. `boundary` says which way it
+   * was going. Default 422 for a request and 502 for a reply, with `blockedBy`.
+   */
   readonly onBlocked?: (
     blockedBy: readonly EntityType[],
     req: Req,
     res: ExpressResponseLike,
+    boundary: Boundary,
   ) => void
+}
+
+/** A string body that holds JSON (express.text(), a raw parser): parsed, or undefined. */
+function jsonIn(text: string): { json: unknown } | undefined {
+  try {
+    const json: unknown = JSON.parse(text)
+    return typeof json === 'object' && json !== null ? { json } : undefined
+  } catch {
+    return undefined
+  }
 }
 
 /**
@@ -28,17 +43,36 @@ export interface ExpressOptions<Req extends ExpressRequestLike = ExpressRequestL
  *
  *   app.post('/chat', express.json(), pdpaExpress({ guard }), handler)
  *
- * With `responseFields`, `res.json` is checked on the way out too. A reply sent
- * another way — `res.send`, a stream — is not.
+ * With `responseFields`, a reply sent with `res.json` — or `res.send` with an
+ * object, which Express passes to `res.json` — is checked on the way out. A
+ * string sent with `res.send`, `res.jsonp` and a stream are not.
  */
 export function pdpaExpress<Req extends ExpressRequestLike>(
   options: ExpressOptions<Req>,
 ): (req: Req, res: ExpressResponseLike, next: ExpressNext) => void {
   return (req, res, next) => {
-    if (req.body === undefined) {
-      next(new TypeError('pdpaExpress: req.body is empty — put express.json() before it'))
+    let body: unknown = req.body
+    let asText = false
+    if (body === undefined) {
+      // No parser ran. A JSON request means express.json() is missing — say so
+      // rather than let the text through unread. Anything else (a form, a file,
+      // plain text) is passed through, as protectRequest does.
+      if (namesJson(String(req.headers?.['content-type'] ?? ''))) {
+        next(new TypeError('pdpaExpress: req.body is empty — put express.json() before it'))
+      } else {
+        next()
+      }
       return
     }
+    if (typeof body === 'string') {
+      // express.text() under a JSON body sent as text/plain: the handler may
+      // still JSON.parse it, so it is checked like any other.
+      const read = jsonIn(body)
+      if (read === undefined) return next()
+      body = read.json
+      asText = true
+    }
+
     const sessionId = options.sessionId?.(req)
     const ref = options.ref?.(req)
     const scope = {
@@ -47,23 +81,28 @@ export function pdpaExpress<Req extends ExpressRequestLike>(
       ...(ref === undefined ? {} : { ref }),
     }
     const send = res.json.bind(res)
-    const block = (blockedBy: readonly EntityType[]): void => {
-      if (options.onBlocked !== undefined) options.onBlocked(blockedBy, req, res)
-      else send.call(res.status(BLOCKED_STATUS), blockedBody(blockedBy))
+    const block = (blockedBy: readonly EntityType[], boundary: Boundary): void => {
+      if (options.onBlocked !== undefined) options.onBlocked(blockedBy, req, res, boundary)
+      else send.call(res.status(blockedStatus(boundary)), blockedBody(blockedBy, boundary))
     }
 
-    protectBody(req.body, {
-      ...scope,
-      ...(options.fields === undefined ? {} : { fields: options.fields }),
-    })
+    const fields = options.fields
+    Promise.resolve(options.context?.(req, body))
+      .then((context) =>
+        protectBody(body, {
+          ...scope,
+          ...(fields === undefined ? {} : { fields }),
+          ...(context === undefined ? {} : { context }),
+        }),
+      )
       .then((r) => {
-        if (!r.ok) return block(r.blockedBy)
-        req.body = r.body
+        if (!r.ok) return block(r.blockedBy, 'inbound')
+        if (r.changed) req.body = asText ? JSON.stringify(r.body) : r.body
         const responseFields = options.responseFields
         if (responseFields !== undefined) {
-          res.json = (body: unknown) => {
-            protectBody(body, { ...scope, fields: responseFields, boundary: 'outbound' })
-              .then((out) => (out.ok ? send(out.body) : block(out.blockedBy)))
+          res.json = (reply: unknown) => {
+            protectBody(reply, { ...scope, fields: responseFields, boundary: 'outbound' })
+              .then((out) => (out.ok ? send(out.body) : block(out.blockedBy, 'outbound')))
               .catch(next)
             return res
           }

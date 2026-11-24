@@ -10,22 +10,40 @@ export type FieldPath = string
 /**
  * Ready-made sets of paths for the request bodies chat apps send.
  *
- *   chat       every shape below: the default
- *   openai     Chat Completions: content as a string or as parts with text
- *   anthropic  Messages: the same two shapes
+ *   chat       every chat shape below: the default
+ *   openai     Chat Completions (content as a string or as parts) and the
+ *              Responses API (`input` as a string or as items)
+ *   anthropic  Messages: content as a string or as blocks with text
  *   ai-sdk     Vercel AI SDK: v4 messages with content, v5 with parts, and
  *              useCompletion's prompt
+ *   line       a LINE Messaging API webhook: each event's message text
  *
- * A system prompt is left out: it is the shop's own text, not the customer's.
+ * An item whose `role` is `system` or `developer` is skipped wherever a path
+ * walks an array: it is the shop's own instruction, not the customer's text,
+ * and it often carries the shop's own number on purpose.
  */
-export type Preset = 'chat' | 'openai' | 'anthropic' | 'ai-sdk'
+export type Preset = 'chat' | 'openai' | 'anthropic' | 'ai-sdk' | 'line'
+
+const OPENAI: readonly FieldPath[] = [
+  'messages[].content',
+  'messages[].content[].text',
+  'input',
+  'input[].content',
+  'input[].content[].text',
+]
+const ANTHROPIC: readonly FieldPath[] = ['messages[].content', 'messages[].content[].text']
+const AI_SDK: readonly FieldPath[] = ['messages[].content', 'messages[].parts[].text', 'prompt']
 
 export const PRESETS: Readonly<Record<Preset, readonly FieldPath[]>> = {
-  openai: ['messages[].content', 'messages[].content[].text'],
-  anthropic: ['messages[].content', 'messages[].content[].text'],
-  'ai-sdk': ['messages[].content', 'messages[].parts[].text', 'prompt'],
-  chat: ['messages[].content', 'messages[].content[].text', 'messages[].parts[].text', 'prompt'],
+  openai: OPENAI,
+  anthropic: ANTHROPIC,
+  'ai-sdk': AI_SDK,
+  chat: [...new Set([...OPENAI, ...ANTHROPIC, ...AI_SDK])],
+  line: ['events[].message.text'],
 }
+
+/** Array items written by the shop, not the customer. */
+const SKIPPED_ROLES: ReadonlySet<unknown> = new Set(['system', 'developer'])
 
 /** A preset by name, or the paths as given. */
 export function pathsOf(fields: Preset | readonly FieldPath[] | undefined): readonly FieldPath[] {
@@ -82,6 +100,7 @@ export function eachString(
       if (step.each) {
         if (!Array.isArray(value)) return
         value.forEach((item, i) => {
+          if (isObject(item) && SKIPPED_ROLES.has(item.role)) return
           reach(item, (next) => {
             value[i] = next
           })

@@ -4,7 +4,7 @@ import { eachString, type FieldPath, type Preset, pathsOf } from './fields.js'
 export interface ProtectOptions {
   /** A guard from createGuard. Its policy decides what is hidden and how. */
   readonly guard: Guard
-  /** Where the text is: a preset or paths. Default `chat`, every common shape. */
+  /** Where the text is: a preset or paths. Default `chat`, every common chat shape. */
   readonly fields?: Preset | readonly FieldPath[]
   /** The conversation. Required when the policy tokenises. */
   readonly sessionId?: string
@@ -12,15 +12,28 @@ export interface ProtectOptions {
   readonly ref?: string
   /** `inbound` (default) for what a customer sent; `outbound` for a reply. */
   readonly boundary?: Boundary
+  /**
+   * The other side's last message: for a customer's message, what the shop or
+   * the bot last asked ("ขอเลขบัญชีค่ะ"). Detectors read its cue words, so a
+   * reply that is only "123-4-56789-0" is still found. Given to every string
+   * the fields reach; never checked, changed or written to the audit log.
+   */
+  readonly context?: string
 }
 
 export type ProtectResult =
-  | { readonly ok: true; readonly body: unknown }
+  | {
+      readonly ok: true
+      readonly body: unknown
+      /** False when no text was rewritten: `body` is then the one passed in, untouched. */
+      readonly changed: boolean
+    }
   | { readonly ok: false; readonly blockedBy: readonly EntityType[] }
 
 /**
  * Runs every string the fields reach through the guard and returns a copy of
- * the body with each one protected. The body passed in is not changed.
+ * the body with each one protected. The body passed in is not changed, and is
+ * returned as it is when nothing in it needed protecting.
  *
  * When the policy blocks any of them, nothing is returned but the types that
  * stopped it: a body with one message blocked is not sent on with the rest.
@@ -35,6 +48,10 @@ export async function protectBody(body: unknown, options: ProtectOptions): Promi
     found.push({ value, set })
   })
 
+  // Whether anything was blocked is decided by the outcome, never by the list
+  // of types: a guard that blocks and names nothing must still stop the body.
+  let blocked = false
+  let changed = false
   const blockedBy: EntityType[] = []
   // One at a time, in order: a tokenising policy gives one value one token per
   // session, and the order is what makes the audit trail read like the chat.
@@ -42,14 +59,18 @@ export async function protectBody(body: unknown, options: ProtectOptions): Promi
     const r = await options.guard.process(value, {
       ...(options.sessionId === undefined ? {} : { sessionId: options.sessionId }),
       ...(options.ref === undefined ? {} : { ref: options.ref }),
+      ...(options.context === undefined ? {} : { context: options.context }),
       boundary: options.boundary ?? 'inbound',
     })
     if (r.outcome === 'blocked') {
+      blocked = true
       for (const e of r.blockedBy ?? []) if (!blockedBy.includes(e)) blockedBy.push(e)
-    } else {
+    } else if (r.text !== value) {
       set(r.text)
+      changed = true
     }
   }
 
-  return blockedBy.length > 0 ? { ok: false, blockedBy } : { ok: true, body: copy }
+  if (blocked) return { ok: false, blockedBy }
+  return changed ? { ok: true, body: copy, changed } : { ok: true, body, changed }
 }

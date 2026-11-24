@@ -52,15 +52,50 @@ describe('pdpaExpress', () => {
       'replied',
     )
     expect(sent).toEqual([
-      { status: 422, body: { error: 'pdpa_blocked', blockedBy: ['CREDIT_CARD'] } },
+      {
+        status: 422,
+        body: { error: 'pdpa_blocked', boundary: 'inbound', blockedBy: ['CREDIT_CARD'] },
+      },
     ])
   })
 
-  it('no body parser: an error that says so', async () => {
+  it('a JSON request with no body parser: an error that says so', async () => {
     const { guard } = build()
     const { res } = response()
-    const error = await run(pdpaExpress({ guard }), {}, res)
+    const req = { headers: { 'content-type': 'application/json' } }
+    const error = await run(pdpaExpress({ guard }), req, res)
     expect(String(error)).toMatch(/express\.json\(\)/)
+  })
+
+  it('a body that is not JSON is passed through, as protectRequest does', async () => {
+    const { guard } = build()
+    const { res } = response()
+    const req = { headers: { 'content-type': 'text/plain' } }
+    expect(await run(pdpaExpress({ guard }), req, res)).toBe('next')
+  })
+
+  it('context: read from req, may be async', async () => {
+    const { guard } = build()
+    const req = { body: { chatId: 'c1', prompt: '123-4-56789-0' } }
+    const { res } = response()
+    const mw = pdpaExpress({
+      guard,
+      context: async (r: typeof req) => (r.body.chatId === 'c1' ? 'ขอเลขบัญชีค่ะ' : undefined),
+    })
+    expect(await run(mw, req, res)).toBe('next')
+    expect(req.body).toEqual({ chatId: 'c1', prompt: '[เลขบัญชี]' })
+  })
+
+  it('a context lookup that fails goes to next(error)', async () => {
+    const { guard } = build()
+    const { res } = response()
+    const mw = pdpaExpress({
+      guard,
+      context: async () => {
+        throw new Error('store down')
+      },
+    })
+    expect(String(await run(mw, { body: { prompt: 'x' } }, res))).toMatch(/store down/)
   })
 
   it('with responseFields, res.json is checked on the way out', async () => {

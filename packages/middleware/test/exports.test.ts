@@ -16,6 +16,6 @@ describe('one install is enough', () => {
       onAudit: () => {},
     })
     const r = await mw.protectBody({ prompt: 'เบอร์ 0812345678' }, { guard })
-    expect(r).toEqual({ ok: true, body: { prompt: 'เบอร์ [เบอร์โทร]' } })
+    expect(r).toEqual({ ok: true, body: { prompt: 'เบอร์ [เบอร์โทร]' }, changed: true })
   })
 })

@@ -28,7 +28,11 @@ describe('protectRequest', () => {
     expect(r.ok).toBe(false)
     if (r.ok) return
     expect(r.response.status).toBe(422)
-    expect(await r.response.json()).toEqual({ error: 'pdpa_blocked', blockedBy: ['CREDIT_CARD'] })
+    expect(await r.response.json()).toEqual({
+      error: 'pdpa_blocked',
+      boundary: 'inbound',
+      blockedBy: ['CREDIT_CARD'],
+    })
   })
 
   it('onBlocked answers instead', async () => {
@@ -41,7 +45,7 @@ describe('protectRequest', () => {
     expect(await r.response.text()).toBe('ขออภัย ไม่สามารถรับเลขบัตรได้')
   })
 
-  it('not JSON: passed through; broken JSON: 400', async () => {
+  it('plain text that is not JSON: passed through; broken JSON: 400', async () => {
     const { guard } = build()
     const text = new Request('https://shop.test/x', { method: 'POST', body: `โทร ${PHONE}` })
     expect(await protectRequest(text, { guard })).toEqual({ ok: true, request: text })
@@ -121,5 +125,51 @@ describe('pdpaHono', () => {
     })
     expect(out?.status).toBe(422)
     expect(ran).toBe(false)
+  })
+})
+
+describe('context', () => {
+  const ACCOUNT = '123-4-56789-0'
+
+  it('protectRequest: an async lookup, given the parsed body, lets a bare reply be found', async () => {
+    const { guard, events } = build()
+    const asked = new Map([['U1', 'ขอเลขบัญชีค่ะ']])
+    const seen: unknown[] = []
+    const line = { events: [{ source: { userId: 'U1' }, message: { text: ACCOUNT } }] }
+    const r = await protectRequest(post(line), {
+      guard,
+      fields: 'line',
+      context: async (_request, body) => {
+        seen.push(body)
+        const b = body as typeof line
+        return asked.get(b.events[0]?.source.userId ?? '')
+      },
+    })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(seen).toEqual([line])
+    expect(await r.request.json()).toEqual({
+      events: [{ source: { userId: 'U1' }, message: { text: '[เลขบัญชี]' } }],
+    })
+    expect(JSON.stringify(events)).not.toContain('ขอเลขบัญชี')
+  })
+
+  it('without it the same reply passes, byte for byte', async () => {
+    const { guard } = build()
+    const request = post({ prompt: ACCOUNT })
+    const r = await protectRequest(request, { guard })
+    expect(r.ok && r.request).toBe(request)
+  })
+
+  it('a reply is checked without it', async () => {
+    const { guard } = build()
+    const handler = async () => Response.json({ reply: ACCOUNT })
+    const wrapped = withPdpa(handler, {
+      guard,
+      responseFields: ['reply'],
+      context: () => 'ขอเลขบัญชีค่ะ',
+    })
+    const res = await wrapped(post({ prompt: 'สวัสดี' }))
+    expect(await res.json()).toEqual({ reply: ACCOUNT })
   })
 })

@@ -41,6 +41,7 @@ describe('protectBody', () => {
           { role: 'user', content: 'เบอร์ [เบอร์โทร] ค่ะ' },
         ],
       },
+      changed: true,
     })
     expect(body.messages[1]?.content).toBe(`เบอร์ ${PHONE} ค่ะ`)
   })
@@ -66,6 +67,21 @@ describe('protectBody', () => {
       { guard },
     )
     expect(r).toEqual({ ok: false, blockedBy: ['CREDIT_CARD'] })
+  })
+
+  it('a guard that blocks and names no type still stops the body', async () => {
+    const { guard } = build()
+    const silent = {
+      ...guard,
+      process: async () => ({
+        text: '',
+        findings: [],
+        outcome: 'blocked' as const,
+        skippedDetectors: [],
+      }),
+    }
+    const r = await protectBody({ prompt: `บัตร ${CARD}` }, { guard: silent })
+    expect(r).toEqual({ ok: false, blockedBy: [] })
   })
 
   it('one value, one token in a session; ref and boundary reach audit', async () => {
@@ -97,5 +113,15 @@ describe('protectBody', () => {
   it('an unknown preset is a mistake, not a silent pass', async () => {
     const { guard } = build()
     await expect(protectBody({}, { guard, fields: 'gpt' as 'chat' })).rejects.toThrow(/preset/)
+  })
+
+  it('context: the question asked lets lets a bare reply be found, and is not logged', async () => {
+    const { guard, events } = build()
+    const body = { prompt: '123-4-56789-0' }
+    const without = await protectBody(body, { guard })
+    expect(without).toEqual({ ok: true, body, changed: false })
+    const withContext = await protectBody(body, { guard, context: 'ขอเลขบัญชีค่ะ' })
+    expect(withContext).toEqual({ ok: true, body: { prompt: '[เลขบัญชี]' }, changed: true })
+    expect(JSON.stringify(events)).not.toContain('ขอเลขบัญชี')
   })
 })
