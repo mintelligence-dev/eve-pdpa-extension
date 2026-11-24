@@ -222,4 +222,4 @@ Vercel เก็บ log ของ function 1 ชั่วโมง (Hobby) ห�
 
 ## License
 
-Apache-2.0
+MIT

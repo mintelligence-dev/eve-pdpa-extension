@@ -3,7 +3,7 @@
 > Mask Thai personal data in an [eve](https://eve.dev) agent before it reaches the model, gets recorded, or goes back to the customer.
 
 [![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/eve)](https://www.npmjs.com/package/@eve-pdpa-extension/eve)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
 [![Node](https://img.shields.io/badge/Node-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![eve](https://img.shields.io/badge/eve-0.80.1-black)](https://eve.dev)
 
@@ -484,4 +484,4 @@ Report it privately through GitHub: on the repository's **Security** tab choose 
 
 ## License
 
-Apache-2.0
+MIT

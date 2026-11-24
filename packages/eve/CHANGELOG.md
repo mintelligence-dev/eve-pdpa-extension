@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Licensed under MIT instead of Apache-2.0, as the other M Intelligence open-source projects are. Versions already published stay under Apache-2.0. The package no longer ships a `NOTICE` file.
 - The `eve` peer dependency is now `>=0.80.0 <0.81.0` instead of `*`. Only eve 0.80.x was ever supported; beside eve 1.x the package manager now warns or refuses at install, rather than the agent stopping only when it loads.
 
 ## 0.1.1

@@ -14,7 +14,7 @@
   "bugs": {
     "url": "https://github.com/mintelligence-dev/eve-pdpa-extension/issues"
   },
-  "license": "Apache-2.0",
+  "license": "MIT",
   "author": "M Intelligence",
   "repository": {
     "type": "git",
@@ -34,7 +34,6 @@
   "files": [
     "dist",
     "LICENSE",
-    "NOTICE",
     "CHANGELOG.md"
   ],
   "engines": {

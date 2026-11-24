@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### License
+
+- Licensed under MIT instead of Apache-2.0, as the other M Intelligence open-source projects are. Versions already published stay under Apache-2.0. The package no longer ships a `NOTICE` file.
+
 ### Detection
 
 - An `@` in a link's path is no longer read as an address: `https://line.me/R/ti/p/@shop.com` and `instagram.com/@handle.name` were spanned from `//` as emails. A slash now ends the local part, as a space does, which also finds an address written right before one (`somchai@example.com/…`), missed until now.

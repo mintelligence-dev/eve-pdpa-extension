@@ -3,7 +3,7 @@
 > Find out what Thai personal data is sitting in old chat exports — **without writing any code**. Run it before letting an AI read your chats, or before handing a file to someone else.
 
 [![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/cli)](https://www.npmjs.com/package/@eve-pdpa-extension/cli)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
 [![Node](https://img.shields.io/badge/Node-18.18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 
 > **This is a technical tool, not a certification of compliance with Thailand's Personal Data Protection Act (PDPA).**
@@ -240,4 +240,4 @@ Report it privately through GitHub: on the repository's **Security** tab choose 
 
 ## License
 
-Apache-2.0
+MIT
