@@ -28,7 +28,7 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
 4. **ตรวจโปรเจกต์ให้** `eve-pdpa-check` บอกชื่อ channel, model หรือ hook ที่ลืมห่อ
 5. **audit ไม่มีค่าจริง** ใช้ตัวตรวจจากแพ็กเกจ [`@eve-pdpa-extension/core`](../core) ได้แก่ เลขบัตรประชาชน, เบอร์โทร, อีเมล, เลขบัญชี, บัตรเครดิต และ LINE user ID และ audit event **ไม่มีค่าจริงอยู่ข้างใน**
 
-ใช้กับ Node 24 ขึ้นไป ทดสอบกับ eve **0.80.1** (eve ยังเป็น beta ให้รันเทสต์ทุกครั้งก่อนเปลี่ยนรุ่น)
+ใช้กับ Node 24 ขึ้นไป ทดสอบกับ eve **0.80.1** รองรับเฉพาะ eve 0.80.x · eve 1.x ซึ่งเป็นรุ่นที่ `npm install eve` ให้มาตอนนี้ยังไม่รองรับ ให้ติดตั้ง `eve@0.80.1` · ตั้งแต่รุ่นถัดจาก 0.1.1 peer dependency จะระบุช่วงนี้ไว้
 
 ## หลักความปลอดภัย
 
@@ -480,7 +480,7 @@ conversation = "<channelName>:<address>"   หรือ   "session:<eve session 
 
 ## แจ้งช่องโหว่
 
-อีเมลไปที่ **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[eve-pdpa-extension security]` ใช้ค่าสมมติในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
+แจ้งแบบส่วนตัวผ่าน GitHub ที่แท็บ **Security** ของ repository เลือก **Report a vulnerability** ([ลิงก์ตรง](https://github.com/mintelligence-dev/eve-pdpa-extension/security/advisories/new)) ห้ามเปิดเป็น issue สาธารณะ · ใช้ค่าสมมติในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
 
 ## License
 

@@ -47,3 +47,28 @@ corepack pnpm install
 corepack pnpm exec playwright install chromium   # once
 corepack pnpm verify
 ```
+
+## Pull requests
+
+`main` is protected: changes land through a pull request, and the `build`,
+`quality`, `constraints` and `eve` jobs must pass. User-visible changes add a
+line under `## Unreleased` in the package's `CHANGELOG.md`.
+
+Everyone taking part is expected to follow the
+[Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Releasing (maintainers)
+
+Versions and changelogs are edited by hand; there is no release tool.
+
+1. Set the version in `package.json`: `core` and `cli` share one version, `eve`
+   has its own. Keep `packages/core/src/version.ts` in step (a test checks it).
+2. Rename `## Unreleased` in each `CHANGELOG.md` to the version.
+3. Merge to `main`, then tag that commit: `v<version>` for core and cli,
+   `eve-v<version>` for eve. Push the tag.
+4. The `publish` workflow checks the tag against the versions and stages the
+   packages on npm. Nothing is installable until an owner approves each one on
+   npmjs.com → Staged Packages.
+5. Create a GitHub Release for the tag with the changelog section as its notes.
+
+Run the workflow by hand (Actions → publish → Run workflow) for a dry run.

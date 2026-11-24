@@ -28,7 +28,7 @@ Reply the customer sees   ส่ง OTP ไปที่ xxx-xxx-7777 แล้�
 4. **Checks your project:** `eve-pdpa-check` says by name which channel, model or hook you forgot to wrap.
 5. **Audits without real values:** detection comes from [`@eve-pdpa-extension/core`](../core) (Thai national ID, phone number, email, bank account, credit card and LINE user ID), and audit events **never contain the real value**.
 
-Node 24+, tested with eve **0.80.1**. eve is in beta: re-run the tests before moving to a new version.
+Node 24+, tested with eve **0.80.1**. Only eve 0.80.x is supported: eve 1.x, which `npm install eve` gives you today, is not supported yet, so install `eve@0.80.1`. From the release after 0.1.1 the peer dependency says so.
 
 ## Safeguards
 
@@ -480,7 +480,7 @@ The function every layer uses underneath: masks a string or an AI SDK `UserConte
 
 ## Reporting a vulnerability
 
-Email **kunlachat@m-intelligence.tech** with the subject line starting `[eve-pdpa-extension security]`. Reproduce with made-up values — never send real personal data.
+Report it privately through GitHub: on the repository's **Security** tab choose **Report a vulnerability** ([direct link](https://github.com/mintelligence-dev/eve-pdpa-extension/security/advisories/new)). Do not open a public issue. Reproduce with made-up values — never send real personal data.
 
 ## License
 

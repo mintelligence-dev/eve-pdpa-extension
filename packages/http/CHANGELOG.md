@@ -1,8 +1,8 @@
 # @eve-pdpa-extension/http
 
-## 0.1.0
+## Unreleased
 
-First release. Not yet published.
+Not yet published to npm; `package.json` stays at 0.0.0 until it is.
 
 - `createGateway` returns four handlers that take a web `Request` and return a `Response`: `/inbound` protects a customer's message and forwards it to `forwardTo`, `/outbound` checks the answer and sends it to `replyTo`, `/resolve` exchanges a token for its real value, `/end-session` deletes a chat's tokens.
 - Every request is checked against an HMAC-SHA256 signature over a timestamp, a scope and the body, and everything forwarded is signed the same way. The scope names what a signature is for (`inbound`, `outbound`, `resolve`, `end-session`, `forward`, `reply`), so one signed for one route or direction is refused by any other. `signRequest` and `verifyRequest` take the scope and are exported for the two ends. A missing, wrong or stale signature gets one answer, 401.

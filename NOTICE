@@ -11,10 +11,10 @@ Algorithms implemented from public specifications:
 
   - Thai national ID check digit — weighted mod-11, public administrative
     specification.
-  - (planned) SHA-256 and HMAC-SHA256 — to be implemented from FIPS 180-4 and
-    RFC 2104, verified against RFC 4231 and NIST CAVP vectors. Implemented from
-    the specification rather than adapted from an existing codebase, so that
-    this file does not need to carry another project's licence.
+  - SHA-256 and HMAC-SHA256 — implemented from FIPS 180-4 and RFC 2104, and
+    tested against published vectors. Implemented from the specification
+    rather than adapted from an existing codebase, so that this file does not
+    need to carry another project's licence.
 
 Datasets bundled with the library record their source and licence in
 data/LICENCES.md.

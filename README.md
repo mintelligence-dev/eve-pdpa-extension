@@ -25,6 +25,7 @@
    · บัตรเครดิต · LINE user ID
    · เลขพาสปอร์ต (ต้องมีคำบอกใบ้)
    ทั้งเลขไทยและเลขอารบิก
+   > ทะเบียนรถ วันเกิด และเลขพาสปอร์ต อยู่บน `main` แล้วแต่**ยังไม่ออกบน npm** · core 0.1.0 บน npm ตรวจ 6 ประเภทที่เหลือ ดู [CHANGELOG ของ core](packages/core/CHANGELOG.md)
 2. **ปิดตาม policy** เลือกได้ต่อประเภท `redact` · `mask` · `tokenise` · `hash` · `flag` · `block` เช่น AI เห็น `[tok:…]` แต่ tool ส่ง OTP ได้เบอร์จริง และลูกค้าเห็น `xxx-xxx-7777`
 3. **บันทึก audit** ทุกครั้งที่ตรวจ โดยไม่มีค่าจริงอยู่ใน audit
 4. **ตรวจไฟล์แชทเก่า** โดยไม่ต้องเขียนโค้ด รองรับ JSONL · CSV · ไฟล์ export จาก LINE OA
@@ -96,7 +97,7 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
 
 - ยังไม่ตรวจชื่อคนและที่อยู่ (วางแผนไว้ 0.2)
 - เลขบัญชี เบอร์ที่ไม่มี 0 นำหน้า และประเภทที่เขียนว่า "ต้องมีคำบอกใบ้" ด้านบน ต้องมีคำบอกใบ้ เช่น "เลขบัญชี" "เบอร์" หรือส่ง `context`
-- eve: HTTP channel ของ eve ยังไม่ถูกปิดตอนขาออก และ eve 1.0.0-rc.1 ยังไม่รองรับ
+- eve: HTTP channel ของ eve ยังไม่ถูกปิดตอนขาออก และรองรับเฉพาะ **eve 0.80.x** · eve 1.x (รุ่น `latest` บน npm ตอนนี้) ยังไม่รองรับ ให้ติดตั้ง `eve@0.80.1`
 - ตัวเลขความแม่นยำวัดจากข้อมูลสังเคราะห์ จึงเป็นค่าสูงสุดที่ทำได้ ไม่ใช่ค่าที่จะเจอจริง
 
 รายการเต็มอยู่ในหัวข้อข้อจำกัดของ [core](packages/core/README.th.md#ข้อจำกัดที่รู้อยู่) และ [eve](packages/eve/README.th.md#ข้อจำกัดที่ควรรู้)
@@ -123,6 +124,7 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
    · credit card · LINE user ID
    · passport number (with a cue word)
    — in Thai or Arabic digits.
+   > License plates, dates of birth and passport numbers are on `main` but **not on npm yet**: core 0.1.0 on npm detects the other six. See core's [CHANGELOG](packages/core/CHANGELOG.md).
 2. **Protects them per your policy:** `redact` · `mask` · `tokenise` · `hash` · `flag` · `block`, chosen per type. For example, the AI sees `[tok:…]`, the OTP tool gets the real number, and the customer sees `xxx-xxx-7777`.
 3. **Audits every scan**, and an audit event never contains the real value.
 4. **Scans old chat exports** without writing code: JSONL · CSV · LINE OA exports.
@@ -180,7 +182,7 @@ See the code sample in the Thai section, or the full flow (resolving a token in 
 
 - Names and addresses are not detected yet (planned for 0.2).
 - Bank accounts, phone numbers without a leading 0, and the types marked "with a cue word" above, need a cue such as "เลขบัญชี" or "เบอร์", or pass `context`.
-- eve: eve's HTTP channel is not masked on the way out, and eve 1.0.0-rc.1 is not supported yet.
+- eve: eve's HTTP channel is not masked on the way out, and only **eve 0.80.x** is supported. eve 1.x — what `latest` on npm installs today — is not supported yet: install `eve@0.80.1`.
 - Accuracy figures come from synthetic data, so they are an upper bound, not what you will see in production.
 
 The full lists are under Known limitations in the [core](packages/core/README.md#known-limitations) and [eve](packages/eve/README.md#known-limitations) READMEs.

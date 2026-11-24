@@ -334,7 +334,7 @@ See [`@eve-pdpa-extension/cli`](https://www.npmjs.com/package/@eve-pdpa-extensio
 
 ## Reporting a vulnerability
 
-Email **kunlachat@m-intelligence.tech** with the subject line starting `[eve-pdpa-extension security]`. Reproduce with made-up values — never send real personal data.
+Report it privately through GitHub: on the repository's **Security** tab choose **Report a vulnerability** ([direct link](https://github.com/mintelligence-dev/eve-pdpa-extension/security/advisories/new)). Do not open a public issue. Reproduce with made-up values — never send real personal data.
 
 ## License
 

@@ -1,12 +1,16 @@
 # Security Policy
 
 `eve-pdpa-extension` handles Thai personal data. A vulnerability here can expose
-real people's national ID numbers, phone numbers and addresses.
+real people's national ID numbers, phone numbers and bank accounts.
 
 ## Reporting a vulnerability
 
-Email **kunlachat@m-intelligence.tech** with the subject line starting
-`[eve-pdpa-extension security]`. Include the version, the runtime, and the
+Please do not open a public issue for a security problem.
+
+Report it privately through GitHub: on the repository's **Security** tab choose
+**Report a vulnerability**
+([direct link](https://github.com/mintelligence-dev/eve-pdpa-extension/security/advisories/new)).
+Only the maintainers see the report. Include the version, the runtime, and the
 smallest input that reproduces the problem.
 
 We aim to acknowledge within 3 working days and to ship a fix or a mitigation

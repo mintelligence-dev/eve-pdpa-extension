@@ -1,5 +1,13 @@
 # @eve-pdpa-extension/ner
 
+Adapter that calls a NER model; no model bytes live here. Node only. **Planned for 0.3 — not started.** No model has been chosen, and NER itself is not confirmed: every candidate's licence has to be audited first.
+
+There is **no `package.json` here on purpose**: pnpm does not see the folder, so CI never reports a green build for a package with no code. Add a `package.json` when work starts and pnpm picks it up on the next install.
+
+---
+
+## ภาษาไทย
+
 Adapter เรียกโมเดล NER — ไม่มี model bytes อยู่ในนี้ · Node เท่านั้น · **เริ่ม 0.3**
 
 ยังไม่เลือกโมเดล และยังไม่ยืนยันว่าจะใช้ NER — ต้อง audit licence ทุก candidate ก่อน

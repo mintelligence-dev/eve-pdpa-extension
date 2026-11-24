@@ -1,10 +1,10 @@
-# FINDINGS — first run, 13 Oct
+# FINDINGS — first run, 13 Oct 2026
 
-The integrator was cut off before it could write this file (its write was refused, and its
-hand-back never arrived). This page was compiled by the main session from the integrator's own
-failing checks (`features/*.check.mjs`), `out/report-*.md`, `out/cli-report.md` and
-`COVERAGE.md`. Items marked **verified** were reproduced again outside the sandbox. Behaviour
-only; causes are left to whoever fixes them.
+A record of what the first user-bench run found, before 0.1.0 was published. It is kept as
+history, not as a list of open bugs: items say where they were fixed, and the package
+CHANGELOGs and READMEs are the current word on the rest. Compiled from the failing checks (`features/*.check.mjs`), the run's
+reports and `COVERAGE.md`. Items marked **verified** were reproduced a second time by hand.
+Codes in brackets (`OV1b`, `CL-leak-id` …) are check ids in `features/` and `cli-checks/`.
 
 ## 🔴 Personal data reaches the output
 
