@@ -101,6 +101,17 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
 
 รายการเต็มอยู่ในหัวข้อข้อจำกัดของ [core](packages/core/README.th.md#ข้อจำกัดที่รู้อยู่) และ [eve](packages/eve/README.th.md#ข้อจำกัดที่ควรรู้)
 
+### แผนงาน
+
+ยังไม่มีกำหนดเวอร์ชัน ลำดับอาจเปลี่ยนได้
+
+- **ชื่อคน ที่อยู่ และพร้อมเพย์** มีโค้ดอยู่บน branch `feat/promptpay` แล้ว รอรีวิวและรวมเข้า `main`
+- **eve 1.x** แพ็กเกจ eve ตอนนี้รองรับเฉพาะ eve 0.80.x
+- **ปิดข้อมูลขาออกของ HTTP channel** ใน eve
+- **โหลด policy จากไฟล์** (`@eve-pdpa-extension/policy`) อ่าน YAML และตรวจ policy เต็มรูปแบบ ใช้ได้เฉพาะ Node จึงแยกจาก core ที่ไม่มี dependency
+- **MCP server** (`@eve-pdpa-extension/mcp`) มี tool `pdpa.scan` และ `pdpa.redact` ให้ AI agent เรียกใช้
+- **ตรวจชื่อด้วยโมเดล NER** (`@eve-pdpa-extension/ner`) แยกจาก core เพราะโมเดลมีขนาดหลายร้อย MB ยังไม่ได้เลือกโมเดล ต้องตรวจ license ก่อน
+
 ### ร่วมพัฒนา
 
 ยินดีรับ issue และ pull request ก่อนส่ง PR ให้รัน `corepack pnpm verify` ให้ผ่าน **ห้าม commit ข้อมูลส่วนบุคคลจริง** ทั้งในเทสต์ fixture issue และ commit message ดูกฎทั้งหมดใน [CONTRIBUTING.md](CONTRIBUTING.md) · แจ้งช่องโหว่ตาม [SECURITY.md](SECURITY.md)
@@ -186,6 +197,17 @@ See the code sample in the Thai section, or the full flow (resolving a token in 
 
 The full lists are under Known limitations in the [core](packages/core/README.md#known-limitations) and [eve](packages/eve/README.md#known-limitations) READMEs.
 
+### Roadmap
+
+No versions are promised, and the order may change.
+
+- **Person names, addresses and PromptPay IDs.** The code is on the `feat/promptpay` branch, waiting for review.
+- **eve 1.x.** The eve package supports eve 0.80.x only.
+- **Masking eve's HTTP channel on the way out.**
+- **Policy files from disk** (`@eve-pdpa-extension/policy`): YAML and full validation. Node only, so it stays out of the zero-dependency core.
+- **An MCP server** (`@eve-pdpa-extension/mcp`) with `pdpa.scan` and `pdpa.redact` tools for AI agents.
+- **Name detection with an NER model** (`@eve-pdpa-extension/ner`), kept out of core because a model is hundreds of MB. No model is chosen yet; every candidate's licence has to be checked first.
+
 ### Project layout
 
 ```
@@ -193,7 +215,6 @@ packages/core/       @eve-pdpa-extension/core   zero deps · every runtime · 15
 packages/cli/        @eve-pdpa-extension/cli    Node only
 packages/eve/        @eve-pdpa-extension/eve    eve adapter: channel · tool · model · outbound · hook · Node 24+
 packages/http/       @eve-pdpa-extension/http   gateway · not on npm · deployed with a Deploy to Vercel button
-packages/{policy,ner,ner-model-th,mcp}/   README only · not started
 
 examples/            example policy files
 bench/               chat templates and the accuracy harness · generated data stays out of git
