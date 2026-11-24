@@ -96,7 +96,8 @@ describe('scan', () => {
     const r = await report('scan', many, '--policy', POLICY)
     expect(r.records.blocked).toBe(0)
     expect(r.actions).toEqual({ tokenise: 12_000 })
-  })
+    // 2.1 s on CI before vitest 5.1.1, 3.2 s after: too close to the 5 s default.
+  }, 15_000)
 
   it('reads the fields it is told to', async () => {
     const custom = file(jsonl({ msgId: 'abc', message: 'เบอร์ 0918887777' }))
