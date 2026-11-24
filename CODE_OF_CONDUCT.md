@@ -12,6 +12,7 @@ synthetic values.
 
 ## Reporting
 
-Report unacceptable behaviour to **kunlachat@m-intelligence.tech**. Reports are
-handled in confidence. Maintainers may remove comments, commits and
+If you see or experience behaviour that breaks this code, contact the
+maintainers at M Intelligence through <https://m-intelligence.tech>. Reports
+are handled in confidence. Maintainers may remove comments, commits and
 contributions that break this code, and may block repeat offenders.

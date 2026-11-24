@@ -218,7 +218,7 @@ Vercel เก็บ log ของ function 1 ชั่วโมง (Hobby) ห�
 
 ## แจ้งช่องโหว่
 
-อีเมลไปที่ **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[eve-pdpa-extension security]` · ใช้ค่าที่แต่งขึ้นในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
+แจ้งแบบส่วนตัวผ่าน GitHub ที่แท็บ **Security** ของ repository เลือก **Report a vulnerability** ([ลิงก์ตรง](https://github.com/mintelligence-dev/eve-pdpa-extension/security/advisories/new)) ห้ามเปิดเป็น issue สาธารณะ · ใช้ค่าที่แต่งขึ้นในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
 
 ## License
 

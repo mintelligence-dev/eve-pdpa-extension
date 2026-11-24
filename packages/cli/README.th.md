@@ -236,7 +236,7 @@ esac
 
 ## แจ้งช่องโหว่
 
-ส่งอีเมลถึง **kunlachat@m-intelligence.tech** หัวเรื่องขึ้นต้นด้วย `[eve-pdpa-extension security]` · ใช้ข้อมูลปลอมในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
+แจ้งแบบส่วนตัวผ่าน GitHub ที่แท็บ **Security** ของ repository เลือก **Report a vulnerability** ([ลิงก์ตรง](https://github.com/mintelligence-dev/eve-pdpa-extension/security/advisories/new)) ห้ามเปิดเป็น issue สาธารณะ · ใช้ข้อมูลปลอมในการทำซ้ำ ห้ามส่งข้อมูลส่วนบุคคลจริง
 
 ## License
 
