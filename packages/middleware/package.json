@@ -54,6 +54,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "@types/express": "5.0.6",
+    "express": "5.2.1",
+    "hono": "4.13.17",
     "tsdown": "0.23.0",
     "typescript": "5.9.3"
   }
