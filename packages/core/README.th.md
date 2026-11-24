@@ -3,7 +3,7 @@
 > ตรวจจับและปิดข้อมูลส่วนบุคคลไทยในข้อความ ก่อนส่งต่อให้ AI model, tool, log หรือคนรีวิว
 
 [![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/core)](https://www.npmjs.com/package/@eve-pdpa-extension/core)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
 [![Node](https://img.shields.io/badge/Node-18.18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Dependencies: 0](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#ทำอะไรได้)
 
@@ -338,4 +338,4 @@ npx @eve-pdpa-extension/cli scan chats.csv --policy pdpa-policy.json
 
 ## License
 
-Apache-2.0
+MIT

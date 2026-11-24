@@ -3,7 +3,7 @@
 > Detect and protect Thai personal data in text before it reaches an AI model, a tool, a log or a human reviewer.
 
 [![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/core)](https://www.npmjs.com/package/@eve-pdpa-extension/core)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
 [![Node](https://img.shields.io/badge/Node-18.18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Dependencies: 0](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](#what-it-does)
 
@@ -338,4 +338,4 @@ Report it privately through GitHub: on the repository's **Security** tab choose 
 
 ## License
 
-Apache-2.0
+MIT

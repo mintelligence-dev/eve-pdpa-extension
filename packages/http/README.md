@@ -222,4 +222,4 @@ Report it privately through GitHub: on the repository's **Security** tab choose 
 
 ## License
 
-Apache-2.0
+MIT

@@ -2,7 +2,7 @@
 // prepack runs and workspace:* is rewritten — and checks what is inside.
 //
 // Each check is something that once went missing without anyone noticing:
-// LICENSE and NOTICE were listed in core's files but lived at the repo root,
+// LICENSE was listed in core's files but lived at the repo root,
 // CHANGELOG.md is not shipped by npm unless listed, and npm itself never
 // rewrites workspace:* — publishing cli with npm would ship a dependency no
 // one can install.
@@ -19,14 +19,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url))
 
 export const PACKAGES = ['core', 'cli', 'eve', 'http']
 
-const EVERY_PACKAGE = [
-  'package.json',
-  'README.md',
-  'README.th.md',
-  'CHANGELOG.md',
-  'LICENSE',
-  'NOTICE',
-]
+const EVERY_PACKAGE = ['package.json', 'README.md', 'README.th.md', 'CHANGELOG.md', 'LICENSE']
 const ALSO = {
   core: ['schema/policy.schema.json', 'schema/audit-event.schema.json'],
   cli: [],

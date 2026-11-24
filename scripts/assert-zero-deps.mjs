@@ -43,7 +43,7 @@ if (pkg.publishConfig?.dependencies !== undefined) {
 if (pkg.sideEffects !== false)
   note('package.json: "sideEffects": false is required for tree-shaking')
 if (pkg.type !== 'module') note('package.json: "type": "module" is required')
-if (pkg.license !== 'Apache-2.0') note('package.json: license must be Apache-2.0')
+if (pkg.license !== 'MIT') note('package.json: license must be MIT')
 if (pkg.exports?.['./package.json'] === undefined) {
   note('package.json: must export "./package.json" — several toolchains read it')
 }
@@ -87,9 +87,7 @@ try {
   if (!names.includes('schema/policy.schema.json')) {
     note('tarball: schema/policy.schema.json must be published for editor validation')
   }
-  for (const legal of ['LICENSE', 'NOTICE']) {
-    if (!names.includes(legal)) note(`tarball: ${legal} must be published (Apache-2.0)`)
-  }
+  if (!names.includes('LICENSE')) note('tarball: LICENSE must be published (MIT)')
   if (!names.includes('schema/audit-event.schema.json')) {
     note('tarball: schema/audit-event.schema.json must be published for log pipelines')
   }

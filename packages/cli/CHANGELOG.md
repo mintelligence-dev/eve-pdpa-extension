@@ -1,5 +1,9 @@
 # @eve-pdpa-extension/cli
 
+## Unreleased
+
+- Licensed under MIT instead of Apache-2.0, as the other M Intelligence open-source projects are. Versions already published stay under Apache-2.0. The package no longer ships a `NOTICE` file.
+
 ## 0.1.0
 
 First release.

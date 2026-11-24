@@ -3,7 +3,7 @@
 > ตรวจจับและปิดข้อมูลส่วนบุคคลไทยในข้อความ ก่อนส่งต่อให้ AI model, AI agent, tool, log หรือคนรีวิว  
 > Detect and protect Thai personal data before it reaches an AI model, an AI agent, a tool, a log or a human reviewer.
 
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![core](https://img.shields.io/npm/v/@eve-pdpa-extension/core?label=core)](https://www.npmjs.com/package/@eve-pdpa-extension/core)
 [![cli](https://img.shields.io/npm/v/@eve-pdpa-extension/cli?label=cli)](https://www.npmjs.com/package/@eve-pdpa-extension/cli)
 [![eve](https://img.shields.io/npm/v/@eve-pdpa-extension/eve?label=eve)](https://www.npmjs.com/package/@eve-pdpa-extension/eve)
@@ -108,8 +108,9 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
 
 ### สัญญาอนุญาต
 
-เผยแพร่ภายใต้ [Apache License 2.0](LICENSE) · Copyright 2026 The eve-pdpa-extension contributors ([NOTICE](NOTICE))  
-นำไปใช้ แก้ไข และใช้เชิงพาณิชย์ได้ ต้องคงข้อความลิขสิทธิ์ สัญญาอนุญาต และไฟล์ NOTICE ไว้ และระบุไฟล์ที่แก้ไข ซอฟต์แวร์นี้ให้ "ตามสภาพ" ไม่มีการรับประกันใดๆ
+เผยแพร่ภายใต้ [MIT License](LICENSE) · Copyright (c) 2026 M Intelligence  
+นำไปใช้ แก้ไข และใช้เชิงพาณิชย์ได้ ต้องคงข้อความลิขสิทธิ์และสัญญาอนุญาตไว้ ซอฟต์แวร์นี้ให้ "ตามสภาพ" ไม่มีการรับประกันใดๆ  
+เวอร์ชันที่ออกไปแล้ว (core 0.1.0 · cli 0.1.0 · eve 0.1.0 และ 0.1.1) ยังเป็น Apache-2.0 ตามที่ออก
 
 ---
 
@@ -212,4 +213,5 @@ Issues and pull requests are welcome. Make sure `corepack pnpm verify` passes be
 
 ### License
 
-Released under the [Apache License 2.0](LICENSE). Copyright 2026 The eve-pdpa-extension contributors (see [NOTICE](NOTICE)).
+Released under the [MIT License](LICENSE). Copyright (c) 2026 M Intelligence.  
+Versions already published (core 0.1.0, cli 0.1.0, eve 0.1.0 and 0.1.1) stay under Apache-2.0, as released.

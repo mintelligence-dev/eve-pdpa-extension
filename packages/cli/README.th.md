@@ -3,7 +3,7 @@
 > ตรวจไฟล์แชทเก่าว่ามีข้อมูลส่วนบุคคลไทยอะไรอยู่บ้าง **โดยไม่ต้องเขียนโค้ด** · ใช้ก่อนเปิดให้ AI อ่านแชท หรือก่อนส่งไฟล์ให้คนอื่น
 
 [![npm](https://img.shields.io/npm/v/@eve-pdpa-extension/cli)](https://www.npmjs.com/package/@eve-pdpa-extension/cli)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/blob/main/LICENSE)
 [![Node](https://img.shields.io/badge/Node-18.18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 
 > **เป็นเครื่องมือทางเทคนิค ไม่ใช่ใบรับรองการปฏิบัติตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล**
@@ -240,4 +240,4 @@ esac
 
 ## License
 
-Apache-2.0
+MIT
