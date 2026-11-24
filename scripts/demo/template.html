@@ -1,202 +1,199 @@
-<title>eve-pdpa-extension Live Demo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<title>eve-pdpa-extension · Live Demo</title>
+<!--__MINTEL_HEAD__-->
 <style>
-/* Layout: a presenter's lab bench — one step per screen, controls on the left, live results on the right, stepped like slides. */
+/* Layout: a presenter's lab bench — one step per screen, controls on the left, live results on the right, stepped like slides.
+   Colours, fonts and radius come from the M Intelligence design tokens (@m-intelligence/tokens), inlined by build.mjs.
+   This page's own names carry a --d- prefix so they never collide with the tokens' shadcn names (--muted, --accent, --radius). */
 :root {
-  --bg: #F3F2EC;
-  --surface: #FCFBF7;
-  --sunken: #E9E7DF;
-  --ink: #14213D;
-  --text: #1E2633;
-  --muted: #586274;
-  --line: #D9D5C9;
-  --accent: #0F766E;
-  --accent-ink: #F2FBF9;
-  --accent-soft: #D8EEE9;
-  --code-bg: #14213D;
-  --code-fg: #E3EAF3;
-  --code-dim: #93A4BD;
-  --code-str: #6EE7D5;
-  --ok-bg: #D8EEE9; --ok-fg: #0B5751;
-  --warn-bg: #FBE7CF; --warn-fg: #7A3F06;
-  --bad-bg: #F9DEE2; --bad-fg: #8A1C30;
-  --id-bg: #E9E1FA; --id-fg: #4A2A99;
-  --phone-bg: #D6EEE8; --phone-fg: #0B5751;
-  --email-bg: #DDE8FA; --email-fg: #1D4A93;
-  --bank-bg: #FBE7CF; --bank-fg: #7A3F06;
-  --card-bg: #F9DEE2; --card-fg: #8A1C30;
-  --line-bg: #DFF0D6; --line-fg: #2D6619;
-  --kept-bg: #E9E7DF; --kept-fg: #3D4655;
+  --d-bg: var(--grouped);
+  --d-surface: var(--card);
+  --d-sunken: var(--muted);
+  --d-ink: var(--foreground);
+  --d-text: var(--foreground);
+  --d-muted: var(--muted-foreground);
+  --d-line: var(--border);
+  --d-accent: var(--primary);
+  --d-accent-ink: var(--primary-foreground);
+  --d-accent-soft: color-mix(in oklab, var(--primary) 14%, var(--card));
+  --d-code-bg: var(--mintel-color-neutral-900);
+  --d-code-fg: var(--mintel-color-neutral-50);
+  --d-code-dim: var(--mintel-color-neutral-400);
+  --d-code-str: var(--mintel-color-cyan-400);
 
-  --font-sans: 'IBM Plex Sans Thai', 'Leelawadee UI', Tahoma, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
-  --step-0: 0.875rem;
-  --step-1: 1rem;
-  --step-2: 1.125rem;
-  --step-3: 1.5rem;
-  --step-4: 2.25rem;
-  --radius: 10px;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0E1626; --surface: #152035; --sunken: #1B2740; --ink: #EEF2F8; --text: #D7DEE9; --muted: #9AA6B9; --line: #2A3755;
-    --accent: #5EEAD4; --accent-ink: #062823; --accent-soft: #123B37;
-    --code-bg: #0A1120; --code-fg: #DCE5F0; --code-dim: #8597B1; --code-str: #6EE7D5;
-    --ok-bg: #123B37; --ok-fg: #8BF0DE; --warn-bg: #3E2A12; --warn-fg: #F6C68A; --bad-bg: #42202A; --bad-fg: #F6A9B6;
-    --id-bg: #2D2550; --id-fg: #CDBDFB; --phone-bg: #123B37; --phone-fg: #8BF0DE; --email-bg: #1C2F52; --email-fg: #A9C6F6;
-    --bank-bg: #3E2A12; --bank-fg: #F6C68A; --card-bg: #42202A; --card-fg: #F6A9B6; --line-bg: #1E3A18; --line-fg: #B3E59A;
-    --kept-bg: #22304A; --kept-fg: #C2CCDA;
-    color-scheme: dark;
-  }
+  /* one hue per data type; the tint and the text are mixed from it, so light and dark both follow the tokens */
+  --d-hue-ok: var(--success);
+  --d-hue-warn: var(--warning);
+  --d-hue-bad: var(--destructive);
+  --d-hue-id: var(--mintel-color-purple-600);
+  --d-hue-phone: var(--mintel-color-blue-600);
+  --d-hue-email: var(--mintel-color-cyan-600);
+  --d-hue-bank: var(--mintel-color-amber-600);
+  --d-hue-card: var(--mintel-color-red-600);
+  --d-hue-line: var(--mintel-color-green-600);
+  --d-hue-plate: var(--mintel-color-blue-900);
+  --d-hue-dob: color-mix(in oklab, var(--mintel-color-purple-600) 55%, var(--mintel-color-red-500));
+  --d-hue-passport: color-mix(in oklab, var(--mintel-color-green-600) 50%, var(--mintel-color-cyan-600));
+  --d-kept-bg: var(--muted);
+  --d-kept-fg: color-mix(in oklab, var(--muted-foreground) 45%, var(--foreground));
+
+  --d-font-sans: var(--mintel-font-sans);
+  --d-font-heading: var(--mintel-font-heading);
+  --d-font-mono: var(--mintel-font-mono);
+  --d-step-0: 0.875rem;
+  --d-step-1: 1rem;
+  --d-step-2: 1.125rem;
+  --d-step-3: 1.5rem;
+  --d-step-4: 2.25rem;
+  --d-radius: var(--radius);
 }
 :root[data-theme="dark"] {
-  --bg: #0E1626; --surface: #152035; --sunken: #1B2740; --ink: #EEF2F8; --text: #D7DEE9; --muted: #9AA6B9; --line: #2A3755;
-  --accent: #5EEAD4; --accent-ink: #062823; --accent-soft: #123B37;
-  --code-bg: #0A1120; --code-fg: #DCE5F0; --code-dim: #8597B1; --code-str: #6EE7D5;
-  --ok-bg: #123B37; --ok-fg: #8BF0DE; --warn-bg: #3E2A12; --warn-fg: #F6C68A; --bad-bg: #42202A; --bad-fg: #F6A9B6;
-  --id-bg: #2D2550; --id-fg: #CDBDFB; --phone-bg: #123B37; --phone-fg: #8BF0DE; --email-bg: #1C2F52; --email-fg: #A9C6F6;
-  --bank-bg: #3E2A12; --bank-fg: #F6C68A; --card-bg: #42202A; --card-fg: #F6A9B6; --line-bg: #1E3A18; --line-fg: #B3E59A;
-  --kept-bg: #22304A; --kept-fg: #C2CCDA;
-  color-scheme: dark;
+  --d-code-bg: var(--mintel-color-neutral-950);
+  --d-hue-plate: var(--mintel-color-blue-300);
 }
 
 * { box-sizing: border-box; }
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--step-1);
+  background: var(--d-bg);
+  color: var(--d-text);
+  font-family: var(--d-font-sans);
+  font-size: var(--d-step-1);
   line-height: 1.6;
   padding-inline: clamp(16px, 3vw, 40px);
   padding-block: 0 40px;
 }
-h1, h2, h3 { color: var(--ink); margin: 0; text-wrap: balance; }
+h1, h2, h3 { color: var(--d-ink); margin: 0; text-wrap: balance; }
+h2 { font-family: var(--d-font-heading); letter-spacing: -0.01em; }
 p { margin: 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+:focus-visible { outline: 3px solid var(--d-accent); outline-offset: 2px; }
+code, .mono { font-family: var(--d-font-mono); font-size: 0.92em; }
 
 /* ---------- top bar ---------- */
 .bar {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
-  background: var(--bg);
+  background: var(--d-bg) var(--brand-gradient) top / 100% 3px no-repeat;
   display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
-  padding-block: 16px 12px;
-  border-bottom: 1px solid var(--line);
+  padding-block: 18px 12px;
+  border-bottom: 1px solid var(--d-line);
 }
 .brand { display: flex; flex-direction: column; gap: 0; min-width: 0; }
-.brand b { font-size: var(--step-2); color: var(--ink); letter-spacing: 0.01em; }
-.brand span { font-size: var(--step-0); color: var(--muted); }
+.brand b { font-family: var(--d-font-heading); font-size: var(--d-step-2); letter-spacing: 0.01em; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.brand span { font-size: var(--d-step-0); color: var(--d-muted); }
 .steps { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; justify-content: center; }
 .steps button {
-  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
-  border-radius: 999px; padding: 4px 12px; font-size: var(--step-0); cursor: pointer;
+  border: 1px solid var(--d-line); background: var(--d-surface); color: var(--d-muted);
+  border-radius: 999px; padding: 4px 12px; font-size: var(--d-step-0); cursor: pointer;
 }
-.steps button[aria-current="step"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.steps button[aria-current="step"] { background: var(--d-accent); border-color: var(--d-accent); color: var(--d-accent-ink); font-weight: 600; }
 .nav { display: flex; gap: 8px; align-items: center; }
-.nav .count { font-size: var(--step-0); color: var(--muted); font-variant-numeric: tabular-nums; min-width: 3.5em; text-align: center; }
+.nav .count { font-size: var(--d-step-0); color: var(--d-muted); font-variant-numeric: tabular-nums; min-width: 3.5em; text-align: center; }
 
 .btn {
-  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  transition: border-color var(--mintel-duration-fast) var(--mintel-ease-standard), background-color var(--mintel-duration-fast) var(--mintel-ease-standard);
+  border: 1px solid var(--d-line); background: var(--d-surface); color: var(--d-ink);
   border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 600;
 }
-.btn:hover { border-color: var(--accent); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.btn.small { padding: 4px 10px; font-size: var(--step-0); }
+.btn:hover { border-color: var(--d-accent); }
+.btn.primary { background: var(--d-accent); border-color: var(--d-accent); color: var(--d-accent-ink); }
+.btn.small { padding: 4px 10px; font-size: var(--d-step-0); }
 .btn[disabled] { opacity: 0.5; cursor: default; }
 
 /* ---------- a step ---------- */
 .step { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; padding-block: 28px 0; }
 @media (max-width: 960px) { .step { grid-template-columns: minmax(0, 1fr); } }
 .head { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
-.eyebrow { font-size: var(--step-0); font-weight: 600; color: var(--accent); letter-spacing: 0.04em; }
-.head h2 { font-size: var(--step-4); line-height: 1.2; font-weight: 700; }
-.head p { color: var(--muted); font-size: var(--step-2); }
+.eyebrow { font-size: var(--d-step-0); font-weight: 600; color: var(--d-accent); letter-spacing: 0.04em; }
+.head h2 { font-size: var(--d-step-4); line-height: 1.2; font-weight: 700; }
+.head p { color: var(--d-muted); font-size: var(--d-step-2); }
 
 .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.panel h3 { font-size: var(--step-0); font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
-.label { font-size: var(--step-0); font-weight: 600; color: var(--muted); }
+.panel { background: var(--d-surface); border: 1px solid var(--d-line); border-radius: var(--d-radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.panel h3 { font-size: var(--d-step-0); font-weight: 600; color: var(--d-muted); letter-spacing: 0.04em; }
+.label { font-size: var(--d-step-0); font-weight: 600; color: var(--d-muted); }
 textarea, input[type="text"], select {
-  width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+  width: 100%; background: var(--d-surface); border: 1px solid var(--d-line); border-radius: 8px; padding: 10px 12px;
 }
 textarea { resize: vertical; min-height: 6.5em; line-height: 1.6; }
-textarea.code { font-family: var(--font-mono); font-size: var(--step-0); min-height: 18em; }
+textarea.code { font-family: var(--d-font-mono); font-size: var(--d-step-0); min-height: 18em; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { border: 1px solid var(--line); background: var(--sunken); color: var(--text); border-radius: 999px; padding: 3px 12px; font-size: var(--step-0); cursor: pointer; }
-.chip:hover { border-color: var(--accent); }
-.hint { font-size: var(--step-0); color: var(--muted); }
-.policy { font-family: var(--font-mono); font-size: var(--step-0); background: var(--sunken); border-radius: 8px; padding: 8px 12px; overflow-x: auto; white-space: pre; }
-.check { display: flex; gap: 8px; align-items: center; font-size: var(--step-0); }
+.chip { border: 1px solid var(--d-line); background: var(--d-sunken); color: var(--d-text); border-radius: 999px; padding: 3px 12px; font-size: var(--d-step-0); cursor: pointer; }
+.chip:hover { border-color: var(--d-accent); }
+.hint { font-size: var(--d-step-0); color: var(--d-muted); }
+.policy { font-family: var(--d-font-mono); font-size: var(--d-step-0); background: var(--d-sunken); border-radius: 8px; padding: 8px 12px; overflow-x: auto; white-space: pre; }
+.check { display: flex; gap: 8px; align-items: center; font-size: var(--d-step-0); }
+table.rules td { padding: 6px 8px; }
+table.rules tr:last-child td { border-bottom: none; }
 
 /* ---------- text with marks ---------- */
-.text { font-size: var(--step-2); line-height: 2.1; word-break: break-word; white-space: pre-wrap; }
+.text { font-size: var(--d-step-2); line-height: 2.1; word-break: break-word; white-space: pre-wrap; }
 .hl { border-radius: 6px; padding: 2px 6px; font-weight: 600; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .hl .tag { font-size: 0.68em; font-weight: 600; margin-inline-start: 6px; padding: 0 5px; border-radius: 4px; border: 1px solid currentColor; opacity: 0.85; vertical-align: 0.15em; white-space: nowrap; }
-.e-id { background: var(--id-bg); color: var(--id-fg); }
-.e-phone { background: var(--phone-bg); color: var(--phone-fg); }
-.e-email { background: var(--email-bg); color: var(--email-fg); }
-.e-bank { background: var(--bank-bg); color: var(--bank-fg); }
-.e-card { background: var(--card-bg); color: var(--card-fg); }
-.e-line { background: var(--line-bg); color: var(--line-fg); }
-.kept { background: var(--kept-bg); color: var(--kept-fg); }
-.inv { font-family: var(--font-mono); font-size: 0.6em; font-weight: 500; background: var(--warn-bg); color: var(--warn-fg); border-radius: 4px; padding: 1px 4px; margin-inline: 2px; vertical-align: 0.2em; }
+.e-id { background: color-mix(in oklab, var(--d-hue-id) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-id) 78%, var(--d-ink)); }
+.e-phone { background: color-mix(in oklab, var(--d-hue-phone) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-phone) 78%, var(--d-ink)); }
+.e-email { background: color-mix(in oklab, var(--d-hue-email) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-email) 78%, var(--d-ink)); }
+.e-bank { background: color-mix(in oklab, var(--d-hue-bank) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-bank) 78%, var(--d-ink)); }
+.e-card { background: color-mix(in oklab, var(--d-hue-card) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-card) 78%, var(--d-ink)); }
+.e-line { background: color-mix(in oklab, var(--d-hue-line) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-line) 78%, var(--d-ink)); }
+.e-plate { background: color-mix(in oklab, var(--d-hue-plate) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-plate) 78%, var(--d-ink)); }
+.e-dob { background: color-mix(in oklab, var(--d-hue-dob) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-dob) 78%, var(--d-ink)); }
+.e-passport { background: color-mix(in oklab, var(--d-hue-passport) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-passport) 78%, var(--d-ink)); }
+.kept { background: var(--d-kept-bg); color: var(--d-kept-fg); }
+.inv { font-family: var(--d-font-mono); font-size: 0.6em; font-weight: 500; background: color-mix(in oklab, var(--d-hue-warn) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-warn) 80%, var(--d-ink)); border-radius: 4px; padding: 1px 4px; margin-inline: 2px; vertical-align: 0.2em; }
 
 /* ---------- pills, tables, code ---------- */
-.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 2px 10px; font-size: var(--step-0); font-weight: 600; white-space: nowrap; }
-.pill.ok { background: var(--ok-bg); color: var(--ok-fg); }
-.pill.warn { background: var(--warn-bg); color: var(--warn-fg); }
-.pill.bad { background: var(--bad-bg); color: var(--bad-fg); }
-.pill.neutral { background: var(--kept-bg); color: var(--kept-fg); }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 2px 10px; font-size: var(--d-step-0); font-weight: 600; white-space: nowrap; }
+.pill.ok { background: color-mix(in oklab, var(--d-hue-ok) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-ok) 80%, var(--d-ink)); }
+.pill.warn { background: color-mix(in oklab, var(--d-hue-warn) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-warn) 80%, var(--d-ink)); }
+.pill.bad { background: color-mix(in oklab, var(--d-hue-bad) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-bad) 80%, var(--d-ink)); }
+.pill.neutral { background: var(--d-kept-bg); color: var(--d-kept-fg); }
 .tablewrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: var(--step-0); }
-th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-td.mono, td .mono { font-family: var(--font-mono); }
-td .text { font-size: var(--step-1); line-height: 1.9; }
+table { width: 100%; border-collapse: collapse; font-size: var(--d-step-0); }
+th { text-align: left; color: var(--d-muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--d-line); white-space: nowrap; }
+td { padding: 10px; border-bottom: 1px solid var(--d-line); vertical-align: top; }
+td.mono, td .mono { font-family: var(--d-font-mono); }
+td .text { font-size: var(--d-step-1); line-height: 1.9; }
 .num { font-variant-numeric: tabular-nums; }
 pre.json {
-  margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius);
-  padding: 14px 16px; font-family: var(--font-mono); font-size: var(--step-0); line-height: 1.55;
+  margin: 0; background: var(--d-code-bg); color: var(--d-code-fg); border-radius: var(--d-radius);
+  padding: 14px 16px; font-family: var(--d-font-mono); font-size: var(--d-step-0); line-height: 1.55;
   overflow-x: auto; max-height: 30em;
 }
-.k { color: var(--code-dim); } .s { color: var(--code-str); }
-.empty { color: var(--muted); font-size: var(--step-0); padding: 6px 0; }
+.k { color: var(--d-code-dim); } .s { color: var(--d-code-str); }
+.empty { color: var(--d-muted); font-size: var(--d-step-0); padding: 6px 0; }
 
 /* confidence meter: the bar is the value, the tick is the 0.95 threshold */
-.meter { position: relative; height: 8px; background: var(--sunken); border-radius: 4px; min-width: 120px; }
-.meter i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--accent); }
-.meter i.low { background: var(--muted); }
-.meter b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); left: 95%; }
+.meter { position: relative; height: 8px; background: var(--d-sunken); border-radius: 4px; min-width: 120px; }
+.meter i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--d-accent); }
+.meter i.low { background: var(--d-muted); }
+.meter b { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--d-ink); left: 95%; }
 
-.cand { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.cand { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--d-line); }
 .cand:last-child { border-bottom: none; }
-.cand .why { grid-column: 2 / -1; margin: 0; font-size: var(--step-0); color: var(--text); }
-.panel > .why { font-size: var(--step-0); color: var(--text); }
-.logrow { border-top: 1px solid var(--line); padding: 8px 0; }
-.logrow summary { cursor: pointer; font-size: var(--step-0); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cand .why { grid-column: 2 / -1; margin: 0; font-size: var(--d-step-0); color: var(--d-text); }
+.panel > .why { font-size: var(--d-step-0); color: var(--d-text); }
+.logrow { border-top: 1px solid var(--d-line); padding: 8px 0; }
+.logrow summary { cursor: pointer; font-size: var(--d-step-0); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .logrow summary .mono { word-break: break-all; }
 .logrow pre.json { margin-top: 8px; }
-.steps-list { margin: 0; padding-inline-start: 1.4em; display: flex; flex-direction: column; gap: 4px; font-size: var(--step-0); }
-.cand .meta { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: var(--step-0); color: var(--muted); }
+.steps-list { margin: 0; padding-inline-start: 1.4em; display: flex; flex-direction: column; gap: 4px; font-size: var(--d-step-0); }
+.cand .meta { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: var(--d-step-0); color: var(--d-muted); }
 
-.blocked { display: flex; flex-direction: column; gap: 8px; background: var(--bad-bg); color: var(--bad-fg); border-radius: var(--radius); padding: 14px 16px; }
-.blocked b { font-size: var(--step-2); }
-.notice { background: var(--accent-soft); color: var(--text); border-radius: var(--radius); padding: 12px 14px; font-size: var(--step-0); }
-.error { background: var(--bad-bg); color: var(--bad-fg); border-radius: var(--radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.blocked { display: flex; flex-direction: column; gap: 8px; background: color-mix(in oklab, var(--d-hue-bad) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-bad) 80%, var(--d-ink)); border-radius: var(--d-radius); padding: 14px 16px; }
+.blocked b { font-size: var(--d-step-2); }
+.notice { background: var(--d-accent-soft); color: var(--d-text); border-radius: var(--d-radius); padding: 12px 14px; font-size: var(--d-step-0); }
+.error { background: color-mix(in oklab, var(--d-hue-bad) 15%, var(--d-surface)); color: color-mix(in oklab, var(--d-hue-bad) 80%, var(--d-ink)); border-radius: var(--d-radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
 .error code { font-weight: 500; }
 .stage { display: grid; grid-template-columns: 2em minmax(0, 1fr); gap: 4px 12px; }
-.stage .n { font-family: var(--font-mono); font-weight: 500; color: var(--accent); font-size: var(--step-2); }
+.stage .n { font-family: var(--d-font-heading); font-weight: 600; color: var(--d-accent); font-size: var(--d-step-2); text-align: center; }
+.fn { font-family: var(--d-font-mono); font-size: 0.85em; font-weight: 400; color: var(--d-muted); letter-spacing: 0; }
 .stage .body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.footnote { grid-column: 1 / -1; color: var(--muted); font-size: var(--step-0); border-top: 1px solid var(--line); padding-block: 14px 0; }
-@media (prefers-reduced-motion: no-preference) { .flash { animation: flash 0.5s ease-out; } @keyframes flash { from { background: var(--accent-soft); } } }
+.footnote { grid-column: 1 / -1; color: var(--d-muted); font-size: var(--d-step-0); border-top: 1px solid var(--d-line); padding-block: 14px 0; }
+@media (prefers-reduced-motion: no-preference) { .flash { animation: flash 0.5s ease-out; } @keyframes flash { from { background: var(--d-accent-soft); } } }
 </style>
 
 <header class="bar">
-  <div class="brand"><b>eve-pdpa-extension</b><span id="libinfo">กำลังโหลด library…</span></div>
+  <div class="brand"><b>eve-pdpa-extension</b><span id="libinfo">กำลังโหลด…</span></div>
   <nav class="steps" id="steps" aria-label="ขั้นตอนของ demo"></nav>
   <div class="nav">
     <button class="btn small" id="prev" type="button" aria-label="ก่อนหน้า">←</button>
@@ -247,7 +244,12 @@ pre.json {
     BANK_ACCOUNT: { label: 'เลขบัญชี', cls: 'e-bank' },
     CREDIT_CARD: { label: 'บัตรเครดิต', cls: 'e-card' },
     LINE_USER_ID: { label: 'LINE ID', cls: 'e-line' },
+    LICENSE_PLATE: { label: 'ทะเบียนรถ', cls: 'e-plate' },
+    DATE_OF_BIRTH: { label: 'วันเกิด', cls: 'e-dob' },
+    PASSPORT: { label: 'พาสปอร์ต', cls: 'e-passport' },
   }
+  /** A type this page does not know yet still renders, under its own name. */
+  const ent = (e) => ENTITY[e] || { label: e, cls: 'kept' }
   const INVISIBLE = {
     '​': 'ZWSP', '‌': 'ZWNJ', '‍': 'ZWJ', '‎': 'LRM', '‏': 'RLM',
     '⁠': 'WJ', '﻿': 'BOM', '­': 'SHY', ' ': 'NBSP',
@@ -327,7 +329,7 @@ pre.json {
     const box = h('div', { class: 'text' })
     for (const p of parts) {
       if ('same' in p) { appendVisible(box, p.same); continue }
-      const meta = ENTITY[p.f.entity]
+      const meta = ent(p.f.entity)
       const untouched = p.rep === p.was
       const tag = p.f.allowlisted ? 'ปล่อยผ่าน · allowlist' : untouched ? 'flag · ไม่ได้แก้' : meta.label
       const mk = h('mark', { class: 'hl ' + (untouched ? 'kept' : meta.cls) })
@@ -390,10 +392,10 @@ pre.json {
   // =====================================================================
   function stepPipeline() {
     const s = section({
-      id: 's1', eyebrow: 'เส้นทางของข้อความ',
-      title: 'ข้อความเดินผ่าน 3 ขั้นก่อนถึง AI',
-      lede: 'ทำความสะอาด → ตรวจหา → ลงมือตาม policy · ลองพิมพ์เลขไทย หรือแทรกอักขระที่มองไม่เห็นเข้าไปกลางเบอร์',
-      foot: 'ลบอักขระที่มองไม่เห็นออก ทำให้ตำแหน่งในฉบับสะอาดเลื่อนไปจากต้นฉบับ guard จึงแปลงตำแหน่งกลับก่อนแก้ข้อความ ส่วนที่ไม่ใช่ข้อมูลส่วนตัวกลับไปเหมือนที่ลูกค้าพิมพ์ทุกตัวอักษร',
+      id: 's1', eyebrow: 'ภาพรวม',
+      title: 'ก่อนถึง AI ทุกข้อความผ่าน 3 ขั้น',
+      lede: 'ทำความสะอาด → หาข้อมูลส่วนบุคคล → ปิดตามกติกาของร้าน · ลองพิมพ์เลขไทย หรือแทรกอักขระที่มองไม่เห็นเข้าไปกลางเบอร์',
+      foot: 'พอลบอักขระที่มองไม่เห็นออก ตำแหน่งตัวอักษรจะเลื่อน guard จึงคำนวณตำแหน่งกลับไปที่ข้อความต้นฉบับก่อนปิด ส่วนที่ไม่ใช่ข้อมูลส่วนบุคคลจึงเหมือนที่ลูกค้าพิมพ์ทุกตัวอักษร',
     })
     const { guard } = guardWith({ TH_NATIONAL_ID: { action: 'redact' }, PHONE: { action: 'mask', keep: 'last4' } })
     const engine = P.createEngine(P.BUILTIN_DETECTORS)
@@ -403,36 +405,36 @@ pre.json {
       const det = engine.runSync(norm, { sessionId: 'demo', boundary: 'inbound' })
       const r = guard.processSync(text)
       const dropped = norm.original.length - norm.text.length
+      const digitsChanged = /[๐-๙０-９]/.test(text)
+      const fixes = []
+      if (dropped > 0) fixes.push('ลบอักขระที่มองไม่เห็น ' + dropped + ' ตัว')
+      if (digitsChanged) fixes.push('เปลี่ยนเลขไทยและเลขตัวกว้างเป็นเลขปกติ')
+      const fn = (name) => h('code', { class: 'fn' }, name)
       clear(s.right).append(
         h('div', { class: 'panel' }, h('div', { class: 'stage' },
-          h('span', { class: 'n' }, '①'),
-          h('div', { class: 'body' }, h('h3', {}, 'ต้นฉบับที่ลูกค้าพิมพ์'), marked(text, [])),
+          h('span', { class: 'n' }, '·'),
+          h('div', { class: 'body' }, h('h3', {}, 'ข้อความที่ลูกค้าพิมพ์'), marked(text, [])),
         )),
         h('div', { class: 'panel' }, h('div', { class: 'stage' },
-          h('span', { class: 'n' }, '②'),
+          h('span', { class: 'n' }, '1'),
           h('div', { class: 'body' },
-            h('h3', {}, 'ทำความสะอาด · normalise()'),
+            h('h3', {}, 'ทำความสะอาด ', fn('normalise()')),
             marked(norm.text, []),
-            h('p', { class: 'hint' }, dropped > 0
-              ? 'ลบอักขระที่มองไม่เห็น ' + dropped + ' ตัว · ตารางตำแหน่งที่เลื่อน: ' + JSON.stringify(norm.shifts)
-              : 'ไม่มีอักขระที่ต้องลบ · ตำแหน่งตรงกับต้นฉบับ (shifts: null)'),
+            h('p', { class: 'hint' }, fixes.length ? fixes.join(' · ') : 'ไม่มีอะไรต้องแก้'),
           ),
         )),
         h('div', { class: 'panel' }, h('div', { class: 'stage' },
-          h('span', { class: 'n' }, '③'),
+          h('span', { class: 'n' }, '2'),
           h('div', { class: 'body' },
-            h('h3', {}, 'ตัวตรวจเจอ · engine.runSync()'),
-            marked(norm.text, det.candidates.map((c) => ({ start: c.start, end: c.end, cls: ENTITY[c.entity].cls, tag: ENTITY[c.entity].label + ' · ' + c.confidence }))),
+            h('h3', {}, 'หาข้อมูลส่วนบุคคล ', fn('engine.runSync()')),
+            marked(norm.text, det.candidates.map((c) => ({ start: c.start, end: c.end, cls: ent(c.entity).cls, tag: ent(c.entity).label + ' · ' + c.confidence }))),
             det.candidates.length === 0 ? h('p', { class: 'empty' }, 'ไม่เจอข้อมูลส่วนบุคคล') : h('p', { class: 'hint' },
-              det.candidates.map((c) => {
-                const [os, oe] = P.toOriginalSpan(norm, c.start, c.end)
-                return c.entity + ' ตำแหน่ง ' + c.start + '–' + c.end + ' ในฉบับสะอาด → ' + os + '–' + oe + ' ในต้นฉบับ'
-              }).join(' · ')),
+              'เจอ ' + det.candidates.length + ' รายการ · ตัวเลขหลังชื่อประเภทคือความมั่นใจ (0–1) ลงมือเมื่อถึง 0.95'),
           ),
         )),
         h('div', { class: 'panel' }, h('div', { class: 'stage' },
-          h('span', { class: 'n' }, '④'),
-          h('div', { class: 'body' }, h('h3', {}, 'ลงมือตาม policy · AI เห็น'), aiView(text, r)),
+          h('span', { class: 'n' }, '3'),
+          h('div', { class: 'body' }, h('h3', {}, 'ปิดตามกติกา · สิ่งที่ AI ได้เห็น ', fn('guard.processSync()')), aiView(text, r)),
         )),
       )
     }
@@ -441,16 +443,19 @@ pre.json {
       const at = ta.selectionStart ?? ta.value.length
       ta.value = ta.value.slice(0, at) + '​' + ta.value.slice(at)
       ta.focus(); ta.setSelectionRange(at + 1, at + 1); run()
-    } }, 'แทรกอักขระล่องหน (ZWSP) ตรงเคอร์เซอร์')
+    } }, 'แทรกอักขระที่มองไม่เห็นตรงเคอร์เซอร์')
     const inp = inputPanel('s1-input', 'ข้อความจากลูกค้า',
       'เลขบัตร ๓-๑๐๐๕-๐๐๑๒๓-๔๕-๘ เบอร์ ๐๙๑-๘๘๘-​๗๗๗๗ ค่ะ',
       [
         { label: 'เลขไทย + อักขระล่องหน', text: 'เลขบัตร ๓-๑๐๐๕-๐๐๑๒๓-๔๕-๘ เบอร์ ๐๙๑-๘๘๘-​๗๗๗๗ ค่ะ' },
-        { label: 'เลขเต็มความกว้าง', text: 'เบอร์ ０９１８８８７７７７ ค่ะ' },
-        { label: 'ข้อความธรรมดา', text: 'เลขบัตร 3-1005-00123-45-8 เบอร์ 091-888-7777' },
+        { label: 'เลขตัวกว้าง', text: 'เบอร์ ０９１８８８７７７７ ค่ะ' },
+        { label: 'เลขปกติ', text: 'เลขบัตร 3-1005-00123-45-8 เบอร์ 091-888-7777' },
+        { label: 'ทะเบียนรถ + วันเกิด', text: 'ทะเบียนรถ กข 1234 กรุงเทพมหานคร วันเกิด 12 พ.ค. 2530 ค่ะ' },
       ], run, h('div', { class: 'row' }, insert))
     s.left.append(inp.node,
-      h('div', { class: 'panel' }, h('h3', {}, 'policy ที่ใช้'), h('div', { class: 'policy' }, 'TH_NATIONAL_ID → redact\nPHONE          → mask, keep: last4\nอื่น ๆ          → redact (onUnmapped)')),
+      h('div', { class: 'panel' }, h('h3', {}, 'กติกาที่ใช้ในหน้านี้'), h('div', { class: 'tablewrap' }, h('table', { class: 'rules' }, h('tbody', {},
+        [['เลขบัตรประชาชน', 'ลบออก', 'redact'], ['เบอร์โทร', 'เหลือ 4 ตัวท้าย', 'mask · keep: last4'], ['ประเภทอื่น', 'ลบออก', 'onUnmapped: redact']]
+          .map(([who, what, code]) => h('tr', {}, h('td', {}, who), h('td', {}, h('b', {}, what)), h('td', {}, h('code', { class: 'fn' }, code)))))))),
     )
     run()
     return s.el
@@ -461,10 +466,10 @@ pre.json {
   // =====================================================================
   function stepDetect() {
     const s = section({
-      id: 's2', eyebrow: 'ตัวตรวจจับ 6 ตัว',
+      id: 's2', eyebrow: 'ตัวตรวจ 9 ประเภท',
       title: 'ตัวตรวจเห็นอะไร และมั่นใจแค่ไหน',
-      lede: 'แสดงทุกอย่างที่ตัวตรวจเจอ รวมถึงตัวที่ความมั่นใจต่ำกว่าเกณฑ์ 0.95 ซึ่ง guard จะไม่ลงมือ',
-      foot: 'เลขบัตรประชาชนกับบัตรเครดิตยืนยันด้วยหลักตรวจ (mod-11 · Luhn) · อีเมลกับ LINE ID ใช้รูปแบบเฉพาะ · เบอร์โทรกับเลขบัญชีไม่มีหลักตรวจ จึงอ่านคำรอบข้างประกอบ',
+      lede: 'แสดงทุกอย่างที่ตัวตรวจเจอ รวมถึงรายการที่มั่นใจไม่ถึงเกณฑ์ 0.95 ซึ่ง guard จะปล่อยไว้',
+      foot: 'เลขบัตรประชาชนกับบัตรเครดิตยืนยันด้วยหลักตรวจ (mod-11 · Luhn) · อีเมลกับ LINE ID ดูจากรูปแบบ · เบอร์โทรกับเลขบัญชีไม่มีหลักตรวจ จึงอ่านคำรอบข้างประกอบ · ทะเบียนรถ วันเกิด และพาสปอร์ต ต้องมีคำบอกใบ้ เช่น ทะเบียน วันเกิด พาสปอร์ต จึงจะลงมือ',
     })
     const engine = P.createEngine(P.BUILTIN_DETECTORS)
     // Why a detector reported what it did. Mirrors the confidence constants in
@@ -488,6 +493,12 @@ pre.json {
           return /^0[689]\d{8}$/.test(digits)
             ? 'หน้าตาเหมือนเบอร์มือถือ แต่มีคำว่า บัญชี อยู่ใกล้ ๆ ตัวตรวจเบอร์จึงถอยให้'
             : 'เป็นชุดตัวเลขแบบเลขบัญชี และมีคำว่า บัญชี / โอน หรือชื่อธนาคารอยู่ใกล้ ๆ'
+        case 'license-plate':
+          return c.confidence >= 0.95 ? 'รูปแบบทะเบียนรถ (ตัวอักษร ตามด้วยตัวเลข) และมีคำว่า ทะเบียน หรือชื่อจังหวัดอยู่ใกล้ ๆ' : 'รูปแบบเหมือนทะเบียนรถ แต่ไม่มีคำบอกใบ้ที่ชัดพอ'
+        case 'date-of-birth':
+          return c.confidence >= 0.95 ? 'เป็นวันที่จริง และมีคำว่า วันเกิด / เกิด / DOB ติดอยู่' : 'เป็นวันที่ แต่ไม่มีคำบอกว่าเป็นวันเกิด'
+        case 'passport':
+          return c.confidence >= 0.95 ? 'รูปแบบเลขพาสปอร์ต และมีคำว่า พาสปอร์ต / หนังสือเดินทาง / passport อยู่ใกล้ ๆ' : 'รูปแบบเหมือนพาสปอร์ตไทย (อักษร 2 ตัว + เลข 7 หลัก) แต่ไม่มีคำบอกใบ้'
         default:
           return ''
       }
@@ -496,20 +507,20 @@ pre.json {
       const text = inp.ta.value
       const norm = P.normalise(text)
       const det = engine.runSync(norm, { sessionId: 'demo', boundary: 'inbound' })
-      const list = h('div', { class: 'panel' }, h('h3', {}, 'ที่ตัวตรวจเจอ · ก่อนตัดสินตาม policy'))
+      const list = h('div', { class: 'panel' }, h('h3', {}, 'สิ่งที่ตัวตรวจเจอ · ก่อนดูกติกา'))
       if (det.candidates.length === 0) {
         const preset = PRESETS.find((p) => p.text === text)
         list.append(h('p', { class: 'empty' }, 'ไม่เจออะไร · ข้อความนี้ผ่านไปโดยไม่แก้'))
         if (preset && preset.whyNot) list.append(h('p', { class: 'why' }, 'ทำไมไม่จับ: ' + preset.whyNot))
       }
       for (const c of det.candidates) {
-        const meta = ENTITY[c.entity]
+        const meta = ent(c.entity)
         const acts = c.confidence >= 0.95
         list.append(h('div', { class: 'cand' },
           h('mark', { class: 'hl ' + meta.cls }, meta.label),
           h('span', { class: 'mono' }, norm.text.slice(c.start, c.end)),
-          h('span', { class: 'pill ' + (acts ? 'ok' : 'neutral') }, acts ? 'ลงมือ' : 'ต่ำกว่าเกณฑ์ ไม่ลงมือ'),
-          h('p', { class: 'why' }, (acts ? 'จับเพราะ: ' : 'เจอแต่ไม่มั่นใจ: ') + why(c, norm.text.slice(c.start, c.end))),
+          h('span', { class: 'pill ' + (acts ? 'ok' : 'neutral') }, acts ? 'ปิด' : 'ไม่ถึงเกณฑ์ ปล่อยไว้'),
+          h('p', { class: 'why' }, (acts ? 'เพราะ ' : 'เจอแต่ไม่มั่นใจ: ') + why(c, norm.text.slice(c.start, c.end))),
           h('div', { class: 'meta' },
             h('span', { class: 'num' }, 'ความมั่นใจ ' + c.confidence.toFixed(2)),
             h('div', { class: 'meter', role: 'img', 'aria-label': 'ความมั่นใจ ' + c.confidence + ' จากเกณฑ์ 0.95' },
@@ -519,7 +530,7 @@ pre.json {
         ))
       }
       clear(s.right).append(
-        h('div', { class: 'panel' }, h('h3', {}, 'ข้อความ'), marked(norm.text, det.candidates.map((c) => ({ start: c.start, end: c.end, cls: ENTITY[c.entity].cls, tag: ENTITY[c.entity].label })))),
+        h('div', { class: 'panel' }, h('h3', {}, 'ข้อความ'), marked(norm.text, det.candidates.map((c) => ({ start: c.start, end: c.end, cls: ent(c.entity).cls, tag: ent(c.entity).label })))),
         list,
       )
     }
@@ -534,6 +545,10 @@ pre.json {
       { label: 'เบอร์ +66', text: 'โทรหาผมที่ +66 91 888 7777 ครับ' },
       { label: 'เลขบัญชี', text: 'โอนมาที่ กสิกร 123-4-56789-0 นะครับ' },
       { label: 'เลขเดียวกัน ใต้คำว่าบัญชี', text: 'เลขบัญชี 0812345678', note: 'เบอร์โทรถอนตัว ให้เลขบัญชีจับแทน' },
+      { label: 'ทะเบียนรถ', text: 'ทะเบียนรถ กข 1234 กรุงเทพมหานคร' },
+      { label: 'วันเกิด', text: 'วันเกิด 12 พ.ค. 2530 ค่ะ' },
+      { label: 'พาสปอร์ต', text: 'เลขพาสปอร์ต AA1234567' },
+      { label: 'พาสปอร์ตไม่มีคำบอก', text: 'AA1234567', note: 'มั่นใจ 0.6 · ไม่ถึงเกณฑ์' },
       { label: 'เลขออเดอร์', text: 'เลขที่ออเดอร์ 8829301847 ราคา 250 บาท', note: 'ไม่มีคำว่าบัญชี · ไม่จับ', whyNot: 'ไม่ขึ้นต้นด้วย 0 จึงไม่ใช่เบอร์ และไม่มีคำว่า บัญชี หรือชื่อธนาคาร จึงไม่ใช่เลขบัญชี' },
     ]
     const inp = inputPanel('s2-input', 'ข้อความ · กดตัวอย่างด้านล่าง หรือพิมพ์เอง', 'เลขบัตร 3-1005-00123-45-8 บัตร 4111 1111 1111 1111', PRESETS, run)
@@ -547,18 +562,18 @@ pre.json {
   // =====================================================================
   function stepActions() {
     const s = section({
-      id: 's3', eyebrow: 'action ทั้ง 6',
-      title: 'ข้อความเดียวกัน ผ่าน policy 6 แบบ',
-      lede: 'เปลี่ยนแค่ action ของเบอร์โทร · ข้อมูลประเภทอื่นถูกปิดตามค่าเริ่มต้น',
-      foot: 'token และ hash ใช้ตัวอักษรล้วน ไม่มีตัวเลข จึงผ่าน guard รอบสองโดยไม่ถูกจับซ้ำ · block คืนข้อความว่าง ถ้าแอปลืมเช็คผลก็ไม่มีอะไรหลุด',
+      id: 's3', eyebrow: 'วิธีปิด 6 แบบ',
+      title: 'ข้อความเดียวกัน ปิดได้ 6 แบบ',
+      lede: 'เปลี่ยนแค่วิธีปิดเบอร์โทร (action) · ข้อมูลประเภทอื่นถูกลบออกตามค่าเริ่มต้น',
+      foot: 'token และ hash เป็นตัวอักษรล้วน ไม่มีตัวเลข ส่งผ่าน guard ซ้ำก็ไม่ถูกจับอีก · block คืนข้อความว่าง ถึงแอปจะลืมเช็คผล ก็ไม่มีอะไรหลุดออกไป',
     })
     const keep = h('input', { type: 'checkbox', id: 's3-keep', checked: true })
     const ACTIONS = [
-      { a: 'redact', when: 'ลบค่าออก แทนด้วยชื่อประเภท · ไม่เหลือส่วนไหนของค่าเดิม' },
-      { a: 'mask', when: 'แทนตัวเลขด้วย x คงขีดและเว้นวรรคไว้ · ใส่ keep: last4 จะเหลือ 4 ตัวท้าย' },
-      { a: 'tokenise', when: 'แทนด้วย token สุ่ม เก็บค่าจริงไว้ฝั่ง server · ค่าเดิมในห้องเดิมได้ token เดิม · tool แลกคืนได้ตาม purpose ภายในเวลาที่กำหนด' },
-      { a: 'hash', when: 'แทนด้วย HMAC ของค่า · ค่าเดียวกันได้ผลเดียวกันเสมอ แม้พิมพ์ต่างรูปแบบ · ย้อนกลับเป็นค่าจริงไม่ได้ถ้าไม่มี key' },
-      { a: 'flag', when: 'ไม่แก้ข้อความ ส่งต่อตามเดิม · แต่บันทึกลง audit ว่าเจออะไร ตรงไหน' },
+      { a: 'redact', when: 'ลบค่าออก ใส่ชื่อประเภทแทน · ไม่เหลือส่วนไหนของค่าเดิม' },
+      { a: 'mask', when: 'เปลี่ยนตัวเลขเป็น x แต่คงขีดและเว้นวรรค · ใส่ keep: last4 จะเหลือ 4 ตัวท้าย' },
+      { a: 'tokenise', when: 'แทนด้วยรหัสสุ่ม ค่าจริงเก็บไว้ฝั่ง server · ค่าเดิมในห้องแชทเดิมได้รหัสเดิม · tool ที่ได้รับอนุญาตแลกคืนได้ภายในเวลาที่กำหนด' },
+      { a: 'hash', when: 'แทนด้วยลายนิ้วมือของค่า (HMAC) · ค่าเดียวกันได้ผลเดียวกันเสมอ แม้พิมพ์ต่างรูปแบบ · ถ้าไม่มี key ย้อนกลับไม่ได้' },
+      { a: 'flag', when: 'ไม่แก้ข้อความ ส่งต่อตามเดิม · แต่บันทึกว่าเจออะไร ตรงไหน' },
       { a: 'block', when: 'ไม่ส่งข้อความนี้เลย คืนข้อความว่าง · บอกใน blockedBy ว่าเจอประเภทไหน' },
     ]
     const run = () => {
@@ -584,7 +599,7 @@ pre.json {
       }
       clear(s.right).append(h('div', { class: 'panel' },
         h('div', { class: 'tablewrap' }, h('table', {},
-          h('thead', {}, h('tr', {}, h('th', {}, 'action'), h('th', {}, 'AI เห็น'), h('th', {}, 'ผล'), h('th', {}, 'ทำงานยังไง'))),
+          h('thead', {}, h('tr', {}, h('th', {}, 'วิธี'), h('th', {}, 'AI เห็น'), h('th', {}, 'ผล'), h('th', {}, 'ทำงานอย่างไร'))),
           tbody,
         )),
       ))
@@ -594,7 +609,7 @@ pre.json {
       { label: 'เบอร์อย่างเดียว', text: 'ขอเปลี่ยนเบอร์เป็น 091-888-7777 ค่ะ' },
       { label: 'เบอร์เลขไทย', text: 'ขอเปลี่ยนเบอร์เป็น ๐๙๑-๘๘๘-๗๗๗๗ ค่ะ' },
       { label: 'เบอร์ + อีเมล', text: 'เบอร์ 091-888-7777 อีเมล somchai@example.com' },
-    ], run, h('label', { class: 'check', for: 's3-keep' }, keep, 'mask ใส่ keep: last4 · เอาออกแล้วจะปิดทั้งหมด'))
+    ], run, h('label', { class: 'check', for: 's3-keep' }, keep, 'mask เหลือ 4 ตัวท้าย (keep: last4) · เอาติ๊กออกจะปิดทั้งหมด'))
     s.left.append(inp.node)
     run()
     return s.el
@@ -606,10 +621,10 @@ pre.json {
   // =====================================================================
   function stepPolicyFile() {
     const s = section({
-      id: 's-policy', eyebrow: 'policy',
-      title: 'policy คือไฟล์กติกา',
-      lede: 'บอกว่าเจอข้อมูลแต่ละประเภทแล้วให้ทำอะไร · dev เขียนครั้งเดียว รีวิวเหมือน code แล้ว guard โหลดตอน server เริ่ม',
-      foot: 'ไฟล์นี้คือ examples/pdpa-policy.json ใน repo · มีเทสบังคับว่าต้องโหลดผ่านเสมอ · hmacKey ไม่อยู่ใน policy เพราะไฟล์นี้ถูก commit ลง git ส่วน key ต้องอ่านจาก secret',
+      id: 's-policy', eyebrow: 'กติกา (policy)',
+      title: 'กติกาของร้านอยู่ในไฟล์เดียว',
+      lede: 'บอกว่าเจอข้อมูลแต่ละประเภทแล้วให้ทำอะไร · เขียนครั้งเดียว รีวิวเหมือนโค้ด แล้ว guard โหลดตอน server เริ่ม',
+      foot: 'ไฟล์นี้คือ examples/pdpa-policy.json ใน repo และมีเทสต์บังคับว่าต้องโหลดผ่านเสมอ · hmacKey ไม่อยู่ในไฟล์นี้ เพราะไฟล์ถูก commit ลง git ส่วน key ต้องอ่านจาก secret',
     })
     const ta = h('textarea', { id: 'sp-policy', class: 'code', value: EXAMPLE_POLICY, spellcheck: 'false' })
     const msg = h('textarea', { id: 'sp-msg', rows: 3, spellcheck: 'false',
@@ -691,9 +706,9 @@ pre.json {
   // =====================================================================
   function stepTokenise() {
     const s = section({
-      id: 's4', eyebrow: 'tokenise แล้วแลกค่ากลับ',
-      title: 'AI เห็นแค่ token · tool แลกค่าจริงได้ตาม purpose',
-      lede: 'purpose ไม่ใช่รหัสผ่าน แต่เป็นเหตุผลที่ policy อนุญาต · ทุกครั้งที่แลกถูกบันทึก ทั้งที่ได้และที่ถูกปฏิเสธ',
+      id: 's4', eyebrow: 'token และการแลกค่าจริง',
+      title: 'AI เห็นแค่ token · tool ที่ได้รับอนุญาตเท่านั้นแลกเบอร์จริงได้',
+      lede: 'purpose ไม่ใช่รหัสผ่าน แต่เป็นเหตุผลที่กติกาอนุญาต · ทุกครั้งที่ขอแลกถูกบันทึก ทั้งที่ได้และที่ถูกปฏิเสธ',
       foot: 'ค่าเดิมในห้องแชทเดิมได้ token เดิม AI จึงไม่เข้าใจผิดว่ามีสองเบอร์ · แลกได้ค่าในรูปแบบมาตรฐาน 0918887777 ที่ tool ใช้ได้ทันที · ตอนตอบลูกค้า guard ขาออกแปลง token เป็นเบอร์ที่ปิดไว้ ลูกค้าไม่เห็น token และไม่เห็นเบอร์เต็ม · sessionId ควรเป็น id ห้องแชทที่ระบบสร้างเอง ไม่ใช่ LINE userId',
     })
     let state
@@ -891,7 +906,7 @@ pre.json {
   // =====================================================================
   function stepAllowlist() {
     const s = section({
-      id: 's6', eyebrow: 'allowlist',
+      id: 's6', eyebrow: 'ข้อมูลของร้าน (allowlist)',
       title: 'ร้านส่งข้อมูลของร้านเองได้ ข้อมูลลูกค้ายังถูกปิด',
       lede: 'เทียบค่าหลังตัดรูปแบบออก ร้านเขียน 02-123-4567 ไว้ ลูกค้าพิมพ์ ๐๒๑๒๓๔๕๖๗ ก็ตรงกัน',
       foot: 'pattern ต้องตรงทั้งค่า ระบบครอบ ^(?:…)$ ให้เอง · ค่าที่ปล่อยผ่านยังถูกบันทึกใน audit ว่า allowlisted: true แต่ไม่มีค่าจริงอยู่ในบันทึก',
@@ -940,9 +955,9 @@ pre.json {
   // =====================================================================
   function stepAudit() {
     const s = section({
-      id: 's8', eyebrow: 'audit',
+      id: 's8', eyebrow: 'บันทึกตรวจสอบ (audit)',
       title: 'บันทึกทุกครั้ง โดยไม่มีค่าจริงอยู่ข้างใน',
-      lede: 'หน้านี้ตรวจให้ดูสด ๆ ว่าค่าที่เจอในข้อความไม่มีอยู่ใน audit event เลย',
+      lede: 'หน้านี้ค้นให้ดูสด ๆ ว่าค่าที่เจอในข้อความไม่อยู่ในบันทึก (audit event) เลย',
       foot: 'ref คือ id ข้อความในระบบของแอป log ไม่มีค่าจริง แต่ชี้กลับไปหาข้อความต้นทางได้ · ถ้าระบบ log พัง ข้อความยังผ่าน แต่ไม่หายเงียบ ระบบนับไว้ใน guard.stats และแจ้ง onError · audit ต้องเก็บแยกจากข้อความต้นฉบับ เพราะตำแหน่งบวกข้อความเดิมประกอบกลับเป็นค่าจริงได้',
     })
     const broken = h('input', { type: 'checkbox', id: 's8-broken' })
@@ -993,8 +1008,8 @@ pre.json {
 
   // ---------- navigation ----------
   const STEPS = [
-    ['เส้นทาง', stepPipeline], ['ตัวตรวจ', stepDetect], ['action', stepActions], ['policy', stepPolicyFile], ['tokenise', stepTokenise],
-    ['hash', stepHash], ['allowlist', stepAllowlist], ['audit', stepAudit],
+    ['ภาพรวม', stepPipeline], ['ตัวตรวจ', stepDetect], ['วิธีปิด', stepActions], ['กติกา', stepPolicyFile], ['token', stepTokenise],
+    ['hash', stepHash], ['ข้อมูลร้าน', stepAllowlist], ['บันทึก', stepAudit],
   ]
   const stage = document.getElementById('stage')
   const stepsNav = document.getElementById('steps')
@@ -1028,10 +1043,10 @@ pre.json {
   })
 
   if (!P) {
-    document.getElementById('libinfo').textContent = 'โหลด library ไม่สำเร็จ'
+    document.getElementById('libinfo').textContent = 'โหลดไลบรารีไม่สำเร็จ'
     return
   }
-  document.getElementById('libinfo').textContent = 'รัน @eve-pdpa-extension/core v' + P.VERSION + ' ตัวจริงในเบราว์เซอร์นี้ · ไม่มีข้อมูลส่งออกไปไหน'
+  document.getElementById('libinfo').textContent = 'ใช้ @eve-pdpa-extension/core v' + P.VERSION + ' ตัวจริง ทำงานในเบราว์เซอร์นี้ · ข้อความไม่ถูกส่งออกไปไหน'
   const m = /^#s(\d+)$/.exec(location.hash)
   show(m ? Number(m[1]) - 1 : 0)
 })()

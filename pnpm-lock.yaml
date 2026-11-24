@@ -172,6 +172,9 @@ importers:
       '@biomejs/biome':
         specifier: 2.6.8
         version: 2.6.8
+      '@m-intelligence/tokens':
+        specifier: 0.3.1
+        version: 0.3.1
       '@size-limit/file':
         specifier: 14.3.0
         version: 14.3.0(size-limit@14.3.0)
@@ -710,6 +713,9 @@ packages:
 
   '@loaderkit/resolve@1.0.6':
     resolution: {integrity: sha512-G8FdIoF5CypfwmD9rl8BXod5HDn8JqB0CCNBXDTaRZ+yRYhARrrSToX1zg1zy9jX3zLqigsELwhT4gNtkdQAUg==}
+
+  '@m-intelligence/tokens@0.3.1':
+    resolution: {integrity: sha512-M07znm+FTouLqeFl1ZmqCw8OXtCIWIT3xLi7c9OvUSu+hyGlhGrXdQ3uKxL+EYGS8GQaWIjvt6QaLq8bkE39Tg==}
 
   '@napi-rs/wasm-runtime@1.2.6':
     resolution: {integrity: sha512-mRyDmEw9/fCDXCGfL1sbgIw/GUK0PVxRW4YwgPN61F3LQ+fSyoBFarJVzgGyhF6kRzEQZ0FejDqm4WLXSeqQmw==}
@@ -2727,6 +2733,8 @@ snapshots:
   '@loaderkit/resolve@1.0.6':
     dependencies:
       '@braidai/lang': 1.1.2
+
+  '@m-intelligence/tokens@0.3.1': {}
 
   '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)':
     dependencies:
