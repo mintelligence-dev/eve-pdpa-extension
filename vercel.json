@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @eve-pdpa-extension/core build && pnpm --filter @eve-pdpa-extension/demo build",
+  "outputDirectory": "apps/demo/out",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- apps/demo packages/core examples/pdpa-policy.json package.json pnpm-lock.yaml vercel.json",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
+}

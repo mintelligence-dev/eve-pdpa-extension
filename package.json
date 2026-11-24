@@ -20,7 +20,7 @@
     "gate:pack": "pnpm --filter @eve-pdpa-extension/core exec publint --strict && pnpm --filter @eve-pdpa-extension/core exec attw --pack --profile node16",
     "gate:tarballs": "node scripts/assert-tarballs.mjs",
     "gate:attestation": "node scripts/assert-attestation.mjs",
-    "demo": "pnpm build && node scripts/demo/build.mjs",
+    "demo": "pnpm --filter @eve-pdpa-extension/core build && pnpm --filter @eve-pdpa-extension/demo dev",
     "smoke": "node scripts/smoke-runtimes.mjs",
     "smoke:node": "node packages/core/smoke/run.mjs",
     "smoke:cli": "node packages/cli/smoke/run.mjs",
@@ -35,7 +35,6 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
     "@biomejs/biome": "2.6.8",
-    "@m-intelligence/tokens": "0.3.1",
     "@size-limit/file": "14.3.0",
     "@types/node": "24.10.1",
     "@vitest/coverage-v8": "5.1.1",

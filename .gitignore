@@ -12,8 +12,6 @@ coverage/
 .env.*
 !.env.example
 
-# Built demo page (scripts/demo/build.mjs)
-scripts/demo/out/
 
 # Internal design notes and translations of internal pages — kept local. Root
 # only: packages/http/docs is what callers build against, and is tracked.
@@ -32,3 +30,11 @@ packages/*/LICENSE
 
 # Claude Code agents, hooks and skills for this machine (edge-loop, user-bench) — kept local
 .claude/
+
+# Vercel project link
+.vercel/
+
+# Next.js (apps/demo)
+.next/
+next-env.d.ts
+apps/demo/out/
