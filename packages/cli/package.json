@@ -1,6 +1,6 @@
 {
   "name": "@eve-pdpa-extension/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scan JSONL, CSV and LINE Official Account exports for Thai personal data.",
   "keywords": [
     "pdpa",

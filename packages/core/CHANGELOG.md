@@ -1,6 +1,6 @@
 # @eve-pdpa-extension/core
 
-## Unreleased
+## 0.2.0
 
 ### License
 

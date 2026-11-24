@@ -1,7 +1,8 @@
 # @eve-pdpa-extension/cli
 
-## Unreleased
+## 0.2.0
 
+- Reports license plates, dates of birth and passport numbers, through core 0.2.0. `--policy` and `policy validate` know the three new types; a policy written for 0.1 that does not name them redacts them (`onUnmapped`).
 - Licensed under MIT instead of Apache-2.0, as the other M Intelligence open-source projects are. Versions already published stay under Apache-2.0. The package no longer ships a `NOTICE` file.
 
 ## 0.1.0

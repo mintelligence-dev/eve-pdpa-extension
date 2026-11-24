@@ -228,7 +228,7 @@ esac
 
 ## Limitations
 
-- **Names and addresses are not detected yet** (planned for 0.2)
+- **Names and addresses are not detected yet** (planned for a later release)
 - Every detector limitation of core applies here, such as bank accounts needing a cue word · see [Known limitations](https://www.npmjs.com/package/@eve-pdpa-extension/core#known-limitations)
 - One file at a time · does not read .zip
 - The LINE OA format comes from a Thai-language export seen in 2025 · if LINE changes it, the CLI stops and says it cannot find the column, rather than scanning the wrong one in silence

@@ -1,7 +1,12 @@
 # @eve-pdpa-extension/eve
 
-## Unreleased
+## 0.2.0
 
+Built on core 0.2.0.
+
+- **Breaking:** audit events are `schemaVersion: "2.0"` (core 0.2.0): `at` is now `timestamp`, and the scan event drops `skippedDetectors` and `prevHash`. This changes the NDJSON lines `createPdpa` writes to stdout by default; update log queries that read them.
+- License plates, dates of birth and passport numbers are detected, through core. A policy that does not name them redacts them.
+- `eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.2.0/r/pdpa.json --overwrite` installs this version.
 - Licensed under MIT instead of Apache-2.0, as the other M Intelligence open-source projects are. Versions already published stay under Apache-2.0. The package no longer ships a `NOTICE` file.
 - The `eve` peer dependency is now `>=0.80.0 <0.81.0` instead of `*`. Only eve 0.80.x was ever supported; beside eve 1.x the package manager now warns or refuses at install, rather than the agent stopping only when it loads.
 

@@ -26,9 +26,9 @@ Reply the customer sees   ส่ง OTP ไปที่ xxx-xxx-7777 แล้�
 2. **Gives the real value only to the tools you allow**, so an OTP tool can send to the real number while the model only ever sees `[tok:…]`.
 3. **Installs in 3 steps** with `eve add`. See [Install in 3 steps](#install-in-3-steps).
 4. **Checks your project:** `eve-pdpa-check` says by name which channel, model or hook you forgot to wrap.
-5. **Audits without real values:** detection comes from [`@eve-pdpa-extension/core`](../core) (Thai national ID, phone number, email, bank account, credit card and LINE user ID), and audit events **never contain the real value**.
+5. **Audits without real values:** detection comes from [`@eve-pdpa-extension/core`](../core) (Thai national ID, phone number, email, bank account, credit card, LINE user ID, license plate, date of birth and passport number), and audit events **never contain the real value**.
 
-Node 24+, tested with eve **0.80.1**. Only eve 0.80.x is supported: eve 1.x, which `npm install eve` gives you today, is not supported yet, so install `eve@0.80.1`. From the release after 0.1.1 the peer dependency says so.
+Node 24+, tested with eve **0.80.1**. Only eve 0.80.x is supported: eve 1.x, which `npm install eve` gives you today, is not supported yet, so install `eve@0.80.1`. From 0.2.0 the peer dependency says so (`>=0.80.0 <0.81.0`).
 
 ## Safeguards
 
@@ -76,7 +76,7 @@ From an agent made with `eve init`: add the item, edit `agent/agent.ts`, set two
 
 <!-- pdpa-install -->
 ```bash
-eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.1.1/r/pdpa.json --overwrite
+eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.2.0/r/pdpa.json --overwrite
 # Then fill in the two keys eve add put in .env.local, one `openssl rand -hex 32` each:
 # PDPA_HMAC_KEY=...
 # PDPA_SESSION_KEY=...
@@ -115,7 +115,7 @@ npx eve-pdpa-check                # channels, model, hook, eve version
 npx eve-pdpa-check --production   # also both keys and a shared token store
 ```
 
-If jsDelivr is down, the same file is at `https://unpkg.com/@eve-pdpa-extension/eve@0.1.1/r/pdpa.json`.
+If jsDelivr is down, the same file is at `https://unpkg.com/@eve-pdpa-extension/eve@0.2.0/r/pdpa.json`.
 
 ### Deploy on Vercel
 
