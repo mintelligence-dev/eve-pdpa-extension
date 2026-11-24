@@ -1,71 +1,89 @@
 # eve-pdpa-extension
 
-> ตรวจจับและปิดข้อมูลส่วนบุคคลไทยในข้อความ ก่อนส่งต่อให้ AI model, AI agent, tool, log หรือคนรีวิว  
-> Detect and protect Thai personal data before it reaches an AI model, an AI agent, a tool, a log or a human reviewer.
+Detect and protect Thai personal data before it reaches an AI model, an AI agent, a tool, a log or a human reviewer.
 
+[![CI](https://github.com/mintelligence-dev/eve-pdpa-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/mintelligence-dev/eve-pdpa-extension/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![core](https://img.shields.io/npm/v/@eve-pdpa-extension/core?label=core)](https://www.npmjs.com/package/@eve-pdpa-extension/core)
 [![cli](https://img.shields.io/npm/v/@eve-pdpa-extension/cli?label=cli)](https://www.npmjs.com/package/@eve-pdpa-extension/cli)
 [![eve](https://img.shields.io/npm/v/@eve-pdpa-extension/eve?label=eve)](https://www.npmjs.com/package/@eve-pdpa-extension/eve)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-**[ลองใช้ในเบราว์เซอร์ · Live demo](https://eve-pdpa-extension.vercel.app)** ไม่ต้องติดตั้ง ข้อความไม่ถูกส่งออกไปไหน · nothing to install, nothing leaves your browser
+**English** · [ภาษาไทย](README.th.md)
 
-> **เป็นเครื่องมือทางเทคนิค ไม่ใช่ใบรับรองการปฏิบัติตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล**  
+<a href="https://eve-pdpa-extension.vercel.app">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/demo-dark.png">
+    <img alt="The live demo: a customer's message with a national ID and a phone number in Thai digits, cleaned, scanned and masked before the AI sees it" src=".github/assets/demo-light.png">
+  </picture>
+</a>
+
+**[Try it in your browser →](https://eve-pdpa-extension.vercel.app)** The real library runs in the page. Nothing to install, and nothing you type leaves your browser.
+
 > **This is a technical tool, not a certification of compliance with Thailand's PDPA.**
 
----
+## What is in this repository
 
-## ภาษาไทย
+| | What it is | Where it runs | Try it |
+|---|---|---|---|
+| [`packages/core`](packages/core) | The library your app calls on every message: detection, the six actions, tokens, audit. Zero dependencies | Node 18.18+, Deno, Bun, Cloudflare Workers, browsers | `npm install @eve-pdpa-extension/core` |
+| [`packages/cli`](packages/cli) | Scans old chat exports (JSONL, CSV, LINE OA) and checks a policy file, without writing code | Node 18.18+ | `npx @eve-pdpa-extension/cli scan chats.csv` |
+| [`packages/eve`](packages/eve) | An adapter for [eve](https://eve.dev) agents: wraps every channel, the model, the tools and the session | Node 24+, eve 0.80.x | `eve add` (see [Quick start](#quick-start)) |
+| [`examples/pdpa-agent`](examples/pdpa-agent) | A complete eve agent for a Thai shop, set up with `eve add` | Your machine, or Vercel | `npm run dev` |
+| [`apps/demo`](apps/demo) | The live demo, built with Next.js and [Mintel UI](https://mintel-ui.vercel.app) | Your browser | [eve-pdpa-extension.vercel.app](https://eve-pdpa-extension.vercel.app) |
 
-### ทำอะไรได้
+All of them detect and mask with the same code in `packages/core`.
 
-1. **ตรวจ** เลขบัตรประชาชน · เบอร์โทร · อีเมล
-   · ทะเบียนรถ (ต้องมีคำบอกใบ้)
-   · เลขบัญชี
-   · วันเกิด (ต้องมีคำบอกใบ้)
-   · บัตรเครดิต · LINE user ID
-   · เลขพาสปอร์ต (ต้องมีคำบอกใบ้)
-   ทั้งเลขไทยและเลขอารบิก
-2. **ปิดตาม policy** เลือกได้ต่อประเภท `redact` · `mask` · `tokenise` · `hash` · `flag` · `block` เช่น AI เห็น `[tok:…]` แต่ tool ส่ง OTP ได้เบอร์จริง และลูกค้าเห็น `xxx-xxx-7777`
-3. **บันทึก audit** ทุกครั้งที่ตรวจ โดยไม่มีค่าจริงอยู่ใน audit
-4. **ตรวจไฟล์แชทเก่า** โดยไม่ต้องเขียนโค้ด รองรับ JSONL · CSV · ไฟล์ export จาก LINE OA
-5. **ห่อ agent ที่สร้างด้วย [eve](https://eve.dev)** ครบ 4 ชั้น ได้แก่ ขาเข้า · tool · prompt · ขาออกของทุก channel ติดตั้ง 3 ขั้นด้วย `eve add`
+## How it works
 
-### แพ็กเกจ
+A guard sits between your customers and the AI, on your own server:
 
-| แพ็กเกจ | ใช้ทำอะไร | วิธีใช้ |
-|---|---|---|
-| [`@eve-pdpa-extension/core`](packages/core) | ไลบรารีที่แอปเรียกทุกข้อความ · zero dependency · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser | [ไทย](packages/core/README.th.md) · [English](packages/core/README.md) |
-| [`@eve-pdpa-extension/cli`](packages/cli) | ตรวจไฟล์แชทเก่า · `policy validate` | [ไทย](packages/cli/README.th.md) · [English](packages/cli/README.md) |
-| [`@eve-pdpa-extension/eve`](packages/eve) | adapter สำหรับ eve · `eve-pdpa-check` ตรวจว่าลืมห่ออะไร · Node 24+ · ทดสอบกับ eve 0.80.1 | [ไทย](packages/eve/README.th.md) · [English](packages/eve/README.md) |
+```
+customer ──▶ clean up ──▶ detect ──▶ settle overlaps ──▶ act per policy ──▶ AI sees [tok:…]
+                                                                              │
+     tool allowed by the policy  ◀── swap the token for the real value ◀─────┤
+                                                                              ▼
+customer sees xxx-xxx-7777  ◀────────────── check the reply ◀────────── AI answers [tok:…]
 
-README ของแต่ละแพ็กเกจเป็นหน้าเดียวกับที่ขึ้นบน npm และมีรายละเอียดครบ ไฟล์นี้สรุปไว้สั้นๆ
-
-### หลักความปลอดภัย
-
-| กฎ | บังคับใช้อย่างไร |
-|---|---|
-| audit ไม่มีค่าจริง | audit event เก็บแค่ประเภท ตำแหน่ง และ action ไม่เก็บข้อความที่ตรวจเจอ · ส่วน `sessionId` และ `ref` ถูกเก็บตามที่ส่งมา จึงไม่ควรใช้เบอร์หรือ LINE userId เป็นค่าพวกนี้ |
-| tool ได้ค่าจริงเฉพาะที่อนุญาต | `guard.resolve()` แลก token ได้เฉพาะ purpose ที่อยู่ใน `allowedPurposes` ของ policy และ token หมดอายุตาม `ttlSec` (สูงสุด 3600 วินาที) ใน eve มีแค่ tool ที่ห่อด้วย `withTokenResolution` ที่แลกได้ |
-| ลูกค้าไม่เห็น token | ขาออก (`boundary: 'outbound'`) แปลง token เป็นค่าที่ปิดแล้ว เช่น `xxx-xxx-7777` |
-| ข้อความที่ถูก block ไม่หลุด | `block` คืน `text: ''` เสมอ ถึงจะลืมเช็ค `outcome` ข้อความก็ไม่ถูกส่งต่อ |
-| core ไม่มีทางรั่วออกเน็ต | ไม่มี dependency ไม่ใช้ `node:` builtin และไม่เรียก network บังคับด้วย `pnpm gates` และ smoke test บน Deno ที่ไม่ให้ permission ใดๆ |
-| ไม่มีข้อมูลจริงใน repo | ทุกไฟล์ใน `fixtures/` ต้องลงชื่อใน `fixtures/ATTESTATION.md` ว่าเป็นข้อมูลสังเคราะห์ (`pnpm gate:attestation`) |
-
-### เริ่มใช้งาน
-
-```bash
-npm install @eve-pdpa-extension/core            # ไลบรารี
-npx @eve-pdpa-extension/cli scan chats.csv      # ตรวจไฟล์แชทเก่า ไม่ต้องเขียนโค้ด
+                   every step writes an audit event, never the value itself
 ```
 
-- **ใช้ในแอป:** ต้องมีไฟล์ policy และ `PDPA_HMAC_KEY` (สร้างด้วย `openssl rand -hex 32`) ดู[เริ่มใช้ของ core](packages/core/README.th.md#เริ่มใช้)
-- **ตรวจไฟล์เก่า:** ใช้ CLI ตามข้างบน ดู [README ของ cli](packages/cli/README.th.md)
-- **agent ที่สร้างด้วย eve:** ติดตั้ง 3 ขั้นด้วย `eve add` ดู [README ของ eve](packages/eve/README.th.md#ติดตั้งใน-3-ขั้น) · ตัวอย่าง agent ที่รันได้อยู่ที่ [examples/pdpa-agent](examples/pdpa-agent)
-- รัน guard **ฝั่ง server เท่านั้น** เพราะ key และ token ที่อยู่ในเบราว์เซอร์ ใครก็อ่านได้
+1. **Clean up.** Thai and full-width digits become ordinary digits, and invisible characters hidden inside a number are removed. Positions are mapped back, so everything else stays exactly as the customer typed it.
+2. **Detect.** Nine types: national ID, phone, email, bank account, credit card, LINE user ID, license plate, date of birth and passport number. Each match has a confidence score. Checksums (mod-11, Luhn), patterns and cue words such as "เบอร์" or "บัญชี" decide it. No AI is involved and nothing goes over the network.
+3. **Settle overlaps.** When two matches overlap they are hidden together as one span, so no value is ever left half covered.
+4. **Act per policy.** One JSON file says what happens to each type: `redact`, `mask`, `tokenise`, `hash`, `flag` or `block`.
+5. **Tokens.** A tool can swap a token back for the real value, but only for a purpose the policy allows, in the same chat, before it expires. A reply has its tokens shown masked to the customer.
+6. **Audit.** Every scan, every token swap and every policy load is recorded. A record never holds a real value.
 
-### ใช้ในโค้ด
+## Safeguards
+
+| Rule | How it is enforced |
+|---|---|
+| No real values in audit | An audit event records the type, position and action, never the matched text. `sessionId` and `ref` are stored as you pass them, so do not use a phone number or LINE userId for them. |
+| Real values only where allowed | `guard.resolve()` swaps a token only for a purpose listed in the policy's `allowedPurposes`, in the token's own session, within `ttlSec` (at most 3600 s). In eve, only tools wrapped with `pdpa.tool()` can resolve. |
+| Customers never see tokens | Outbound (`boundary: 'outbound'`) turns this chat's tokens into masked values such as `xxx-xxx-7777`, and any other token into a placeholder. |
+| Blocked text does not leak | `block` always returns `text: ''`, so forgetting to check `outcome` still sends nothing. |
+| A broken token store fails closed | If tokens cannot be stored, the message is blocked rather than passed through. |
+| core cannot reach the network | No dependencies, no `node:` builtins, no network calls. Enforced by `pnpm gates` and a Deno smoke test run with no permissions. |
+| No real data in the repo | Every file under `fixtures/` must be listed in `fixtures/ATTESTATION.md` as synthetic. |
+
+## Quick start
+
+### Protect an eve agent
+
+Needs Node 24 or later and an eve 0.80.x agent (`npx eve@0.80.1 init my-agent`).
+
+```bash
+eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.2.0/r/pdpa.json --overwrite
+```
+
+This writes a policy, wraps the channel and adds the session hook. Then wrap your model in `agent/agent.ts` and set two keys. The [eve README](packages/eve/README.md#install-in-3-steps) has the three steps; [`examples/pdpa-agent`](examples/pdpa-agent) is a finished agent made exactly this way.
+
+### Use the library in your own code
+
+```bash
+npm install @eve-pdpa-extension/core
+```
 
 ```ts
 import { readFileSync } from 'node:fs'
@@ -73,166 +91,82 @@ import { createGuard, parsePolicy } from '@eve-pdpa-extension/core'
 
 const guard = createGuard({
   policy: parsePolicy(readFileSync('pdpa-policy.json', 'utf8')),
-  hmacKey: process.env.PDPA_HMAC_KEY,
+  hmacKey: process.env.PDPA_HMAC_KEY, // openssl rand -hex 32
   onAudit: (event) => console.log(JSON.stringify(event)),
 })
 
 const inbound = await guard.process('เบอร์ ๐๙๑-๘๘๘-๗๗๗๗ ค่ะ', { sessionId: 'conv_8f2a' })
-inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← สิ่งที่ AI เห็น
+inbound.text // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'  ← what the AI sees
 ```
 
-ตัวอย่างเต็ม (แลก token ใน tool และปิดขาออก) อยู่ใน [README ของ core](packages/core/README.th.md#เริ่มใช้)
+Run the guard **on the server only**: anyone can read a key or a token that is in the browser. The full flow, with a tool resolving the token and the reply masked, is in core's [Quick start](packages/core/README.md#quick-start).
 
-### คำสั่ง
-
-| คำสั่ง | |
-|---|---|
-| `corepack pnpm install` | ติดตั้ง dependency ของ repo |
-| `corepack pnpm exec playwright install chromium` | ครั้งเดียว · ใช้ใน smoke test ของ browser |
-| `corepack pnpm verify` | lint · build · typecheck · test · gates · size · smoke 5 runtime · ตัวอย่างใน README |
-| `corepack pnpm demo` | สร้างหน้า live demo ที่ `scripts/demo/out/pdpa-demo.html` · ฉบับที่ deploy บน Vercel อยู่ที่ [eve-pdpa-extension.vercel.app](https://eve-pdpa-extension.vercel.app) |
-| `node bench/generate.mjs --holdout` | สร้างชุด holdout (ชุดที่ไม่ได้ใช้ปรับตัวตรวจ) จาก seed · ต้อง `pnpm build` ก่อน |
-| `node bench/evaluate.mjs --holdout --context` | วัดความแม่นยำ · เขียนรายงานที่ `bench/out/` |
-
-### ข้อจำกัดที่ควรรู้
-
-- ยังไม่ตรวจชื่อคนและที่อยู่ (วางแผนไว้รุ่นถัดไป)
-- เลขบัญชี เบอร์ที่ไม่มี 0 นำหน้า และประเภทที่เขียนว่า "ต้องมีคำบอกใบ้" ด้านบน ต้องมีคำบอกใบ้ เช่น "เลขบัญชี" "เบอร์" หรือส่ง `context`
-- eve: HTTP channel ของ eve ยังไม่ถูกปิดตอนขาออก และรองรับเฉพาะ **eve 0.80.x** · eve 1.x (รุ่น `latest` บน npm ตอนนี้) ยังไม่รองรับ ให้ติดตั้ง `eve@0.80.1`
-- ตัวเลขความแม่นยำวัดจากข้อมูลสังเคราะห์ จึงเป็นค่าสูงสุดที่ทำได้ ไม่ใช่ค่าที่จะเจอจริง
-
-รายการเต็มอยู่ในหัวข้อข้อจำกัดของ [core](packages/core/README.th.md#ข้อจำกัดที่รู้อยู่) และ [eve](packages/eve/README.th.md#ข้อจำกัดที่ควรรู้)
-
-### แผนงาน
-
-ยังไม่มีกำหนดเวอร์ชัน ลำดับอาจเปลี่ยนได้
-
-- **ชื่อคน ที่อยู่ และพร้อมเพย์** มีโค้ดอยู่บน branch `feat/promptpay` แล้ว รอรีวิวและรวมเข้า `main`
-- **eve 1.x** แพ็กเกจ eve ตอนนี้รองรับเฉพาะ eve 0.80.x
-- **ปิดข้อมูลขาออกของ HTTP channel** ใน eve
-- **โหลด policy จากไฟล์** (`@eve-pdpa-extension/policy`) อ่าน YAML และตรวจ policy เต็มรูปแบบ ใช้ได้เฉพาะ Node จึงแยกจาก core ที่ไม่มี dependency
-- **MCP server** (`@eve-pdpa-extension/mcp`) มี tool `pdpa.scan` และ `pdpa.redact` ให้ AI agent เรียกใช้
-- **ตรวจชื่อด้วยโมเดล NER** (`@eve-pdpa-extension/ner`) แยกจาก core เพราะโมเดลมีขนาดหลายร้อย MB ยังไม่ได้เลือกโมเดล ต้องตรวจ license ก่อน
-
-### ร่วมพัฒนา
-
-ยินดีรับ issue และ pull request ก่อนส่ง PR ให้รัน `corepack pnpm verify` ให้ผ่าน **ห้าม commit ข้อมูลส่วนบุคคลจริง** ทั้งในเทสต์ fixture issue และ commit message ดูกฎทั้งหมดใน [CONTRIBUTING.md](CONTRIBUTING.md) · แจ้งช่องโหว่ตาม [SECURITY.md](SECURITY.md)
-
-### สัญญาอนุญาต
-
-เผยแพร่ภายใต้ [MIT License](LICENSE) · Copyright (c) 2026 M Intelligence  
-นำไปใช้ แก้ไข และใช้เชิงพาณิชย์ได้ ต้องคงข้อความลิขสิทธิ์และสัญญาอนุญาตไว้ ซอฟต์แวร์นี้ให้ "ตามสภาพ" ไม่มีการรับประกันใดๆ  
-เวอร์ชันที่ออกไปแล้ว (core 0.1.0 · cli 0.1.0 · eve 0.1.0 และ 0.1.1) ยังเป็น Apache-2.0 ตามที่ออก
-
----
-
-## English
-
-### What it does
-
-1. **Detects:** Thai national ID · phone number · email
-   · license plate (with a cue word)
-   · bank account
-   · date of birth (with a cue word)
-   · credit card · LINE user ID
-   · passport number (with a cue word)
-   — in Thai or Arabic digits.
-2. **Protects them per your policy:** `redact` · `mask` · `tokenise` · `hash` · `flag` · `block`, chosen per type. For example, the AI sees `[tok:…]`, the OTP tool gets the real number, and the customer sees `xxx-xxx-7777`.
-3. **Audits every scan**, and an audit event never contains the real value.
-4. **Scans old chat exports** without writing code: JSONL · CSV · LINE OA exports.
-5. **Guards [eve](https://eve.dev) agents** at all 4 layers: inbound · tools · prompt · outbound on every channel. Installs in 3 steps with `eve add`.
-
-### Packages
-
-| Package | What it is for | Docs |
-|---|---|---|
-| [`@eve-pdpa-extension/core`](packages/core) | The library your app calls on every message · zero dependencies · Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers | [English](packages/core/README.md) · [ไทย](packages/core/README.th.md) |
-| [`@eve-pdpa-extension/cli`](packages/cli) | Scan old chat exports · `policy validate` | [English](packages/cli/README.md) · [ไทย](packages/cli/README.th.md) |
-| [`@eve-pdpa-extension/eve`](packages/eve) | Adapter for eve · `eve-pdpa-check` finds what you forgot to wrap · Node 24+ · tested with eve 0.80.1 | [English](packages/eve/README.md) · [ไทย](packages/eve/README.th.md) |
-
-Each package README is the page shown on npm and has the full details. This file is a summary.
-
-### Safeguards
-
-| Rule | How it is enforced |
-|---|---|
-| No real values in audit | An audit event records the type, position and action, never the matched text. `sessionId` and `ref` are stored as you pass them, so do not use a phone number or LINE userId for them. |
-| Real values only where allowed | `guard.resolve()` exchanges a token only for a purpose listed in the policy's `allowedPurposes`, and tokens expire after `ttlSec` (at most 3600 s). In eve, only tools wrapped with `withTokenResolution` can resolve. |
-| Customers never see tokens | Outbound (`boundary: 'outbound'`) turns tokens into masked values such as `xxx-xxx-7777`. |
-| Blocked text does not leak | `block` always returns `text: ''`, so forgetting to check `outcome` still sends nothing. |
-| core cannot reach the network | No dependencies, no `node:` builtins, no network calls. Enforced by `pnpm gates` and a Deno smoke test run with no permissions. |
-| No real data in the repo | Every file under `fixtures/` must be listed in `fixtures/ATTESTATION.md` as synthetic (`pnpm gate:attestation`). |
-
-### Getting started
+### Scan old chat exports
 
 ```bash
-npm install @eve-pdpa-extension/core            # the library
-npx @eve-pdpa-extension/cli scan chats.csv      # scan old chats, no code
+npx @eve-pdpa-extension/cli scan chats.csv
 ```
 
-- **In your app:** you need a policy file and a `PDPA_HMAC_KEY` (`openssl rand -hex 32`). See core's [Quick start](packages/core/README.md#quick-start).
-- **Old chat exports:** use the CLI above. See the [cli README](packages/cli/README.md).
-- **eve agents:** install in 3 steps with `eve add`. See the [eve README](packages/eve/README.md#install-in-3-steps), and [examples/pdpa-agent](examples/pdpa-agent) for a complete agent.
-- Run the guard **on the server only**: anyone can read a key or a token that is in the browser.
+It reports what personal data the file holds, per type and line, and never prints a value. See the [cli README](packages/cli/README.md).
 
-### Using it in code
+## Known limits
 
-See the code sample in the Thai section, or the full flow (resolving a token in a tool, masking the reply) in core's [Quick start](packages/core/README.md#quick-start).
+- Names and addresses are not detected yet. See the [Roadmap](#roadmap).
+- Bank accounts, phone numbers without a leading 0, license plates, dates of birth and passport numbers need a cue word such as "เลขบัญชี" or "วันเกิด", or the other side's question passed as `context`.
+- eve: only **eve 0.80.x** is supported; eve 1.x, which `npm install eve` gives today, is not yet. eve's HTTP channel is not masked on the way out.
+- Accuracy figures come from synthetic data, so they are an upper bound, not what you will see in production.
 
-### Commands
+The full lists are under Known limitations in the [core](packages/core/README.md#known-limitations) and [eve](packages/eve/README.md#known-limitations) READMEs.
+
+## Roadmap
+
+No versions are promised, and the order may change.
+
+- **Person names, addresses and PromptPay IDs.** The code is on the `feat/promptpay` branch, waiting for review.
+- **eve 1.x.**
+- **Masking eve's HTTP channel on the way out.**
+- **Policy files from disk** (`@eve-pdpa-extension/policy`): YAML and full validation. Node only, so it stays out of the zero-dependency core.
+- **An MCP server** (`@eve-pdpa-extension/mcp`) with `pdpa.scan` and `pdpa.redact` tools for AI agents.
+- **Name detection with an NER model** (`@eve-pdpa-extension/ner`), kept out of core because a model is hundreds of MB. No model is chosen yet; every candidate's licence has to be checked first.
+
+## Repository layout
+
+```
+packages/core/       @eve-pdpa-extension/core   zero deps · every runtime · 150 KB size budget
+packages/cli/        @eve-pdpa-extension/cli    Node only
+packages/eve/        @eve-pdpa-extension/eve    eve adapter: channel · tool · model · outbound · hook
+packages/http/       @eve-pdpa-extension/http   gateway · not on npm · deployed with a Deploy to Vercel button
+apps/demo/           the live demo · Next.js + Mintel UI · a static export, hosted on Vercel
+examples/            pdpa-policy.json, an example policy · pdpa-agent/, a runnable eve agent
+bench/               chat templates and the accuracy harness · generated data stays out of git
+internal/            4 consumer fixtures proving the exports map works
+scripts/             gates enforcing core's constraints · smoke tests on 5 runtimes
+```
+
+## Development
+
+Needs Node 22.19+ or 24.5+, and pnpm through corepack.
 
 | Command | |
 |---|---|
 | `corepack pnpm install` | Install the repo's dependencies |
 | `corepack pnpm exec playwright install chromium` | Once · used by the browser smoke test |
 | `corepack pnpm verify` | lint · build · typecheck · test · gates · size · smoke on 5 runtimes · README examples |
-| `corepack pnpm demo` | Build the live demo page at `scripts/demo/out/pdpa-demo.html` · deployed on Vercel at [eve-pdpa-extension.vercel.app](https://eve-pdpa-extension.vercel.app) |
-| `node bench/generate.mjs --holdout` | Generate the holdout set (never used to tune the detectors) from a seed · run `pnpm build` first |
+| `corepack pnpm demo` | Run the live demo at http://localhost:3000 |
+| `node bench/generate.mjs --holdout` | Generate the holdout set (never used to tune the detectors) · run `pnpm build` first |
 | `node bench/evaluate.mjs --holdout --context` | Measure accuracy · writes a report to `bench/out/` |
 
-### Known limitations
+TypeScript · pnpm workspaces · tsdown · Vitest · Biome · size-limit · Playwright · Next.js · smoke tests on Node, Deno, Bun, workerd and Chromium.
 
-- Names and addresses are not detected yet (planned for a later release).
-- Bank accounts, phone numbers without a leading 0, and the types marked "with a cue word" above, need a cue such as "เลขบัญชี" or "เบอร์", or pass `context`.
-- eve: eve's HTTP channel is not masked on the way out, and only **eve 0.80.x** is supported. eve 1.x — what `latest` on npm installs today — is not supported yet: install `eve@0.80.1`.
-- Accuracy figures come from synthetic data, so they are an upper bound, not what you will see in production.
+## Contributing
 
-The full lists are under Known limitations in the [core](packages/core/README.md#known-limitations) and [eve](packages/eve/README.md#known-limitations) READMEs.
+Issues and pull requests are welcome. Make sure `corepack pnpm verify` passes before opening a pull request. **Never commit real personal data**, not in tests, fixtures, issues or commit messages. See [CONTRIBUTING.md](CONTRIBUTING.md) for all the rules, [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SECURITY.md](SECURITY.md) to report a vulnerability privately.
 
-### Roadmap
+## Credits
 
-No versions are promised, and the order may change.
+The demo is built with [Mintel UI](https://github.com/mintelligence-dev/mintel-magicui), M Intelligence's open-source design system.
 
-- **Person names, addresses and PromptPay IDs.** The code is on the `feat/promptpay` branch, waiting for review.
-- **eve 1.x.** The eve package supports eve 0.80.x only.
-- **Masking eve's HTTP channel on the way out.**
-- **Policy files from disk** (`@eve-pdpa-extension/policy`): YAML and full validation. Node only, so it stays out of the zero-dependency core.
-- **An MCP server** (`@eve-pdpa-extension/mcp`) with `pdpa.scan` and `pdpa.redact` tools for AI agents.
-- **Name detection with an NER model** (`@eve-pdpa-extension/ner`), kept out of core because a model is hundreds of MB. No model is chosen yet; every candidate's licence has to be checked first.
+## License
 
-### Project layout
-
-```
-packages/core/       @eve-pdpa-extension/core   zero deps · every runtime · 150 KB size budget
-packages/cli/        @eve-pdpa-extension/cli    Node only
-packages/eve/        @eve-pdpa-extension/eve    eve adapter: channel · tool · model · outbound · hook · Node 24+
-packages/http/       @eve-pdpa-extension/http   gateway · not on npm · deployed with a Deploy to Vercel button
-
-examples/            pdpa-policy.json, an example policy · pdpa-agent/, a runnable eve agent set up with eve add
-bench/               chat templates and the accuracy harness · generated data stays out of git
-internal/            4 consumer fixtures proving the exports map works
-scripts/             gates enforcing core's constraints · smoke tests on 5 runtimes · demo
-```
-
-### Tech stack
-
-TypeScript 5 · pnpm workspaces · tsdown · Vitest · Biome · size-limit · Playwright · smoke tests on Node, Deno, Bun, workerd and Chromium
-
-### Contributing
-
-Issues and pull requests are welcome. Make sure `corepack pnpm verify` passes before opening a PR. **Never commit real personal data**, not in tests, fixtures, issues or commit messages. See [CONTRIBUTING.md](CONTRIBUTING.md) for all the rules, and [SECURITY.md](SECURITY.md) to report a vulnerability.
-
-### License
-
-Released under the [MIT License](LICENSE). Copyright (c) 2026 M Intelligence.  
-Versions already published (core 0.1.0, cli 0.1.0, eve 0.1.0 and 0.1.1) stay under Apache-2.0, as released.
+[MIT](LICENSE). Copyright (c) 2026 M Intelligence.
+Versions already published under Apache-2.0 (core 0.1.0, cli 0.1.0, eve 0.1.0 and 0.1.1) stay under it, as released.

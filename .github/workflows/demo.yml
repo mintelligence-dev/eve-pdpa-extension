@@ -1,4 +1,4 @@
-# Builds the live demo (scripts/demo) on pull requests that touch it, so a
+# Builds the live demo (apps/demo, Next.js + Mintel UI) on pull requests that touch it, so a
 # broken page is caught before merge. The page is hosted on Vercel (project
 # eve-pdpa-extension in the mintelligence team, configured by vercel.json);
 # nothing is deployed from here.
@@ -7,7 +7,7 @@ name: demo
 on:
   pull_request:
     paths:
-      - 'scripts/demo/**'
+      - 'apps/demo/**'
       - 'packages/core/**'
       - 'examples/pdpa-policy.json'
       - 'package.json'
@@ -33,8 +33,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '24', cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      # The demo inlines core's dist bundle; nothing else needs building.
       - run: pnpm --filter @eve-pdpa-extension/core build
-      - run: node scripts/demo/build.mjs
-      # The same commands Vercel runs (vercel.json).
-      - run: mkdir -p .vercel-site && cp scripts/demo/out/pdpa-demo.html .vercel-site/index.html
+      # The same build Vercel runs (vercel.json): a static export in apps/demo/out.
+      - run: pnpm --filter @eve-pdpa-extension/demo build
+        env: { NEXT_TELEMETRY_DISABLED: '1' }
