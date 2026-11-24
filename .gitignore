@@ -1,6 +1,6 @@
 node_modules/
 dist/
-# eve's local build, dev and deploy state (examples/line-agent, packages/eve)
+# eve's local build, dev and deploy state (packages/eve)
 .eve/
 .output/
 .nitro/

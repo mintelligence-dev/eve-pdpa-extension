@@ -1,5 +1,13 @@
 # @eve-pdpa-extension/mcp
 
+MCP tools `pdpa.scan` and `pdpa.redact`. **Planned for 0.2 — not started.**
+
+There is **no `package.json` here on purpose**: pnpm does not see the folder, so CI never reports a green build for a package with no code. Add a `package.json` when work starts and pnpm picks it up on the next install.
+
+---
+
+## ภาษาไทย
+
 MCP tools `pdpa.scan` และ `pdpa.redact` · **เริ่ม 0.2**
 
 **ยังไม่มี `package.json` โดยตั้งใจ** — pnpm จึงมองไม่เห็นโฟลเดอร์นี้ และ CI
