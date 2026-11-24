@@ -1,0 +1,34 @@
+{
+  "name": "pdpa-agent",
+  "version": "0.0.0",
+  "private": true,
+  "description": "An eve agent with eve-pdpa-extension: Thai personal data is masked before the model reads it.",
+  "type": "module",
+  "imports": {
+    "#*": "./agent/*",
+    "#evals/*": "./evals/*"
+  },
+  "scripts": {
+    "build": "eve build",
+    "deploy": "eve deploy",
+    "dev": "eve dev",
+    "eval": "eve eval",
+    "start": "eve start",
+    "typecheck": "tsc",
+    "check": "eve-pdpa-check"
+  },
+  "dependencies": {
+    "@eve-pdpa-extension/eve": "^0.2.0",
+    "@vercel/connect": "2.5.2",
+    "ai": "^7.0.137",
+    "eve": "0.80.1",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.x",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}
