@@ -42,6 +42,7 @@ describe('protectBody', () => {
         ],
       },
       changed: true,
+      matched: 1,
     })
     expect(body.messages[1]?.content).toBe(`เบอร์ ${PHONE} ค่ะ`)
   })
@@ -119,9 +120,14 @@ describe('protectBody', () => {
     const { guard, events } = build()
     const body = { prompt: '123-4-56789-0' }
     const without = await protectBody(body, { guard })
-    expect(without).toEqual({ ok: true, body, changed: false })
+    expect(without).toEqual({ ok: true, body, changed: false, matched: 1 })
     const withContext = await protectBody(body, { guard, context: 'ขอเลขบัญชีค่ะ' })
-    expect(withContext).toEqual({ ok: true, body: { prompt: '[เลขบัญชี]' }, changed: true })
+    expect(withContext).toEqual({
+      ok: true,
+      body: { prompt: '[เลขบัญชี]' },
+      changed: true,
+      matched: 1,
+    })
     expect(JSON.stringify(events)).not.toContain('ขอเลขบัญชี')
   })
 })

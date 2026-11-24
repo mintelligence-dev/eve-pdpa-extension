@@ -31,6 +31,17 @@ export interface AdapterOptions<In> {
    * checked without it.
    */
   readonly context?: (input: In, body: unknown) => string | undefined | Promise<string | undefined>
+  /**
+   * Called when `fields` (or, for a reply, `responseFields`) reach no string at
+   * all in a body that was read as JSON — so a shop that forgot to set `fields`
+   * for its body shape finds out, instead of believing it is protected. The
+   * request goes on as it is: this does not block or change anything. A body
+   * with no text in it (a button press) is normal, so use this to log, not to
+   * block. Not called for a body that is not JSON, nor for one that was blocked.
+   * If it throws, the request fails: a rejected promise for the web adapters,
+   * `next(error)` for Express.
+   */
+  readonly onNoMatch?: (input: In, boundary: Boundary) => void
 }
 
 /**

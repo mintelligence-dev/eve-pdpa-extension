@@ -55,7 +55,7 @@ app.post('/chat', pdpaHono({ guard, sessionId: (r) => r.headers.get('x-chat-id')
 })
 ```
 
-วางไว้ก่อนอะไรก็ตามที่อ่าน body
+วางไว้ก่อนอะไรก็ตามที่อ่าน body ถ้า body ถูกอ่านไปก่อนแล้ว จะเป็น error ไม่ใช่ปล่อยผ่าน: Hono ตอบ 500 ผ่าน `app.onError` และ handler ไม่ทำงาน
 
 ### Next.js route handler
 
@@ -110,6 +110,7 @@ const r = await protectBody(req.body, { guard, sessionId: 'conv_8f2a', context: 
 | `context` | `(request, body) => string \| Promise<string>` · ข้อความล่าสุดของอีกฝ่าย เช่น สิ่งที่บอทถามล่าสุด · `body` คือ request ที่อ่านเป็น JSON แล้ว · ไปดึงจากฐานข้อมูลของคุณได้ · ใช้กับ request อย่างเดียว ไม่ใช้กับคำตอบ · ไม่ถูกบันทึกลง audit |
 | `maxBytes` | adapter แบบ web-standard (Hono, Next.js, `protectRequest`) · ขนาด body สูงสุดที่อ่าน (ไบต์) · ใหญ่กว่านี้ตอบ `413` และ handler ไม่ทำงาน · ค่าเริ่มต้น 1 MB · Express ใช้ `limit` ของ `express.json()` แทน |
 | `onBlocked` | `(blockedBy, request, boundary) => Response` (Express: `(blockedBy, req, res, boundary)`) · คำตอบเมื่อข้อความถูกบล็อก · `boundary` เป็น `inbound` ถ้าเป็นข้อความลูกค้า `outbound` ถ้าเป็นคำตอบของคุณ · ค่าเริ่มต้น 422 / 502 พร้อม `blockedBy` |
+| `onNoMatch` | `(request, boundary) => void` (Express: `(req, boundary)`) · ถูกเรียกเมื่อ `fields` (หรือ `responseFields` ถ้าเป็นคำตอบ) หา string ไม่เจอเลยใน body ที่อ่านเป็น JSON ได้ เพื่อให้รู้ตัวถ้าลืมตั้ง `fields` ให้ตรงกับรูปแบบ body · request ยังไปต่อตามเดิม · body ที่ไม่มีข้อความเลย เช่นการกดปุ่ม ถือว่าปกติ ใช้บันทึก log ไม่ใช่ใช้บล็อก · ไม่เรียกถ้า body ไม่ใช่ JSON หรือถูกบล็อกไปแล้ว · ถ้า throw request จะ error (Express: ส่งให้ `next(error)`) |
 
 **path:** `messages[].content` คือ `content` ของทุกตัวใน `messages` · `[]` คือไล่ทุกตัวใน array · จุดคือเข้าไปใน object · ปิดเฉพาะค่าที่เป็นข้อความ
 
@@ -157,6 +158,7 @@ pdpaExpress({
 - **คำตอบแบบ streaming ไม่ถูกตรวจ** · คำตอบที่ส่งทีละคำ (server-sent events) ออกไปตามเดิม · ให้ตรวจด้วย core ตรงจุดที่ประกอบข้อความ
 - **คำตอบที่ติดป้าย JSON แต่ไม่ใช่ JSON จะตอบ `502`** · ตรวจไม่ได้จึงไม่ส่งออก · คำตอบที่เป็นข้อความธรรมดาผ่านไปตามเดิม
 - **path ขึ้นต้นด้วย `[]` ได้** เมื่อ body เป็น array ชั้นนอกสุด: `fields: ['[].text']`
+- **`*` คือทุก key ของ object** ใช้กับ key ที่รู้ชื่อล่วงหน้าไม่ได้: `*.msg` อ่าน `{"u1":{"msg":…},"u2":{"msg":…}}` · ถ้าใช้กว้างเช่น `*.*` จะไปถึงเลข id ด้วยและอาจถูกปิด · ข้อความที่หลาย path ชี้ถึงถูกตรวจครั้งเดียว
 - **รับแค่ body JSON** · form และไฟล์แนบผ่านไปเฉย ๆ · ข้อความธรรมดาที่ไม่ใช่ JSON ก็ผ่านไปเฉย ๆ · body ที่ติดป้าย JSON แต่อ่านไม่ได้ตอบ 400
 - **อ่านทุกข้อความใน body ทุกครั้ง** · แอปที่ส่งประวัติแชททั้งหมดมาทุกรอบ ข้อความเก่าจะถูกตรวจ (และบันทึก audit) ซ้ำ · ถ้าใช้ `tokenise` ค่าเดิมได้ token เดิมใน session เดียวกัน ข้อความที่ AI เห็นจึงเหมือนเดิม
-- **Express:** request ที่เป็น JSON แต่ไม่มี `express.json()` อยู่ก่อน จะ error พร้อมบอกสาเหตุ ส่วน body ที่ไม่ใช่ JSON ผ่านไปเฉย ๆ · ถ้าใช้ `express.text()` ข้อความที่เป็น JSON ถูกตรวจและยังเป็นข้อความเหมือนเดิม · ขาออกตรวจ `res.json` และ `res.send` ที่ส่ง object (Express ส่งต่อให้กัน) ไม่ตรวจ `res.send` ที่ส่ง string, `res.jsonp` และ stream · `onBlocked` ที่เขียนเองแล้วเรียก `res.json` จะผ่านการตรวจขาออกอีกรอบ ไม่มีผลเสีย ไม่ตรวจ `res.send` หรือ stream · **Hono:** body ที่ถูกอ่านก่อน `pdpaHono` จะเป็นแบบที่ยังไม่ได้ปิด
+- **Express:** request ที่เป็น JSON แต่ไม่มี `express.json()` อยู่ก่อน จะ error พร้อมบอกสาเหตุ ส่วน body ที่ไม่ใช่ JSON ผ่านไปเฉย ๆ · ถ้าใช้ `express.text()` ข้อความที่เป็น JSON ถูกตรวจและยังเป็นข้อความเหมือนเดิม · ขาออกตรวจ `res.json` และ `res.send` ที่ส่ง object (Express ส่งต่อให้กัน) ไม่ตรวจ `res.send` ที่ส่ง string, `res.jsonp` และ stream · `onBlocked` ที่เขียนเองแล้วเรียก `res.json` จะผ่านการตรวจขาออกอีกรอบ ไม่มีผลเสีย ไม่ตรวจ `res.send` หรือ stream · **Hono:** body ที่ถูกอ่านก่อน `pdpaHono` จะเป็น error (500 ผ่าน `app.onError`) และ handler ไม่ทำงาน คำตอบที่ถูกอ่านไปก่อนแล้วตอนตั้ง `responseFields` ก็เป็น error เหมือนกัน

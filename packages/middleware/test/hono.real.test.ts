@@ -201,7 +201,12 @@ describe('pdpaHono on real Hono', () => {
     // a TypeError, which Hono answers 500. It fails closed, not silently open.
     const { guard } = build()
     const seen: unknown[] = []
+    const errors: Error[] = []
     const app = new Hono()
+    app.onError((error, c) => {
+      errors.push(error)
+      return c.text('error', 500)
+    })
     app.use('/chat', async (c, next) => {
       await c.req.json()
       await next()
@@ -214,5 +219,7 @@ describe('pdpaHono on real Hono', () => {
     const res = await post(app, { prompt: `เบอร์ ${PHONE}` })
     expect(res.status).toBe(500)
     expect(seen).toEqual([])
+    expect(errors).toHaveLength(1)
+    expect(errors[0]?.message).toContain('before the middleware')
   })
 })

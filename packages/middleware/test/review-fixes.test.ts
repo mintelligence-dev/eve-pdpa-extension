@@ -182,6 +182,7 @@ describe('small things from the review', () => {
     expect(r).toEqual({
       ok: true,
       changed: true,
+      matched: 2,
       body: [{ text: 'เบอร์ [เบอร์โทร]' }, { text: 'สวัสดี' }],
     })
   })

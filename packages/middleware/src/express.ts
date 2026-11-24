@@ -97,12 +97,17 @@ export function pdpaExpress<Req extends ExpressRequestLike>(
       )
       .then((r) => {
         if (!r.ok) return block(r.blockedBy, 'inbound')
+        if (r.matched === 0) options.onNoMatch?.(req, 'inbound')
         if (r.changed) req.body = asText ? JSON.stringify(r.body) : r.body
         const responseFields = options.responseFields
         if (responseFields !== undefined) {
           res.json = (reply: unknown) => {
             protectBody(reply, { ...scope, fields: responseFields, boundary: 'outbound' })
-              .then((out) => (out.ok ? send(out.body) : block(out.blockedBy, 'outbound')))
+              .then((out) => {
+                if (!out.ok) return block(out.blockedBy, 'outbound')
+                if (out.matched === 0) options.onNoMatch?.(req, 'outbound')
+                send(out.body)
+              })
               .catch(next)
             return res
           }

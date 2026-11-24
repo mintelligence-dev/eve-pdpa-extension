@@ -15,8 +15,9 @@ export interface HonoContextLike {
  *
  *   app.post('/chat', pdpaHono({ guard }), async (c) => { const body = await c.req.json() … })
  *
- * Put it before anything that reads the body: Hono keeps the first read, and a
- * body read before this runs is the unprotected one.
+ * Put it before anything that reads the body. A body read before this runs
+ * cannot be checked, so it is an error — a 500 through Hono's error handler
+ * (`app.onError`) — and the handler does not run.
  */
 export function pdpaHono(
   options: WebOptions,

@@ -27,6 +27,11 @@ export type ProtectResult =
       readonly body: unknown
       /** False when no text was rewritten: `body` is then the one passed in, untouched. */
       readonly changed: boolean
+      /**
+       * How many strings the fields reached. 0 means nothing was checked — the
+       * fields may not fit the body's shape; the body is then returned untouched.
+       */
+      readonly matched: number
     }
   | { readonly ok: false; readonly blockedBy: readonly EntityType[] }
 
@@ -37,6 +42,9 @@ export type ProtectResult =
  *
  * When the policy blocks any of them, nothing is returned but the types that
  * stopped it: a body with one message blocked is not sent on with the rest.
+ *
+ * `matched` is how many strings the fields reached; 0 tells the caller the
+ * fields found nothing to check in this body.
  *
  * Framework-free: every adapter in this package calls it, and any framework
  * that hands you the parsed JSON can call it directly.
@@ -72,5 +80,6 @@ export async function protectBody(body: unknown, options: ProtectOptions): Promi
   }
 
   if (blocked) return { ok: false, blockedBy }
-  return changed ? { ok: true, body: copy, changed } : { ok: true, body, changed }
+  const matched = found.length
+  return changed ? { ok: true, body: copy, changed, matched } : { ok: true, body, changed, matched }
 }

@@ -118,6 +118,13 @@ export async function protectRequest<R extends Request>(
   request: R,
   options: WebOptions,
 ): Promise<ProtectRequestResult<R>> {
+  // A body read before us cannot be cloned, and passing it on would pass it on
+  // unchecked: fail closed, and say why.
+  if (request.bodyUsed) {
+    throw new TypeError(
+      'pdpa: the request body was read before the middleware ran — put it before anything that reads the body',
+    )
+  }
   const read = await readJson(request, options.maxBytes ?? DEFAULT_MAX_BYTES)
   if (read === undefined) return { ok: true, request }
   if (read === 'large') {
@@ -138,6 +145,7 @@ export async function protectRequest<R extends Request>(
     ...(context === undefined ? {} : { context }),
   })
   if (!r.ok) return { ok: false, response: blocked(r.blockedBy, request, 'inbound', options) }
+  if (r.matched === 0) options.onNoMatch?.(request, 'inbound')
   if (!r.changed) return { ok: true, request }
   const Rebuilt = request.constructor as new (input: string, init: RequestInit) => R
   return {
@@ -163,6 +171,11 @@ export async function protectResponse(
   options: WebOptions,
 ): Promise<Response> {
   if (options.responseFields === undefined) return response
+  if (response.bodyUsed) {
+    throw new TypeError(
+      'pdpa: the reply body was read before the middleware could check it — do not read the reply in a handler or middleware that runs after it',
+    )
+  }
   const read = await readJson(response)
   if (read === undefined || read === 'large') return response
   if (read === null) {
@@ -181,6 +194,7 @@ export async function protectResponse(
     ...(ref === undefined ? {} : { ref }),
   })
   if (!r.ok) return blocked(r.blockedBy, request, 'outbound', options)
+  if (r.matched === 0) options.onNoMatch?.(request, 'outbound')
   if (!r.changed) return response
   return new Response(JSON.stringify(r.body), {
     status: response.status,
