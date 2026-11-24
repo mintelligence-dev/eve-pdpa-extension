@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The `eve` peer dependency is now `>=0.80.0 <0.81.0` instead of `*`. Only eve 0.80.x was ever supported; an install beside eve 1.x now warns (or fails, under strict peer dependencies) instead of stopping when the agent loads.
+- The `eve` peer dependency is now `>=0.80.0 <0.81.0` instead of `*`. Only eve 0.80.x was ever supported; beside eve 1.x the package manager now warns or refuses at install, rather than the agent stopping only when it loads.
 
 ## 0.1.1
 

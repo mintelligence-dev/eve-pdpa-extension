@@ -10,9 +10,14 @@ updates:
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
     groups:
-      dev-tooling: { patterns: ['*'] }
+      # Minor and patch bumps arrive as one pull request; a major gets its own.
+      dev-tooling: { patterns: ['*'], update-types: [minor, patch] }
     ignore:
       # Moved by hand: the eve adapter is verified against one eve line at a
       # time (packages/eve/NOTES.md), and `ai` follows what eve peers.
       - dependency-name: eve
       - dependency-name: ai
+      # Moved by hand: ci.yml installs the same versions by number
+      # (smoke-workerd, smoke-browser), so both places change together.
+      - dependency-name: miniflare
+      - dependency-name: playwright
