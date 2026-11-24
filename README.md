@@ -9,6 +9,8 @@
 [![eve](https://img.shields.io/npm/v/@eve-pdpa-extension/eve?label=eve)](https://www.npmjs.com/package/@eve-pdpa-extension/eve)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
+**[ลองใช้ในเบราว์เซอร์ · Live demo](https://mintelligence-dev.github.io/eve-pdpa-extension/)** ไม่ต้องติดตั้ง ข้อความไม่ถูกส่งออกไปไหน · nothing to install, nothing leaves your browser
+
 > **เป็นเครื่องมือทางเทคนิค ไม่ใช่ใบรับรองการปฏิบัติตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล**  
 > **This is a technical tool, not a certification of compliance with Thailand's PDPA.**
 
@@ -88,7 +90,7 @@ inbound.text   // 'เบอร์ [tok:rfdbkfrtnsmbvpsh] ค่ะ'   ← ส�
 | `corepack pnpm install` | ติดตั้ง dependency ของ repo |
 | `corepack pnpm exec playwright install chromium` | ครั้งเดียว · ใช้ใน smoke test ของ browser |
 | `corepack pnpm verify` | lint · build · typecheck · test · gates · size · smoke 5 runtime · ตัวอย่างใน README |
-| `corepack pnpm demo` | สร้างหน้า live demo ที่ `scripts/demo/out/pdpa-demo.html` |
+| `corepack pnpm demo` | สร้างหน้า live demo ที่ `scripts/demo/out/pdpa-demo.html` · ฉบับที่ deploy แล้วอยู่ที่ [mintelligence-dev.github.io/eve-pdpa-extension/](https://mintelligence-dev.github.io/eve-pdpa-extension/) |
 | `node bench/generate.mjs --holdout` | สร้างชุด holdout (ชุดที่ไม่ได้ใช้ปรับตัวตรวจ) จาก seed · ต้อง `pnpm build` ก่อน |
 | `node bench/evaluate.mjs --holdout --context` | วัดความแม่นยำ · เขียนรายงานที่ `bench/out/` |
 
@@ -184,7 +186,7 @@ See the code sample in the Thai section, or the full flow (resolving a token in 
 | `corepack pnpm install` | Install the repo's dependencies |
 | `corepack pnpm exec playwright install chromium` | Once · used by the browser smoke test |
 | `corepack pnpm verify` | lint · build · typecheck · test · gates · size · smoke on 5 runtimes · README examples |
-| `corepack pnpm demo` | Build the live demo page at `scripts/demo/out/pdpa-demo.html` |
+| `corepack pnpm demo` | Build the live demo page at `scripts/demo/out/pdpa-demo.html` · deployed from `main` to [mintelligence-dev.github.io/eve-pdpa-extension/](https://mintelligence-dev.github.io/eve-pdpa-extension/) |
 | `node bench/generate.mjs --holdout` | Generate the holdout set (never used to tune the detectors) from a seed · run `pnpm build` first |
 | `node bench/evaluate.mjs --holdout --context` | Measure accuracy · writes a report to `bench/out/` |
 
