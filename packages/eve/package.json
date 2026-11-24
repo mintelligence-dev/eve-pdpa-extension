@@ -72,7 +72,7 @@
     "@types/node": "24.10.1",
     "ai": "7.0.143",
     "eve": "0.80.1",
-    "typescript": "5.9.3"
+    "typescript": "7.0.2"
   },
   "peerDependencies": {
     "ai": "^7.0.137",
