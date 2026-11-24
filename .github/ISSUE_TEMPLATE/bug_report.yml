@@ -1,0 +1,40 @@
+name: Bug report
+description: Something is detected wrongly, leaks, or does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never paste real personal data.** Reproduce with synthetic values — a made-up phone number, `somchai@example.com`. An issue containing real data will be deleted.
+        A real value that reaches output, logs or audit is a vulnerability: report it privately (see SECURITY.md), not here.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options: ['core', 'cli', 'eve', 'http', 'not sure']
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes:
+      label: Version and runtime
+      placeholder: core 0.1.0 · Node 24.5 · eve 0.80.1
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes:
+      label: Smallest input that reproduces it
+      description: The text, the policy (or the part that matters) and the call. Synthetic values only.
+      render: ts
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened
+    validations: { required: true }
+  - type: checkboxes
+    id: synthetic
+    attributes:
+      label: Synthetic data
+      options:
+        - label: Nothing in this issue is real personal data
+          required: true

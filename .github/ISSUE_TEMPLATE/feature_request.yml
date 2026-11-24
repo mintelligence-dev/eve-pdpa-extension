@@ -1,0 +1,24 @@
+name: Feature request
+description: A new entity type, action, reader or integration
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: "**Never paste real personal data.** Use synthetic examples."
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The situation, with a synthetic example of the text involved.
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help?
+  - type: checkboxes
+    id: synthetic
+    attributes:
+      label: Synthetic data
+      options:
+        - label: Nothing in this issue is real personal data
+          required: true

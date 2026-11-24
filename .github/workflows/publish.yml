@@ -31,10 +31,10 @@ jobs:
   stage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with: { fetch-depth: 0 } # the whole history, to check the tag is on main
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v6
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: '24', cache: pnpm, registry-url: 'https://registry.npmjs.org' }
       # `npm stage` needs npm 11.15 or later; Node 24 may come with an older 11.
       - run: npm install -g npm@11.21.0
