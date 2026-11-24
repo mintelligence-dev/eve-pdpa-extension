@@ -1,6 +1,6 @@
 # pdpa-agent · ตัวอย่าง eve agent ที่ปิดข้อมูลส่วนบุคคล
 
-An [eve](https://eve.dev) agent for a Thai online shop, protected by [`@eve-pdpa-extension/eve`](../../packages/eve). Made with `eve init`, then `eve add` from the eve package's README, nothing else.
+An [eve](https://eve.dev) agent for a Thai online shop, protected by [`@eve-pdpa-extension/eve`](../../packages/eve). Made with `eve init` and the `eve add` line from the eve package's README, plus the four small edits listed below.
 
 ตัวอย่าง agent ร้านค้าออนไลน์ที่สร้างด้วย `eve init` แล้วติดตั้ง `@eve-pdpa-extension/eve` ด้วย `eve add` ตาม README ของแพ็กเกจ
 
@@ -17,7 +17,8 @@ eve records:  ขอ OTP ที่เบอร์ [tok:phvbmbbcnsjkqpqd] ค่�
    ▼  tool otp_send (agent/tools/otp_send.ts, pdpa.tool)
 gets 0918887777: the policy allows the purpose "otp_send" for PHONE, for 5 minutes
    │
-   ▼  reply: a channel that posts its replies shows the token as xxx-xxx-7777
+   ▼  reply: LINE, Telegram, Slack … show the token as xxx-xxx-7777;
+      eve's HTTP channel (eve dev) shows [tok:…] as the model wrote it
 ```
 
 The rules are in [`policies/pdpa-policy.json`](policies/pdpa-policy.json):
@@ -43,7 +44,7 @@ npm run check                     # eve-pdpa-check: is every channel, the model 
 npm run dev                       # eve dev: chat with the agent in the terminal
 ```
 
-Type something with a phone number or an ID card number and ask for an OTP. The audit lines on stdout show what was found and what was done, never the value.
+Type something with a phone number or an ID card number and ask for an OTP. The reply in `eve dev` shows the token as the model wrote it (eve's HTTP channel does not mask on the way out); the `otp_send` line on stdout shows the tool got the real number, and the audit lines show what was found and done, never the value.
 
 ## How it was made
 

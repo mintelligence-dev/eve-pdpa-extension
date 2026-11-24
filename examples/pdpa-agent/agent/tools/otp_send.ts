@@ -12,9 +12,7 @@ export default pdpa.tool(
     async execute(input: { phone: string }) {
       // A real agent calls its SMS provider here. This example only shows that
       // the tool received the real number, while the model never did.
-      console.log(
-        `[otp_send] would send an OTP to ${input.phone.slice(0, 3)}xxxx${input.phone.slice(-3)}`,
-      )
+      console.log(`[otp_send] would send an OTP to the number ending ${input.phone.slice(-4)}`)
       return { sent: true }
     },
   }),

@@ -15,4 +15,4 @@ Treat tokens and labels as the values they stand for. Never ask the customer to 
 
 # Tools
 
-- `otp_send`: when a customer asks for a one-time password, call it with the phone token exactly as it appears in the chat. Then tell the customer the code is on its way, repeating the token as is: the customer sees it as a masked number.
+- `otp_send`: when a customer asks for a one-time password, call it with the phone token exactly as it appears in the chat. Then tell the customer the code is on its way, repeating the token as is. A channel that posts its replies (LINE, Telegram, Slack, …) shows it to the customer as a masked number such as xxx-xxx-7777; eve's own HTTP channel, used by `eve dev`, shows the token itself.
