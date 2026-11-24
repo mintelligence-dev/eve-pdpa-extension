@@ -11,12 +11,15 @@ import { definePolicy } from '../src/policy.js'
  *
  * Merging overlaps and rewriting the text both used to cost time in the square
  * of the value count — 5 s for 40,000 phone numbers (found by fuzzing the CLI,
- * 7 Oct). Both are linear now, about 60 ms. The limit is far from either so a
- * slow machine does not fail it, and a return to quadratic does.
+ * 7 Oct). Both are linear now. With every detector up to 0.1 plus plates, dates
+ * of birth and passports, one case takes about 0.7 s on a laptop, 1.2 s under
+ * coverage, and up to 2.05 s under coverage on a CI runner (24 Nov, vitest
+ * 5.1.1), which failed the old 2 s limit. A return to quadratic adds 5 s or
+ * more on top of that, so 4.5 s still catches it and leaves CI twice the room.
  */
 const COUNT = 40_000
 const TEXT = 'เบอร์ 0918887777 '.repeat(COUNT)
-const LIMIT_MS = 2000
+const LIMIT_MS = 4500
 
 describe(`a message with ${COUNT.toLocaleString()} values`, () => {
   it('is merged by the engine in linear time', () => {
