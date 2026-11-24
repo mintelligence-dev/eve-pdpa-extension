@@ -1,6 +1,6 @@
 {
   "name": "@eve-pdpa-extension/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Detect and protect Thai personal data before it reaches an AI model, tool, log or human reviewer.",
   "keywords": [
     "pdpa",

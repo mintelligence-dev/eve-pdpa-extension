@@ -26,9 +26,9 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
 2. **ให้ค่าจริงเฉพาะ tool ที่อนุญาต** tool ส่ง OTP ส่งไปเบอร์จริงได้ ส่วนโมเดลเห็นแค่ `[tok:…]`
 3. **ติดตั้ง 3 ขั้น** ด้วย `eve add` ดู [ติดตั้งใน 3 ขั้น](#ติดตั้งใน-3-ขั้น)
 4. **ตรวจโปรเจกต์ให้** `eve-pdpa-check` บอกชื่อ channel, model หรือ hook ที่ลืมห่อ
-5. **audit ไม่มีค่าจริง** ใช้ตัวตรวจจากแพ็กเกจ [`@eve-pdpa-extension/core`](../core) ได้แก่ เลขบัตรประชาชน, เบอร์โทร, อีเมล, เลขบัญชี, บัตรเครดิต และ LINE user ID และ audit event **ไม่มีค่าจริงอยู่ข้างใน**
+5. **audit ไม่มีค่าจริง** ใช้ตัวตรวจจากแพ็กเกจ [`@eve-pdpa-extension/core`](../core) ได้แก่ เลขบัตรประชาชน, เบอร์โทร, อีเมล, เลขบัญชี, บัตรเครดิต, LINE user ID, ทะเบียนรถ, วันเกิด และเลขพาสปอร์ต และ audit event **ไม่มีค่าจริงอยู่ข้างใน**
 
-ใช้กับ Node 24 ขึ้นไป ทดสอบกับ eve **0.80.1** รองรับเฉพาะ eve 0.80.x · eve 1.x ซึ่งเป็นรุ่นที่ `npm install eve` ให้มาตอนนี้ยังไม่รองรับ ให้ติดตั้ง `eve@0.80.1` · ตั้งแต่รุ่นถัดจาก 0.1.1 peer dependency จะระบุช่วงนี้ไว้
+ใช้กับ Node 24 ขึ้นไป ทดสอบกับ eve **0.80.1** รองรับเฉพาะ eve 0.80.x · eve 1.x ซึ่งเป็นรุ่นที่ `npm install eve` ให้มาตอนนี้ยังไม่รองรับ ให้ติดตั้ง `eve@0.80.1` · ตั้งแต่ 0.2.0 peer dependency ระบุช่วงนี้ไว้ (`>=0.80.0 <0.81.0`)
 
 ## หลักความปลอดภัย
 
@@ -76,7 +76,7 @@ tool otp_send ได้     0918887777                     ← ค่าจร�
 
 <!-- pdpa-install -->
 ```bash
-eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.1.1/r/pdpa.json --overwrite
+eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.2.0/r/pdpa.json --overwrite
 # แล้วใส่ค่า key 2 ตัวที่ eve add เขียนชื่อไว้ใน .env.local ตัวละ `openssl rand -hex 32`:
 # PDPA_HMAC_KEY=...
 # PDPA_SESSION_KEY=...
@@ -115,7 +115,7 @@ npx eve-pdpa-check                # channel, model, hook, รุ่นของ 
 npx eve-pdpa-check --production   # ตรวจ key ทั้งสองตัว และ token store ที่ใช้ร่วมกันด้วย
 ```
 
-ถ้า jsDelivr ล่ม ไฟล์เดียวกันอยู่ที่ `https://unpkg.com/@eve-pdpa-extension/eve@0.1.1/r/pdpa.json`
+ถ้า jsDelivr ล่ม ไฟล์เดียวกันอยู่ที่ `https://unpkg.com/@eve-pdpa-extension/eve@0.2.0/r/pdpa.json`
 
 ### ขึ้น Vercel
 
