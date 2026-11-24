@@ -3,8 +3,13 @@
  * `messages[].content` is the `content` of every item of `messages`. `[]`
  * after a name walks every item of an array; a dot steps into an object. A
  * path may start with `[]` when the body itself is an array: `[].text`.
+ * `*` steps into every key of an object, in order: `*.msg` is the `msg` of
+ * each value of `{"u1":{"msg":"a"},"u2":{"msg":"b"}}`, `data.*` is every string
+ * directly under `data`, and `*[]` is every key whose value is an array, then
+ * each item (`*[].text`). `*` on an array, a string or null reaches nothing.
+ * A broad pattern such as `*.*` also reaches ids and can hide them.
  * Only strings are protected — a number, an object or a missing key at the end
- * of a path is left as it is.
+ * of a path is left as it is. A string two paths reach is scanned once.
  */
 export type FieldPath = string
 
@@ -59,17 +64,20 @@ export function pathsOf(fields: Preset | readonly FieldPath[] | undefined): read
 interface Step {
   readonly key: string
   readonly each: boolean
+  /** `*`: every key of the object, not one named key. */
+  readonly any: boolean
 }
 
 function stepsOf(path: FieldPath): Step[] {
   return path.split('.').map((part, at) => {
     const each = part.endsWith('[]')
     const key = each ? part.slice(0, -2) : part
+    const any = key === '*'
     // Only the first step may have no name: it is the body itself, an array.
     if (key === '' && !(each && at === 0)) {
       throw new TypeError(`empty step in field path "${path}"`)
     }
-    return { key, each }
+    return { key: any ? '' : key, each, any }
   })
 }
 
@@ -81,40 +89,57 @@ function isObject(value: unknown): value is Record<string, unknown> {
  * Calls `visit` with every string the paths reach in `body`, in the order the
  * paths are given and, within one, in document order. `set` writes a new value
  * in its place. `body` must be a copy the caller owns: it is written to.
+ * A string is visited once however many paths reach it: it is told apart by
+ * where it sits (its parent and its key), not by the path that found it.
  */
 export function eachString(
   body: unknown,
   paths: readonly FieldPath[],
   visit: (value: string, set: (next: string) => void) => void,
 ): void {
-  // A path written twice would give one string two scans and two audit events.
+  const seen = new WeakMap<object, Set<string>>()
+  const first = (holder: object, key: string): boolean => {
+    let keys = seen.get(holder)
+    if (keys === undefined) seen.set(holder, (keys = new Set()))
+    if (keys.has(key)) return false
+    keys.add(key)
+    return true
+  }
+  // A path written twice would walk twice for nothing.
   for (const path of new Set(paths)) {
     const steps = stepsOf(path)
     const walk = (node: unknown, at: number): void => {
       const step = steps[at] as Step
-      const root = step.key === ''
-      if (!root && !isObject(node)) return
-      const value = root ? node : (node as Record<string, unknown>)[step.key]
       const last = at === steps.length - 1
-      const reach = (child: unknown, set: (next: string) => void): void => {
+      const reach = (child: unknown, holder: object, key: string): void => {
         if (last) {
-          if (typeof child === 'string') visit(child, set)
+          if (typeof child === 'string' && first(holder, key)) {
+            visit(child, (next) => {
+              ;(holder as Record<string, unknown>)[key] = next
+            })
+          }
         } else {
           walk(child, at + 1)
         }
       }
-      if (step.each) {
-        if (!Array.isArray(value)) return
-        value.forEach((item, i) => {
-          if (isObject(item) && SKIPPED_ROLES.has(item.role)) return
-          reach(item, (next) => {
-            value[i] = next
+      const from = (holder: object | null, key: string, value: unknown): void => {
+        if (step.each) {
+          if (!Array.isArray(value)) return
+          value.forEach((item, i) => {
+            if (isObject(item) && SKIPPED_ROLES.has(item.role)) return
+            reach(item, value, String(i))
           })
-        })
-      } else {
-        reach(value, (next) => {
-          ;(node as Record<string, unknown>)[step.key] = next
-        })
+        } else {
+          reach(value, holder as object, key)
+        }
+      }
+      if (step.any) {
+        if (!isObject(node)) return
+        for (const key of Object.keys(node)) from(node, key, node[key])
+      } else if (step.key === '') {
+        from(null, '', node)
+      } else if (isObject(node)) {
+        from(node, step.key, node[step.key])
       }
     }
     walk(body, 0)
