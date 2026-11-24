@@ -79,6 +79,10 @@ eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.2.0/r/pdpa.json -
 
 This writes a policy, wraps the channel and adds the session hook. Then wrap your model in `agent/agent.ts` and set two keys. The [eve README](packages/eve/README.md#install-in-3-steps) has the three steps; [`examples/pdpa-agent`](examples/pdpa-agent) is a finished agent made exactly this way.
 
+Or deploy that example agent to your own Vercel account in one click. It asks for the two keys, creates the Redis token store and explains each variable [in its README](examples/pdpa-agent#deploy-to-vercel):
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmintelligence-dev%2Feve-pdpa-extension%2Ftree%2Fmain%2Fexamples%2Fpdpa-agent&project-name=pdpa-agent&repository-name=pdpa-agent&env=PDPA_HMAC_KEY%2CPDPA_SESSION_KEY&envDescription=Two%20different%20random%20secrets%20of%2032%20bytes%20or%20more%2C%20one%20for%20each%20key.%20Make%20each%20with%3A%20openssl%20rand%20-hex%2032&envLink=https%3A%2F%2Fgithub.com%2Fmintelligence-dev%2Feve-pdpa-extension%2Ftree%2Fmain%2Fexamples%2Fpdpa-agent%23environment-variables&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22protocol%22%3A%22storage%22%7D%5D)
+
 ### Use the library in your own code
 
 ```bash

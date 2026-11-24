@@ -119,6 +119,8 @@ If jsDelivr is down, the same file is at `https://unpkg.com/@eve-pdpa-extension/
 
 ### Deploy on Vercel
 
+[`examples/pdpa-agent`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/examples/pdpa-agent#deploy-to-vercel) has a Deploy to Vercel button that does all of this for you, and a table explaining each variable.
+
 1. Add **Upstash for Redis** to the project from the Vercel Marketplace. It sets `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` yourself). Tokens are stored there, so every function instance can resolve them; keys start with `pdpa-eve:`.
 2. Set `PDPA_HMAC_KEY` and `PDPA_SESSION_KEY` for Production — new values, not the ones in `.env.local`.
 

@@ -79,6 +79,10 @@ eve add https://cdn.jsdelivr.net/npm/@eve-pdpa-extension/eve@0.2.0/r/pdpa.json -
 
 คำสั่งนี้เขียนไฟล์กติกา ห่อ channel และเพิ่ม hook ให้ จากนั้นห่อโมเดลใน `agent/agent.ts` และตั้ง key 2 ตัว ขั้นตอนครบอยู่ใน [README ของ eve](packages/eve/README.th.md#ติดตั้งใน-3-ขั้น) และ [`examples/pdpa-agent`](examples/pdpa-agent) คือ agent ที่ทำตามขั้นตอนนี้จนเสร็จ
 
+หรือ deploy agent ตัวอย่างนั้นขึ้น Vercel ของคุณด้วยปุ่มเดียว ปุ่มจะให้กรอก key 2 ตัว สร้าง Redis สำหรับเก็บ token ให้ และอธิบายตัวแปรแต่ละตัวไว้[ใน README ของตัวอย่าง](examples/pdpa-agent#deploy-to-vercel)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmintelligence-dev%2Feve-pdpa-extension%2Ftree%2Fmain%2Fexamples%2Fpdpa-agent&project-name=pdpa-agent&repository-name=pdpa-agent&env=PDPA_HMAC_KEY%2CPDPA_SESSION_KEY&envDescription=Two%20different%20random%20secrets%20of%2032%20bytes%20or%20more%2C%20one%20for%20each%20key.%20Make%20each%20with%3A%20openssl%20rand%20-hex%2032&envLink=https%3A%2F%2Fgithub.com%2Fmintelligence-dev%2Feve-pdpa-extension%2Ftree%2Fmain%2Fexamples%2Fpdpa-agent%23environment-variables&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22protocol%22%3A%22storage%22%7D%5D)
+
 ### ใช้ไลบรารีในโค้ดของคุณเอง
 
 ```bash
