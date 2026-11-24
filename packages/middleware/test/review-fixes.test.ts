@@ -171,3 +171,84 @@ describe('withPdpa keeps the request class', () => {
     expect(await res.json()).toEqual({ path: '/api/chat' })
   })
 })
+
+describe('small things from the review', () => {
+  it('a body that is an array: a path may start with []', async () => {
+    const { guard } = build()
+    const r = await protectBody([{ text: `เบอร์ ${PHONE}` }, { text: 'สวัสดี' }], {
+      guard,
+      fields: ['[].text'],
+    })
+    expect(r).toEqual({
+      ok: true,
+      changed: true,
+      body: [{ text: 'เบอร์ [เบอร์โทร]' }, { text: 'สวัสดี' }],
+    })
+  })
+
+  it('a name missing before a later [] is still an error', async () => {
+    const { guard } = build()
+    await expect(protectBody({ a: 1 }, { guard, fields: ['a.[]'] })).rejects.toThrow(/empty step/)
+  })
+
+  it('a path written twice is scanned once: one audit event', async () => {
+    const { guard, events } = build()
+    await protectBody({ prompt: `เบอร์ ${PHONE}` }, { guard, fields: ['prompt', 'prompt'] })
+    expect(events.filter((e) => e.type === 'scan')).toHaveLength(1)
+  })
+
+  it('a request body over maxBytes: 413, handler not run', async () => {
+    const { guard } = build()
+    const big = JSON.stringify({ prompt: 'ก'.repeat(200) })
+    const r = await protectRequest(at(big), { guard, maxBytes: 100 })
+    expect(r.ok).toBe(false)
+    if (r.ok) return
+    expect(r.response.status).toBe(413)
+  })
+
+  it('a body over maxBytes with no content-length (chunked) is cut off too', async () => {
+    const { guard } = build()
+    const chunks = new ReadableStream<Uint8Array>({
+      start(c) {
+        const enc = new TextEncoder()
+        c.enqueue(enc.encode('{"prompt":"'))
+        c.enqueue(enc.encode('x'.repeat(500)))
+        c.enqueue(enc.encode('"}'))
+        c.close()
+      },
+    })
+    const request = new Request('https://shop.test/chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: chunks,
+      duplex: 'half',
+    } as RequestInit)
+    const r = await protectRequest(request, { guard, maxBytes: 100 })
+    expect(r.ok === false && r.response.status).toBe(413)
+  })
+
+  it('a body under the default cap passes as before', async () => {
+    const { guard } = build()
+    const r = await protectRequest(at(JSON.stringify({ prompt: 'สวัสดี' })), { guard })
+    expect(r.ok).toBe(true)
+  })
+
+  it('a reply labelled JSON that is not JSON: 502, not sent on', async () => {
+    const { guard } = build()
+    const wrapped = withPdpa(
+      async () =>
+        new Response(`โทร ${PHONE} นะคะ`, { headers: { 'content-type': 'application/json' } }),
+      { guard, responseFields: ['reply'] },
+    )
+    const res = await wrapped(at(JSON.stringify({ prompt: 'x' })))
+    expect(res.status).toBe(502)
+    expect(await res.text()).not.toContain(PHONE)
+  })
+
+  it('a plain-text reply is passed as it is', async () => {
+    const { guard } = build()
+    const wrapped = withPdpa(async () => new Response('สวัสดี'), { guard, responseFields: ['reply'] })
+    const res = await wrapped(at(JSON.stringify({ prompt: 'x' })))
+    expect(await res.text()).toBe('สวัสดี')
+  })
+})

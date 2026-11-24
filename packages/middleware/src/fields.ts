@@ -1,7 +1,8 @@
 /**
  * Where the text to protect sits in a JSON body, written as a path:
  * `messages[].content` is the `content` of every item of `messages`. `[]`
- * after a name walks every item of an array; a dot steps into an object.
+ * after a name walks every item of an array; a dot steps into an object. A
+ * path may start with `[]` when the body itself is an array: `[].text`.
  * Only strings are protected — a number, an object or a missing key at the end
  * of a path is left as it is.
  */
@@ -61,10 +62,13 @@ interface Step {
 }
 
 function stepsOf(path: FieldPath): Step[] {
-  return path.split('.').map((part) => {
+  return path.split('.').map((part, at) => {
     const each = part.endsWith('[]')
     const key = each ? part.slice(0, -2) : part
-    if (key === '') throw new TypeError(`empty step in field path "${path}"`)
+    // Only the first step may have no name: it is the body itself, an array.
+    if (key === '' && !(each && at === 0)) {
+      throw new TypeError(`empty step in field path "${path}"`)
+    }
     return { key, each }
   })
 }
@@ -83,12 +87,14 @@ export function eachString(
   paths: readonly FieldPath[],
   visit: (value: string, set: (next: string) => void) => void,
 ): void {
-  for (const path of paths) {
+  // A path written twice would give one string two scans and two audit events.
+  for (const path of new Set(paths)) {
     const steps = stepsOf(path)
     const walk = (node: unknown, at: number): void => {
-      if (!isObject(node)) return
       const step = steps[at] as Step
-      const value = node[step.key]
+      const root = step.key === ''
+      if (!root && !isObject(node)) return
+      const value = root ? node : (node as Record<string, unknown>)[step.key]
       const last = at === steps.length - 1
       const reach = (child: unknown, set: (next: string) => void): void => {
         if (last) {
@@ -107,7 +113,7 @@ export function eachString(
         })
       } else {
         reach(value, (next) => {
-          node[step.key] = next
+          ;(node as Record<string, unknown>)[step.key] = next
         })
       }
     }

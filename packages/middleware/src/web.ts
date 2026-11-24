@@ -4,6 +4,12 @@ import { protectBody } from './protect.js'
 
 export interface WebOptions extends AdapterOptions<Request> {
   /**
+   * The longest request body read, in bytes. A longer one is answered 413 and
+   * the handler never runs. Default 1 MB. Express is not affected: its body
+   * parser has its own `limit`.
+   */
+  readonly maxBytes?: number
+  /**
    * The answer when the policy blocks a message. `boundary` says which way it
    * was going: `inbound`, what the customer sent, or `outbound`, the handler's
    * reply. Default 422 for a request and 502 for a reply, with `blockedBy`.
@@ -37,12 +43,52 @@ function blocked(
     : Response.json(blockedBody(blockedBy, boundary), { status: blockedStatus(boundary) })
 }
 
-/** What the body says, read as JSON: `undefined` when there is none, `null` when it is not JSON. */
+/** Default cap on a request body: far more than a chat message, far less than memory. */
+const DEFAULT_MAX_BYTES = 1_048_576
+
+/** The body as text, or null when it is longer than `max` bytes: read no further than that. */
+async function readText(
+  message: Request | Response,
+  max: number | undefined,
+): Promise<string | null> {
+  const copy = message.clone()
+  if (max === undefined || copy.body === null) return copy.text()
+  const declared = Number(message.headers.get('content-length'))
+  if (Number.isFinite(declared) && declared > max) return null
+  const reader = copy.body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > max) {
+      // Not awaited: cancelling one side of a clone waits for the other side, which nobody reads.
+      reader.cancel().catch(() => {})
+      return null
+    }
+    chunks.push(value)
+  }
+  const all = new Uint8Array(total)
+  let at = 0
+  for (const chunk of chunks) {
+    all.set(chunk, at)
+    at += chunk.byteLength
+  }
+  return new TextDecoder().decode(all)
+}
+
+/**
+ * What the body says, read as JSON: `undefined` when there is none, `null` when
+ * it is not JSON, `'large'` when it is longer than `max` bytes.
+ */
 async function readJson(
   message: Request | Response,
-): Promise<{ json: unknown } | null | undefined> {
+  max?: number,
+): Promise<{ json: unknown } | null | undefined | 'large'> {
   if (message.body === null || !mayBeJson(message.headers.get('content-type'))) return undefined
-  const text = await message.clone().text()
+  const text = await readText(message, max)
+  if (text === null) return 'large'
   if (text.trim() === '') return undefined
   try {
     return { json: JSON.parse(text) }
@@ -72,8 +118,11 @@ export async function protectRequest<R extends Request>(
   request: R,
   options: WebOptions,
 ): Promise<ProtectRequestResult<R>> {
-  const read = await readJson(request)
+  const read = await readJson(request, options.maxBytes ?? DEFAULT_MAX_BYTES)
   if (read === undefined) return { ok: true, request }
+  if (read === 'large') {
+    return { ok: false, response: Response.json({ error: 'payload_too_large' }, { status: 413 }) }
+  }
   if (read === null) {
     if (!namesJson(request.headers.get('content-type'))) return { ok: true, request }
     return { ok: false, response: Response.json({ error: 'invalid_json' }, { status: 400 }) }
@@ -115,7 +164,13 @@ export async function protectResponse(
 ): Promise<Response> {
   if (options.responseFields === undefined) return response
   const read = await readJson(response)
-  if (read === undefined || read === null) return response
+  if (read === undefined || read === 'large') return response
+  if (read === null) {
+    // A reply that says it is JSON and is not cannot be checked, and goes out
+    // as it is only if it was never going to hold a value: answer 502 instead.
+    if (!namesJson(response.headers.get('content-type'))) return response
+    return Response.json({ error: 'invalid_json', boundary: 'outbound' }, { status: 502 })
+  }
   const sessionId = options.sessionId?.(request)
   const ref = options.ref?.(request)
   const r = await protectBody(read.json, {

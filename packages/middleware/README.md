@@ -108,6 +108,7 @@ const r = await protectBody(req.body, { guard, sessionId: 'conv_8f2a', context: 
 | `sessionId` | `(request) => string` · the conversation · required when the policy tokenises · not a phone number or LINE userId |
 | `ref` | `(request) => string` · your id for the request, copied into audit so an event can be traced back to it |
 | `context` | `(request, body) => string \| Promise<string>` · the other side's last message, such as what your bot last asked · `body` is the request already read as JSON · may look it up in your store · used for the request only, not the reply · never written to audit |
+| `maxBytes` | Web-standard adapters (Hono, Next.js, `protectRequest`) · the longest request body read · longer is answered `413` and the handler never runs · default 1 MB · Express uses the `limit` of `express.json()` |
 | `onBlocked` | `(blockedBy, request, boundary) => Response` (Express: `(blockedBy, req, res, boundary)`) · the answer when a message is blocked · `boundary` is `inbound` for what the customer sent, `outbound` for your reply · default 422 / 502 with `blockedBy` |
 
 **Paths:** `messages[].content` is the `content` of every item of `messages`. `[]` walks an array, a dot steps into an object. Only strings are protected.
@@ -154,6 +155,8 @@ pdpaExpress({
 ## Known limitations
 
 - **Streamed replies are not checked** · a reply written a word at a time (server-sent events) goes out as it is · check it with core where you assemble it
+- **A reply labelled JSON that is not JSON is answered `502`** · it cannot be checked, so it is not sent on · a plain-text reply is passed as it is
+- **A path may start with `[]`** when the body itself is an array: `fields: ['[].text']`
 - **JSON bodies only** · form posts and file uploads are passed through untouched · plain text that is not JSON is passed through too · a body labelled JSON that does not parse is answered 400
 - **Every message in the body is read on every request** · a chat app that resends the whole history gets the earlier messages checked again (and audited again) · with `tokenise`, one value keeps one token per session, so the text the model sees stays the same
 - **Express:** a JSON request with no `express.json()` before the middleware is an error that says so; a body that is not JSON is passed through · with `express.text()`, a string that holds JSON is checked and stays a string · on the way out, `res.json` and `res.send` with an object are checked (Express passes one to the other); `res.send` with a string, `res.jsonp` and streams are not · a custom `onBlocked` that calls `res.json` goes through the outbound check too, harmlessly, not `res.send` or a stream · **Hono:** a body read before `pdpaHono` runs is the unprotected one
