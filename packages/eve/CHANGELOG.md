@@ -1,5 +1,9 @@
 # @eve-pdpa-extension/eve
 
+## Unreleased
+
+- The `eve` peer dependency is now `>=0.80.0 <0.81.0` instead of `*`. Only eve 0.80.x was ever supported; an install beside eve 1.x now warns (or fails, under strict peer dependencies) instead of stopping when the agent loads.
+
 ## 0.1.1
 
 Install in three steps: `eve add`, four lines in `agent/agent.ts`, two keys. Everything from 0.1.0 is still there and works as before.
