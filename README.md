@@ -60,7 +60,7 @@ npx @eve-pdpa-extension/cli scan chats.csv      # ตรวจไฟล์แช
 
 - **ใช้ในแอป:** ต้องมีไฟล์ policy และ `PDPA_HMAC_KEY` (สร้างด้วย `openssl rand -hex 32`) ดู[เริ่มใช้ของ core](packages/core/README.th.md#เริ่มใช้)
 - **ตรวจไฟล์เก่า:** ใช้ CLI ตามข้างบน ดู [README ของ cli](packages/cli/README.th.md)
-- **agent ที่สร้างด้วย eve:** ติดตั้ง 3 ขั้นด้วย `eve add` ดู [README ของ eve](packages/eve/README.th.md#ติดตั้งใน-3-ขั้น)
+- **agent ที่สร้างด้วย eve:** ติดตั้ง 3 ขั้นด้วย `eve add` ดู [README ของ eve](packages/eve/README.th.md#ติดตั้งใน-3-ขั้น) · ตัวอย่าง agent ที่รันได้อยู่ที่ [examples/pdpa-agent](examples/pdpa-agent)
 - รัน guard **ฝั่ง server เท่านั้น** เพราะ key และ token ที่อยู่ในเบราว์เซอร์ ใครก็อ่านได้
 
 ### ใช้ในโค้ด
@@ -170,7 +170,7 @@ npx @eve-pdpa-extension/cli scan chats.csv      # scan old chats, no code
 
 - **In your app:** you need a policy file and a `PDPA_HMAC_KEY` (`openssl rand -hex 32`). See core's [Quick start](packages/core/README.md#quick-start).
 - **Old chat exports:** use the CLI above. See the [cli README](packages/cli/README.md).
-- **eve agents:** install in 3 steps with `eve add`. See the [eve README](packages/eve/README.md#install-in-3-steps).
+- **eve agents:** install in 3 steps with `eve add`. See the [eve README](packages/eve/README.md#install-in-3-steps), and [examples/pdpa-agent](examples/pdpa-agent) for a complete agent.
 - Run the guard **on the server only**: anyone can read a key or a token that is in the browser.
 
 ### Using it in code
@@ -216,7 +216,7 @@ packages/cli/        @eve-pdpa-extension/cli    Node only
 packages/eve/        @eve-pdpa-extension/eve    eve adapter: channel · tool · model · outbound · hook · Node 24+
 packages/http/       @eve-pdpa-extension/http   gateway · not on npm · deployed with a Deploy to Vercel button
 
-examples/            example policy files
+examples/            pdpa-policy.json, an example policy · pdpa-agent/, a runnable eve agent set up with eve add
 bench/               chat templates and the accuracy harness · generated data stays out of git
 internal/            4 consumer fixtures proving the exports map works
 scripts/             gates enforcing core's constraints · smoke tests on 5 runtimes · demo
