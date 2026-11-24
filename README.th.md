@@ -20,6 +20,10 @@
 
 **[ลองใช้ในเบราว์เซอร์ →](https://eve-pdpa-extension.vercel.app)** ไลบรารีตัวจริงทำงานอยู่ในหน้าเว็บ ไม่ต้องติดตั้ง และข้อความที่พิมพ์ไม่ถูกส่งออกไปไหน
 
+หรือ deploy eve agent ตัวอย่างขึ้น Vercel ของคุณเอง ปุ่มจะให้กรอก key 2 ตัว แล้วสร้าง Redis สำหรับเก็บ token ให้ ([ค่าแต่ละตัวทำอะไร](examples/pdpa-agent#deploy-to-vercel))
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmintelligence-dev%2Feve-pdpa-extension%2Ftree%2Fmain%2Fexamples%2Fpdpa-agent&project-name=pdpa-agent&repository-name=pdpa-agent&env=PDPA_HMAC_KEY%2CPDPA_SESSION_KEY&envDescription=Two%20different%20random%20secrets%20of%2032%20bytes%20or%20more%2C%20one%20for%20each%20key.%20Make%20each%20with%3A%20openssl%20rand%20-hex%2032&envLink=https%3A%2F%2Fgithub.com%2Fmintelligence-dev%2Feve-pdpa-extension%2Ftree%2Fmain%2Fexamples%2Fpdpa-agent%23environment-variables&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22protocol%22%3A%22storage%22%7D%5D)
+
 > **เป็นเครื่องมือทางเทคนิค ไม่ใช่ใบรับรองการปฏิบัติตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล**
 
 ## ใน repository นี้มีอะไร
@@ -29,7 +33,7 @@
 | [`packages/core`](packages/core) | ไลบรารีที่แอปเรียกกับทุกข้อความ: ตรวจหา ปิด 6 แบบ token และบันทึก ไม่มี dependency | Node 18.18+, Deno, Bun, Cloudflare Workers, browser | `npm install @eve-pdpa-extension/core` |
 | [`packages/cli`](packages/cli) | ตรวจไฟล์แชทเก่า (JSONL, CSV, LINE OA) และตรวจไฟล์กติกา โดยไม่ต้องเขียนโค้ด | Node 18.18+ | `npx @eve-pdpa-extension/cli scan chats.csv` |
 | [`packages/eve`](packages/eve) | ตัวห่อ agent ที่สร้างด้วย [eve](https://eve.dev): ห่อทุก channel, โมเดล, tool และ session | Node 24+, eve 0.80.x | `eve add` (ดู[เริ่มใช้งาน](#เริ่มใช้งาน)) |
-| [`examples/pdpa-agent`](examples/pdpa-agent) | eve agent ร้านค้าตัวอย่างที่ติดตั้งด้วย `eve add` รันได้จริง | เครื่องของคุณ หรือ Vercel | `npm run dev` |
+| [`examples/pdpa-agent`](examples/pdpa-agent) | eve agent ร้านค้าตัวอย่างที่ติดตั้งด้วย `eve add` รันได้จริง | เครื่องของคุณ หรือ Vercel | `npm run dev` · [deploy ของคุณเอง](examples/pdpa-agent#deploy-to-vercel) |
 | [`apps/demo`](apps/demo) | หน้า live demo สร้างด้วย Next.js และ [Mintel UI](https://mintel-ui.vercel.app) | เบราว์เซอร์ | [eve-pdpa-extension.vercel.app](https://eve-pdpa-extension.vercel.app) |
 
 ทุกตัวใช้โค้ดตรวจและปิดชุดเดียวกันใน `packages/core`
