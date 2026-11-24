@@ -32,3 +32,7 @@ packages/*/LICENSE
 
 # Claude Code agents, hooks and skills for this machine (edge-loop, user-bench) — kept local
 .claude/
+
+# Vercel project link and the demo site built for it (vercel.json)
+.vercel/
+.vercel-site/
