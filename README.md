@@ -20,6 +20,10 @@ Detect and protect Thai personal data before it reaches an AI model, an AI agent
 
 **[Try it in your browser →](https://eve-pdpa-extension.vercel.app)** The real library runs in the page. Nothing to install, and nothing you type leaves your browser.
 
+Or deploy the example eve agent to your own Vercel account. The button asks for two keys and creates the Redis token store ([what each setting does](examples/pdpa-agent#deploy-to-vercel)):
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmintelligence-dev%2Feve-pdpa-extension%2Ftree%2Fmain%2Fexamples%2Fpdpa-agent&project-name=pdpa-agent&repository-name=pdpa-agent&env=PDPA_HMAC_KEY%2CPDPA_SESSION_KEY&envDescription=Two%20different%20random%20secrets%20of%2032%20bytes%20or%20more%2C%20one%20for%20each%20key.%20Make%20each%20with%3A%20openssl%20rand%20-hex%2032&envLink=https%3A%2F%2Fgithub.com%2Fmintelligence-dev%2Feve-pdpa-extension%2Ftree%2Fmain%2Fexamples%2Fpdpa-agent%23environment-variables&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22protocol%22%3A%22storage%22%7D%5D)
+
 > **This is a technical tool, not a certification of compliance with Thailand's PDPA.**
 
 ## What is in this repository
@@ -29,7 +33,7 @@ Detect and protect Thai personal data before it reaches an AI model, an AI agent
 | [`packages/core`](packages/core) | The library your app calls on every message: detection, the six actions, tokens, audit. Zero dependencies | Node 18.18+, Deno, Bun, Cloudflare Workers, browsers | `npm install @eve-pdpa-extension/core` |
 | [`packages/cli`](packages/cli) | Scans old chat exports (JSONL, CSV, LINE OA) and checks a policy file, without writing code | Node 18.18+ | `npx @eve-pdpa-extension/cli scan chats.csv` |
 | [`packages/eve`](packages/eve) | An adapter for [eve](https://eve.dev) agents: wraps every channel, the model, the tools and the session | Node 24+, eve 0.80.x | `eve add` (see [Quick start](#quick-start)) |
-| [`examples/pdpa-agent`](examples/pdpa-agent) | A complete eve agent for a Thai shop, set up with `eve add` | Your machine, or Vercel | `npm run dev` |
+| [`examples/pdpa-agent`](examples/pdpa-agent) | A complete eve agent for a Thai shop, set up with `eve add` | Your machine, or Vercel | `npm run dev` · [deploy your own](examples/pdpa-agent#deploy-to-vercel) |
 | [`apps/demo`](apps/demo) | The live demo, built with Next.js and [Mintel UI](https://mintel-ui.vercel.app) | Your browser | [eve-pdpa-extension.vercel.app](https://eve-pdpa-extension.vercel.app) |
 
 All of them detect and mask with the same code in `packages/core`.
