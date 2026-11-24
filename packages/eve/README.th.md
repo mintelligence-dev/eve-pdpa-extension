@@ -119,6 +119,8 @@ npx eve-pdpa-check --production   # ตรวจ key ทั้งสองตั
 
 ### ขึ้น Vercel
 
+[`examples/pdpa-agent`](https://github.com/mintelligence-dev/eve-pdpa-extension/tree/main/examples/pdpa-agent#deploy-to-vercel) มีปุ่ม Deploy to Vercel ที่ทำขั้นตอนข้างล่างให้ทั้งหมด พร้อมตารางอธิบายตัวแปรแต่ละตัว
+
 1. เพิ่ม **Upstash for Redis** ให้โปรเจกต์จาก Vercel Marketplace จะได้ `KV_REST_API_URL` และ `KV_REST_API_TOKEN` (หรือตั้ง `UPSTASH_REDIS_REST_URL` และ `UPSTASH_REDIS_REST_TOKEN` เอง) token เก็บไว้ที่นั่น function ทุกตัวจึงแลก token ได้ · key ขึ้นต้นด้วย `pdpa-eve:`
 2. ตั้ง `PDPA_HMAC_KEY` และ `PDPA_SESSION_KEY` ให้ Production เป็นค่าใหม่ ไม่ใช่ค่าใน `.env.local`
 
