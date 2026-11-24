@@ -192,8 +192,8 @@ The full lists are under Known limitations in the [core](packages/core/README.md
 packages/core/       @eve-pdpa-extension/core   zero deps · every runtime · 150 KB size budget
 packages/cli/        @eve-pdpa-extension/cli    Node only
 packages/eve/        @eve-pdpa-extension/eve    eve adapter: channel · tool · model · outbound · hook · Node 24+
-packages/http/       @eve-pdpa-extension/http   gateway · not on npm in 0.1 · deployed with a Deploy to Vercel button
-packages/{policy,ner,ner-model-th,mcp}/   README only · not started (after 0.1)
+packages/http/       @eve-pdpa-extension/http   gateway · not on npm · deployed with a Deploy to Vercel button
+packages/{policy,ner,ner-model-th,mcp}/   README only · not started
 
 examples/            example policy files
 bench/               chat templates and the accuracy harness · generated data stays out of git

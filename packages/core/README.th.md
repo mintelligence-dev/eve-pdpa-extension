@@ -25,7 +25,7 @@
    ทั้งเลขไทยและเลขอารบิก
 2. **ปิดตาม policy** เลือกได้ 6 แบบต่อประเภท ดู [action ทั้ง 6](#action-ทั้ง-6)
 3. **บันทึก audit ทุกครั้งที่ตรวจ** โดย audit event **ไม่มีค่าจริงอยู่ข้างใน** ดู [audit](#audit)
-4. **ใช้ได้ทุกที่** ไม่มี dependency · ~38 KB minified (~14 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser
+4. **ใช้ได้ทุกที่** ไม่มี dependency · ~58 KB minified (~21 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser
 
 ## หลักความปลอดภัย
 
