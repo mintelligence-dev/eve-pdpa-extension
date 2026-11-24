@@ -25,7 +25,7 @@
    — in Thai or Arabic digits.
 2. **Protects each one the way your policy says**, in 6 ways chosen per type. See [The 6 actions](#the-6-actions).
 3. **Audits every scan**, and an audit event **never contains the real value**. See [Audit](#audit).
-4. **Runs anywhere:** zero dependencies · ~38 KB minified (~14 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers.
+4. **Runs anywhere:** zero dependencies · ~58 KB minified (~21 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers.
 
 ## Safeguards
 
