@@ -1,3 +1,4 @@
+import { checkFields } from './fields.js'
 import { protectRequest, protectResponse, type WebOptions } from './web.js'
 
 /**
@@ -22,6 +23,8 @@ export interface HonoContextLike {
 export function pdpaHono(
   options: WebOptions,
 ): (c: HonoContextLike, next: () => Promise<void>) => Promise<Response | undefined> {
+  checkFields(options.fields)
+  checkFields(options.responseFields)
   return async (c, next) => {
     const r = await protectRequest(c.req.raw, options)
     if (!r.ok) return r.response

@@ -1,4 +1,5 @@
 import type { Boundary, EntityType } from '@eve-pdpa-extension/core'
+import { checkFields } from './fields.js'
 import { type AdapterOptions, blockedBody, blockedStatus, namesJson } from './options.js'
 import { protectBody } from './protect.js'
 
@@ -50,6 +51,8 @@ function jsonIn(text: string): { json: unknown } | undefined {
 export function pdpaExpress<Req extends ExpressRequestLike>(
   options: ExpressOptions<Req>,
 ): (req: Req, res: ExpressResponseLike, next: ExpressNext) => void {
+  checkFields(options.fields)
+  checkFields(options.responseFields)
   return (req, res, next) => {
     let body: unknown = req.body
     let asText = false
@@ -73,8 +76,8 @@ export function pdpaExpress<Req extends ExpressRequestLike>(
       asText = true
     }
 
-    const sessionId = options.sessionId?.(req)
-    const ref = options.ref?.(req)
+    const sessionId = options.sessionId?.(req, body)
+    const ref = options.ref?.(req, body)
     const scope = {
       guard: options.guard,
       ...(sessionId === undefined ? {} : { sessionId }),

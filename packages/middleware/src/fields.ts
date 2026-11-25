@@ -61,6 +61,14 @@ export function pathsOf(fields: Preset | readonly FieldPath[] | undefined): read
   return fields
 }
 
+/**
+ * Throws the TypeError a bad preset or path would throw on the first request,
+ * so an adapter can fail when it is created, at server start, instead.
+ */
+export function checkFields(fields: Preset | readonly FieldPath[] | undefined): void {
+  for (const path of pathsOf(fields)) stepsOf(path)
+}
+
 interface Step {
   readonly key: string
   readonly each: boolean

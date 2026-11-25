@@ -16,11 +16,17 @@ export interface AdapterOptions<In> {
   /**
    * The conversation, read from the request. Required when the policy
    * tokenises: tokens are kept apart by it. Must not itself be personal data —
-   * a chat id, not a phone number.
+   * a chat id, not a phone number. `body` is the request body read as JSON,
+   * before anything in it is protected, so a chat id sent in the body can be
+   * read on every framework; it is `undefined` when the body is not JSON.
+   * When a reply is checked it is called again, with the same request body.
    */
-  readonly sessionId?: (input: In) => string | undefined
-  /** Your id for this request, copied into each audit event so it can be traced back. */
-  readonly ref?: (input: In) => string | undefined
+  readonly sessionId?: (input: In, body: any) => string | undefined
+  /**
+   * Your id for this request, copied into each audit event so it can be traced
+   * back. Given `body` as `sessionId` is.
+   */
+  readonly ref?: (input: In, body: any) => string | undefined
   /**
    * The other side's last message — for a customer's message, what your bot or
    * staff last asked ("ขอเลขบัญชีค่ะ") — so a bare reply such as
@@ -30,7 +36,7 @@ export interface AdapterOptions<In> {
    * never changed, never written to audit. Used for the request; a reply is
    * checked without it.
    */
-  readonly context?: (input: In, body: unknown) => string | undefined | Promise<string | undefined>
+  readonly context?: (input: In, body: any) => string | undefined | Promise<string | undefined>
   /**
    * Called when `fields` (or, for a reply, `responseFields`) reach no string at
    * all in a body that was read as JSON — so a shop that forgot to set `fields`

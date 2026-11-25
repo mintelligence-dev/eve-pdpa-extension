@@ -1,4 +1,5 @@
 import type { Boundary, EntityType } from '@eve-pdpa-extension/core'
+import { checkFields } from './fields.js'
 import { type AdapterOptions, blockedBody, blockedStatus, mayBeJson, namesJson } from './options.js'
 import { protectBody } from './protect.js'
 
@@ -41,6 +42,29 @@ function blocked(
   return options.onBlocked !== undefined
     ? options.onBlocked(blockedBy, request, boundary)
     : Response.json(blockedBody(blockedBy, boundary), { status: blockedStatus(boundary) })
+}
+
+interface Scope {
+  readonly sessionId?: string
+  readonly ref?: string
+}
+
+/**
+ * Each request's body as protectRequest read it, before protection, so the
+ * reply's sessionId and ref can be worked out from it too: by the time the
+ * reply comes back the handler has read the request body, and it cannot be
+ * read again. Kept by request, not by options, so protectResponse finds it
+ * even when given another options object.
+ */
+const bodies = new WeakMap<Request, unknown>()
+
+function scopeOf(options: WebOptions, request: Request, body: unknown): Scope {
+  const sessionId = options.sessionId?.(request, body)
+  const ref = options.ref?.(request, body)
+  return {
+    ...(sessionId === undefined ? {} : { sessionId }),
+    ...(ref === undefined ? {} : { ref }),
+  }
 }
 
 /** Default cap on a request body: far more than a chat message, far less than memory. */
@@ -134,29 +158,27 @@ export async function protectRequest<R extends Request>(
     if (!namesJson(request.headers.get('content-type'))) return { ok: true, request }
     return { ok: false, response: Response.json({ error: 'invalid_json' }, { status: 400 }) }
   }
-  const sessionId = options.sessionId?.(request)
-  const ref = options.ref?.(request)
+  const scope = scopeOf(options, request, read.json)
   const context = await options.context?.(request, read.json)
   const r = await protectBody(read.json, {
     guard: options.guard,
     ...(options.fields === undefined ? {} : { fields: options.fields }),
-    ...(sessionId === undefined ? {} : { sessionId }),
-    ...(ref === undefined ? {} : { ref }),
+    ...scope,
     ...(context === undefined ? {} : { context }),
   })
   if (!r.ok) return { ok: false, response: blocked(r.blockedBy, request, 'inbound', options) }
   if (r.matched === 0) options.onNoMatch?.(request, 'inbound')
+  bodies.set(request, read.json)
   if (!r.changed) return { ok: true, request }
   const Rebuilt = request.constructor as new (input: string, init: RequestInit) => R
-  return {
-    ok: true,
-    request: new Rebuilt(request.url, {
-      method: request.method,
-      headers: withoutLength(request.headers),
-      body: JSON.stringify(r.body),
-      signal: request.signal,
-    }),
-  }
+  const rebuilt = new Rebuilt(request.url, {
+    method: request.method,
+    headers: withoutLength(request.headers),
+    body: JSON.stringify(r.body),
+    signal: request.signal,
+  })
+  bodies.set(rebuilt, read.json)
+  return { ok: true, request: rebuilt }
 }
 
 /**
@@ -184,14 +206,14 @@ export async function protectResponse(
     if (!namesJson(response.headers.get('content-type'))) return response
     return Response.json({ error: 'invalid_json', boundary: 'outbound' }, { status: 502 })
   }
-  const sessionId = options.sessionId?.(request)
-  const ref = options.ref?.(request)
+  // The request's body was read by protectRequest, and by the handler since:
+  // use what protectRequest read. A request it never read as JSON has none.
+  const scope = scopeOf(options, request, bodies.get(request))
   const r = await protectBody(read.json, {
     guard: options.guard,
     fields: options.responseFields,
     boundary: 'outbound',
-    ...(sessionId === undefined ? {} : { sessionId }),
-    ...(ref === undefined ? {} : { ref }),
+    ...scope,
   })
   if (!r.ok) return blocked(r.blockedBy, request, 'outbound', options)
   if (r.matched === 0) options.onNoMatch?.(request, 'outbound')
@@ -214,6 +236,8 @@ export function withPdpa<R extends Request, Rest extends unknown[]>(
   handler: (request: R, ...rest: Rest) => Response | Promise<Response>,
   options: WebOptions,
 ): (request: R, ...rest: Rest) => Promise<Response> {
+  checkFields(options.fields)
+  checkFields(options.responseFields)
   return async (request, ...rest) => {
     const r = await protectRequest(request, options)
     if (!r.ok) return r.response
