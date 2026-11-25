@@ -56,11 +56,14 @@ jobs:
             packages/http/dist
             packages/http/smoke
           retention-days: 3
-      # dist only: the constraints job runs gate:builtins over it.
+      # package.json for "type": "module" and the exports map, as for http.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: middleware-dist
-          path: packages/middleware/dist
+          path: |
+            packages/middleware/package.json
+            packages/middleware/dist
+            packages/middleware/smoke
           retention-days: 3
 
   quality:
@@ -90,7 +93,7 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with: { name: http-dist, path: packages/http }
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with: { name: middleware-dist, path: packages/middleware/dist }
+        with: { name: middleware-dist, path: packages/middleware }
       - run: pnpm gate:deps
       - run: pnpm gate:builtins
       - run: pnpm gate:ner
@@ -166,6 +169,30 @@ jobs:
           ln -s ../../../core packages/http/node_modules/@eve-pdpa-extension/core
       - run: node packages/http/smoke/run.mjs
 
+  # middleware claims what core claims: Node 18.18 and up, ESM and CJS, and
+  # the web-standard runtimes below. The shipped dist, no install.
+  smoke-node-middleware:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18.18.0', '18', '20', '22', '24', '26']
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: core-dist, path: packages/core }
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: middleware-dist, path: packages/middleware }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '${{ matrix.node }}' }
+      - run: |
+          mkdir -p packages/middleware/node_modules/@eve-pdpa-extension
+          ln -s ../../../core packages/middleware/node_modules/@eve-pdpa-extension/core
+      - run: node packages/middleware/smoke/run.mjs
+      # The exports map, both conditions: require() reaches the CJS build.
+      - working-directory: packages/middleware
+        run: node smoke/pkg.cjs && node smoke/pkg.mjs
+
   smoke-deno:
     needs: build
     runs-on: ubuntu-latest
@@ -177,6 +204,12 @@ jobs:
       # No -A, no --allow-*. This is the canonical "no network calls" proof:
       # Deno halts on any filesystem, network, env or subprocess access.
       - run: deno run packages/core/smoke/run.mjs
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: middleware-dist, path: packages/middleware }
+      - run: |
+          mkdir -p packages/middleware/node_modules/@eve-pdpa-extension
+          ln -s ../../../core packages/middleware/node_modules/@eve-pdpa-extension/core
+      - run: deno run packages/middleware/smoke/run.mjs
 
   smoke-bun:
     needs: build
@@ -186,6 +219,12 @@ jobs:
         with: { name: core-dist, path: packages/core }
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
       - run: bun packages/core/smoke/run.mjs
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: middleware-dist, path: packages/middleware }
+      - run: |
+          mkdir -p packages/middleware/node_modules/@eve-pdpa-extension
+          ln -s ../../../core packages/middleware/node_modules/@eve-pdpa-extension/core
+      - run: bun packages/middleware/smoke/run.mjs
 
   smoke-workerd:
     needs: build
@@ -201,6 +240,9 @@ jobs:
       - run: npm i --no-save miniflare@4.20260730.0
       - run: node scripts/smoke-workerd.mjs
       - run: node scripts/smoke-workerd.mjs http
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: middleware-dist, path: packages/middleware }
+      - run: node scripts/smoke-workerd.mjs middleware
 
   smoke-browser:
     needs: build

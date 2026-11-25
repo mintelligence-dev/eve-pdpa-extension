@@ -6,7 +6,8 @@ import { defineConfig } from 'tsdown'
 export default defineConfig({
   entry: ['src/index.ts'],
   outDir: 'dist',
-  format: ['esm'],
+  // Both, as core: a project still on require() can use it.
+  format: ['esm', 'cjs'],
   platform: 'neutral',
   target: 'es2022',
   dts: true,
@@ -14,5 +15,8 @@ export default defineConfig({
   clean: true,
   failOnWarn: true,
   deps: { neverBundle: ['@eve-pdpa-extension/core'] },
-  outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+  outExtensions: ({ format }) => ({
+    js: format === 'es' ? '.js' : '.cjs',
+    dts: format === 'es' ? '.d.ts' : '.d.cts',
+  }),
 })

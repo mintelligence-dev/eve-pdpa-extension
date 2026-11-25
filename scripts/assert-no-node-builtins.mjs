@@ -78,12 +78,13 @@ for (const file of files) {
   const lines = src.split('\n')
   const rel = relative(ROOT, file)
 
-  // (a) every require() specifier must be relative
+  // (a) every require() specifier must be relative, or a package this one may
+  // import: middleware's CJS build requires core as its ESM build imports it
   const requireRe = /(?:^|[^\w.$])require\s*\(\s*(['"])([^'"]+)\1\s*\)/g
   let m = requireRe.exec(src)
   while (m !== null) {
     const spec = m[2]
-    if (!spec.startsWith('./') && !spec.startsWith('../')) {
+    if (!spec.startsWith('./') && !spec.startsWith('../') && !allowed.imports.includes(spec)) {
       const line = src.slice(0, m.index).split('\n').length
       const why = BUILTINS.has(spec) ? 'node builtin' : 'bare specifier'
       fail.push(`${rel}:${line}  require("${spec}") — ${why}`)

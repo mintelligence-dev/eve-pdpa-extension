@@ -25,12 +25,13 @@
     "smoke:node": "node packages/core/smoke/run.mjs",
     "smoke:cli": "node packages/cli/smoke/run.mjs",
     "smoke:http": "node packages/http/smoke/run.mjs",
+    "smoke:middleware": "node packages/middleware/smoke/run.mjs && cd packages/middleware && node smoke/pkg.cjs && node smoke/pkg.mjs && cd ../.. && pnpm exec deno run packages/middleware/smoke/run.mjs && pnpm exec bun packages/middleware/smoke/run.mjs && node scripts/smoke-workerd.mjs middleware",
     "smoke:deno": "pnpm exec deno run packages/core/smoke/run.mjs",
     "smoke:bun": "pnpm exec bun packages/core/smoke/run.mjs",
     "smoke:workerd": "node scripts/smoke-workerd.mjs && node scripts/smoke-workerd.mjs http",
     "smoke:browser": "node scripts/smoke-browser.mjs",
     "readme": "node scripts/check-readme.mjs",
-    "verify": "pnpm lint && pnpm build && pnpm typecheck && pnpm test && pnpm gates && pnpm size && pnpm smoke && pnpm smoke:cli && pnpm smoke:http && pnpm readme"
+    "verify": "pnpm lint && pnpm build && pnpm typecheck && pnpm test && pnpm gates && pnpm size && pnpm smoke && pnpm smoke:cli && pnpm smoke:http && pnpm smoke:middleware && pnpm readme"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
