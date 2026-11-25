@@ -7,6 +7,9 @@ describe('public surface', () => {
   it('exports everything the smoke tests and consumers rely on', () => {
     for (const name of [
       'createGuard',
+      'createBrowserGuard',
+      'createStreamGuard',
+      'protectStream',
       'definePolicy',
       'parsePolicy',
       'normalise',

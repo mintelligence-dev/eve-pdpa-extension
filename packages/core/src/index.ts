@@ -1,4 +1,6 @@
 export { allowlistDigestForm } from './allowlist.js'
+export type { BrowserGuardOptions } from './browser.js'
+export { createBrowserGuard } from './browser.js'
 export { isValidLuhn } from './detectors/credit-card.js'
 export {
   BUILTIN_DETECTORS,
@@ -22,6 +24,8 @@ export {
   toOriginalStart,
 } from './normalise.js'
 export { actionFor, definePolicy, parsePolicy } from './policy.js'
+export type { StreamGuard, StreamOptions } from './stream.js'
+export { createStreamGuard, protectStream } from './stream.js'
 export type { MemoryTokenStoreOptions } from './tokens/memory-store.js'
 export { createMemoryTokenStore } from './tokens/memory-store.js'
 export type {
