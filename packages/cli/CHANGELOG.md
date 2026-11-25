@@ -1,5 +1,9 @@
 # @eve-pdpa-extension/cli
 
+## Unreleased
+
+- `--html` prints the report as one self-contained page: no personal data, no script, image or link, a content-security policy that forbids loading anything, and every string from your file escaped. Cannot be combined with `--json`.
+
 ## 0.2.0
 
 - Reports license plates, dates of birth and passport numbers, through core 0.2.0. `--policy` and `policy validate` know the three new types; a policy written for 0.1 that does not name them redacts them (`onUnmapped`).

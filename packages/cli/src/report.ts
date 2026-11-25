@@ -122,3 +122,144 @@ export function formatHuman(r: ScanReport): string {
 
   return `${out.join('\n')}\n`
 }
+
+const esc = (s: string) =>
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
+const STYLE = `:root{color-scheme:light dark;--bg:#fff;--fg:#1a1a1a;--mut:#666;--line:#ddd;--warn:#b45309}
+@media(prefers-color-scheme:dark){:root{--bg:#161616;--fg:#eee;--mut:#999;--line:#333;--warn:#f59e0b}}
+body{font:15px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--fg);max-width:52rem;margin:0 auto;padding:1.5rem 1rem}
+h1{font-size:1.3rem;margin:0 0 .25rem}h2{font-size:1.05rem;margin:1.75rem 0 .5rem}
+.mut{color:var(--mut)}.warn{color:var(--warn)}
+table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:.35rem .6rem;border-bottom:1px solid var(--line)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}.wrap{overflow-x:auto}`
+
+function htmlTable(head: readonly string[], rows: readonly (readonly string[])[]): string {
+  const th = head.map((h) => `<th>${esc(h)}</th>`).join('')
+  const body = rows
+    .map(
+      (r) =>
+        `<tr>${r.map((c, i) => `<td${/^[\d,]+$/.test(c) && i > 0 ? ' class="n"' : ''}>${esc(c)}</td>`).join('')}</tr>`,
+    )
+    .join('')
+  return `<div class="wrap"><table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></div>`
+}
+
+const hitRow = (h: Hit): string[] => [
+  String(h.line),
+  h.idHidden !== undefined ? `(id hidden: ${h.idHidden.join(', ')})` : (h.id ?? ''),
+  h.sender ?? '',
+  h.entities.join(', ') + (h.blocked === true ? ' [blocked]' : ''),
+]
+
+/**
+ * One self-contained page: inline style, no script, no image, no link out, and
+ * a CSP that forbids loading anything. Same content as the human report —
+ * types, counts, line numbers and ids, never a value — and every string that
+ * came from the user's file is escaped.
+ */
+export function formatHtml(r: ScanReport): string {
+  const s: string[] = []
+  s.push(`<h1>eve-pdpa scan</h1><p class="mut">${esc(r.file)} · ${esc(r.format)}</p>`)
+  s.push(
+    `<p>${r.policy.source === 'default' ? 'No policy given — every entity reported, nothing rewritten' : 'Policy'} <span class="mut">(${esc(r.policy.hash)})</span></p>`,
+  )
+  s.push(
+    htmlTable(
+      ['Messages', 'Count'],
+      [
+        ['Scanned', n(r.records.scanned)],
+        ['With personal data', n(r.records.withFindings)],
+        ['Unreadable lines (not scanned)', n(r.records.unreadable)],
+        ...(r.records.blocked > 0 ? [['Would be blocked whole', n(r.records.blocked)]] : []),
+      ],
+    ),
+  )
+  if (r.senders !== undefined) {
+    const { customer: c, shop: sh } = r.senders
+    s.push('<h2>By sender</h2>')
+    s.push(
+      htmlTable(
+        ['Sender', 'Scanned', 'With personal data'],
+        [
+          ['Customers', n(c.scanned), n(c.withFindings)],
+          ['Shop', n(sh.scanned), n(sh.withFindings)],
+        ],
+      ),
+    )
+  }
+  const found = Object.entries(r.entities).filter(([, c]) => c > 0)
+  s.push('<h2>Found</h2>')
+  s.push(
+    found.length === 0
+      ? '<p>Nothing found. <span class="mut">This does not mean the file holds no personal data.</span></p>'
+      : htmlTable(
+          ['Type', 'Values'],
+          found.map(([e, c]) => [e, n(c)]),
+        ),
+  )
+  if (r.allowlisted > 0)
+    s.push(`<p class="mut">${n(r.allowlisted)} more let through by the allowlist.</p>`)
+  if (r.actions !== undefined && found.length > 0) {
+    s.push('<h2>The policy would</h2>')
+    s.push(
+      htmlTable(
+        ['Action', 'Values'],
+        Object.entries(r.actions).map(([a, c]) => [a, n(c ?? 0)]),
+      ),
+    )
+  }
+  if (r.hits.length > 0) {
+    s.push('<h2>Messages with personal data</h2>')
+    s.push(htmlTable(['Line', 'Id', 'Sender', 'Types'], r.hits.map(hitRow)))
+  }
+  const weak = Object.entries(r.belowThreshold.entities)
+  if (weak.length > 0) {
+    s.push(
+      '<h2>Below the confidence threshold</h2><p class="mut">Found, but the policy does nothing with them.</p>',
+    )
+    s.push(
+      htmlTable(
+        ['Type', 'Count', 'Confidence', 'Threshold'],
+        weak.map(([e, t]) => [
+          e,
+          n(t.count),
+          t.lowest === t.highest ? `${t.lowest}` : `${t.lowest}–${t.highest}`,
+          String(t.threshold),
+        ]),
+      ),
+    )
+    s.push(htmlTable(['Line', 'Id', 'Sender', 'Types'], r.belowThreshold.hits.map(hitRow)))
+  }
+  if (r.unreadable.length > 0) {
+    s.push('<h2>Unreadable lines — not scanned</h2>')
+    s.push(
+      htmlTable(
+        ['Line', 'Problem'],
+        r.unreadable.map((u) => [String(u.line), u.problem]),
+      ),
+    )
+  }
+  if (r.degradedDetectors.length > 0) {
+    s.push(
+      `<p class="warn">Warning: a detector failed on some messages, which were not fully scanned: ${esc(r.degradedDetectors.join(', '))}</p>`,
+    )
+  }
+  s.push(
+    '<p class="mut">A technical tool, not a certification of compliance with Thailand\'s PDPA. This page lists types, counts, line numbers and ids, never the personal data itself.</p>',
+  )
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>eve-pdpa scan report</title>
+<style>${STYLE}</style></head><body>
+${s.join('\n')}
+</body></html>
+`
+}

@@ -124,6 +124,14 @@ eve-pdpa scan chats.csv --json > report.json
 
 The same information as JSON, listing **every message** (the human report shows the first 20).
 
+### A report to open in a browser
+
+```bash
+eve-pdpa scan chats.csv --html > report.html
+```
+
+One self-contained page to hand to someone who will not read a terminal: counts, line numbers and message ids, listing **every message**, like the JSON. It holds no personal data, loads nothing from outside (no script, no image, no link, and a content-security policy that forbids them), and escapes everything that came from your file. The CLI still writes no file itself: the `>` is yours. `--json` and `--html` cannot be combined.
+
 ## Files it reads
 
 | Kind | Recognised by | Message is in |
