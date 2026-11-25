@@ -56,6 +56,12 @@ jobs:
             packages/http/dist
             packages/http/smoke
           retention-days: 3
+      # dist only: the constraints job runs gate:builtins over it.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: middleware-dist
+          path: packages/middleware/dist
+          retention-days: 3
 
   quality:
     runs-on: ubuntu-latest
@@ -83,6 +89,8 @@ jobs:
         with: { name: core-dist, path: packages/core }
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with: { name: http-dist, path: packages/http }
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: middleware-dist, path: packages/middleware/dist }
       - run: pnpm gate:deps
       - run: pnpm gate:builtins
       - run: pnpm gate:ner
