@@ -137,6 +137,19 @@ No versions are promised, and the order may change.
 - **Policy files from disk** (`@eve-pdpa-extension/policy`): YAML and full validation. Node only, so it stays out of the zero-dependency core.
 - **Name detection with an NER model** (`@eve-pdpa-extension/ner`), kept out of core because a model is hundreds of MB. No model is chosen yet; every candidate's licence has to be checked first.
 
+### Release 0.3 status (sensitive data and more runtimes)
+
+0.3 is not released. This table says what is started, what can start, and what cannot, from what has been measured.
+
+| Item | Status | Notes |
+|---|---|---|
+| HTML report | **Started** · `eve-pdpa scan --html` | No real values, nothing loaded from outside, everything from the file escaped |
+| Browser mode | **Started** · `createBrowserGuard` | Only `redact` `mask` `flag` `block` · a policy using `hash` or `tokenise` is refused at construction, since anyone can read a key or token in the browser · **Cannot:** stop a user who means to get around it, so the server always needs its own guard |
+| Streaming protection | **Started** · `createStreamGuard` · `protectStream` | The tail of the stream is held back until the detectors see their context, and streamed output equals whole-message output at every split (seeded test) · **Cannot:** be free of latency, or recall text sent before a `block` fired · **Not done:** wiring into the eve adapter |
+| Sensitive data (section 26) | Some types only · scope needs team sign-off first | Health, religion, union membership, criminal record, disability, when tied to a person in the sentence · default `flag` · **Cannot with rules:** political opinion, sexual behaviour, ethnicity, genetic data · **Not text:** real biometrics (fingerprint, face, voice) |
+| Negation awareness | **Blocked** | Needs the sensitive types first, and legal must decide whether "ผมไม่ได้เป็นเบาหวาน" must be protected |
+| Thai NER (optional) | **Blocked** | The base model's licence must be confirmed and a run on real LINE OA chats must show it is worth it · measured today it masks about 40% of names in synthetic chats · not in `core`, not in the browser |
+
 ## Repository layout
 
 ```
