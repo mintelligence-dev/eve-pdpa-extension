@@ -32,7 +32,7 @@ const guard = createGuard({ policy: parsePolicy(policyJson), onAudit: (e) => log
 
 For anything else core offers — a token store, `guard.resolve` — install `@eve-pdpa-extension/core` too, at the version this package depends on. Core's types come with this package as well: `Guard`, `GuardOptions`, `PolicyInput`, `EntityType`, `AuditRecord`.
 
-Needs Node 20 or later. Tested with Express 5, Hono 4 and Next.js 16; Express 4 has not been tested.
+Needs Node 18.18 or later. Works with `import` and with `require()`. The built package is tested on Node 18.18 to 26, Deno, Bun and Cloudflare Workers (workerd); the adapters with Express 5, Hono 4 and Next.js 16. Express 4 has not been tested.
 
 ### Express
 
