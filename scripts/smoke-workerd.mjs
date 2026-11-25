@@ -9,7 +9,8 @@
 // import genuinely fails rather than being politely polyfilled.
 //
 // `node scripts/smoke-workerd.mjs http` runs http's smoke instead (D24): the
-// gateway's dist with core's beside it, both as shipped.
+// gateway's dist with core's beside it, both as shipped. `middleware` does the
+// same for the middleware package.
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { Miniflare } from 'miniflare'
@@ -22,20 +23,20 @@ const read = (path) => readFileSync(resolve(ROOT, path), 'utf8')
 const toCore = (src) => src.replace(/(['"])@eve-pdpa-extension\/core\1/g, "'./core.js'")
 const lib = read('packages/core/dist/index.js')
 const modules =
-  PKG === 'http'
+  PKG === 'http' || PKG === 'middleware'
     ? [
         {
           type: 'ESModule',
           path: 'smoke.js',
-          contents: toCore(read('packages/http/smoke/dist.mjs')).replace(
+          contents: toCore(read(`packages/${PKG}/smoke/dist.mjs`)).replace(
             '../dist/index.js',
-            './http.js',
+            './pkg.js',
           ),
         },
         {
           type: 'ESModule',
-          path: 'http.js',
-          contents: toCore(read('packages/http/dist/index.js')),
+          path: 'pkg.js',
+          contents: toCore(read(`packages/${PKG}/dist/index.js`)),
         },
         { type: 'ESModule', path: 'core.js', contents: lib },
       ]

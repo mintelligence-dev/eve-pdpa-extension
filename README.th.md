@@ -33,6 +33,7 @@
 | [`packages/core`](packages/core) | ไลบรารีที่แอปเรียกกับทุกข้อความ: ตรวจหา ปิด 6 แบบ token และบันทึก ไม่มี dependency | Node 18.18+, Deno, Bun, Cloudflare Workers, browser | `npm install @eve-pdpa-extension/core` |
 | [`packages/cli`](packages/cli) | ตรวจไฟล์แชทเก่า (JSONL, CSV, LINE OA) และตรวจไฟล์กติกา โดยไม่ต้องเขียนโค้ด | Node 18.18+ | `npx @eve-pdpa-extension/cli scan chats.csv` |
 | [`packages/eve`](packages/eve) | ตัวห่อ agent ที่สร้างด้วย [eve](https://eve.dev): ห่อทุก channel, โมเดล, tool และ session | Node 24+, eve 0.80.x | `eve add` (ดู[เริ่มใช้งาน](#เริ่มใช้งาน)) |
+| [`packages/middleware`](packages/middleware) | middleware สำหรับ Express, Hono และ Next.js: ปิดข้อมูลส่วนบุคคลใน body ของ request แชทก่อนถึง handler และตรวจคำตอบแบบ JSON ก่อนส่งออก | Node 18.18+, Deno, Bun, Cloudflare Workers | ยังไม่อยู่บน npm · จะมาใน 0.3 |
 | [`examples/pdpa-agent`](examples/pdpa-agent) | eve agent ร้านค้าตัวอย่างที่ติดตั้งด้วย `eve add` รันได้จริง | เครื่องของคุณ หรือ Vercel | `npm run dev` · [deploy ของคุณเอง](examples/pdpa-agent#deploy-to-vercel) |
 | [`apps/demo`](apps/demo) | หน้า live demo สร้างด้วย Next.js และ [Mintel UI](https://mintel-ui.vercel.app) | เบราว์เซอร์ | [eve-pdpa-extension.vercel.app](https://eve-pdpa-extension.vercel.app) |
 
@@ -144,6 +145,7 @@ packages/core/       @eve-pdpa-extension/core   ไม่มี dependency · �
 packages/cli/        @eve-pdpa-extension/cli    Node เท่านั้น
 packages/eve/        @eve-pdpa-extension/eve    ตัวห่อ eve: channel · tool · model · ขาออก · hook
 packages/http/       @eve-pdpa-extension/http   gateway · ยังไม่อยู่บน npm · deploy ด้วยปุ่ม Deploy to Vercel
+packages/middleware/ @eve-pdpa-extension/middleware   Express · Hono · Next.js · ยังไม่อยู่บน npm (0.3)
 apps/demo/           หน้า live demo · Next.js + Mintel UI · static export บน Vercel
 examples/            pdpa-policy.json กติกาตัวอย่าง · pdpa-agent/ eve agent ที่รันได้
 bench/               ข้อความตัวอย่างและชุดวัดความแม่นยำ · ข้อมูลที่สร้างไม่อยู่ใน git

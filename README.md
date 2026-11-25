@@ -33,6 +33,7 @@ Or deploy the example eve agent to your own Vercel account. The button asks for 
 | [`packages/core`](packages/core) | The library your app calls on every message: detection, the six actions, tokens, audit. Zero dependencies | Node 18.18+, Deno, Bun, Cloudflare Workers, browsers | `npm install @eve-pdpa-extension/core` |
 | [`packages/cli`](packages/cli) | Scans old chat exports (JSONL, CSV, LINE OA) and checks a policy file, without writing code | Node 18.18+ | `npx @eve-pdpa-extension/cli scan chats.csv` |
 | [`packages/eve`](packages/eve) | An adapter for [eve](https://eve.dev) agents: wraps every channel, the model, the tools and the session | Node 24+, eve 0.80.x | `eve add` (see [Quick start](#quick-start)) |
+| [`packages/middleware`](packages/middleware) | Express, Hono and Next.js middleware: hides personal data in a chat request body before your handler runs, and checks a JSON reply on the way out | Node 18.18+, Deno, Bun, Cloudflare Workers | Not on npm yet · coming in 0.3 |
 | [`examples/pdpa-agent`](examples/pdpa-agent) | A complete eve agent for a Thai shop, set up with `eve add` | Your machine, or Vercel | `npm run dev` · [deploy your own](examples/pdpa-agent#deploy-to-vercel) |
 | [`apps/demo`](apps/demo) | The live demo, built with Next.js and [Mintel UI](https://mintel-ui.vercel.app) | Your browser | [eve-pdpa-extension.vercel.app](https://eve-pdpa-extension.vercel.app) |
 
@@ -144,6 +145,7 @@ packages/core/       @eve-pdpa-extension/core   zero deps · every runtime · 15
 packages/cli/        @eve-pdpa-extension/cli    Node only
 packages/eve/        @eve-pdpa-extension/eve    eve adapter: channel · tool · model · outbound · hook
 packages/http/       @eve-pdpa-extension/http   gateway · not on npm · deployed with a Deploy to Vercel button
+packages/middleware/ @eve-pdpa-extension/middleware   Express · Hono · Next.js · not on npm yet (0.3)
 apps/demo/           the live demo · Next.js + Mintel UI · a static export, hosted on Vercel
 examples/            pdpa-policy.json, an example policy · pdpa-agent/, a runnable eve agent
 bench/               chat templates and the accuracy harness · generated data stays out of git
