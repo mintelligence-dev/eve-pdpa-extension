@@ -34,6 +34,7 @@ Or deploy the example eve agent to your own Vercel account. The button asks for 
 | [`packages/cli`](packages/cli) | Scans old chat exports (JSONL, CSV, LINE OA) and checks a policy file, without writing code | Node 18.18+ | `npx @eve-pdpa-extension/cli scan chats.csv` |
 | [`packages/eve`](packages/eve) | An adapter for [eve](https://eve.dev) agents: wraps every channel, the model, the tools and the session | Node 24+, eve 0.80.x | `eve add` (see [Quick start](#quick-start)) |
 | [`packages/middleware`](packages/middleware) | Express, Hono and Next.js middleware: hides personal data in a chat request body before your handler runs, and checks a JSON reply on the way out | Node 18.18+, Deno, Bun, Cloudflare Workers | Not on npm yet · coming in 0.3 |
+| [`packages/mcp`](packages/mcp) | An MCP server with `pdpa_scan` and `pdpa_redact`, so an AI agent (Claude Code, Claude Desktop, Cursor) can find and hide personal data before text leaves it | Node 20+ | Not on npm yet |
 | [`examples/pdpa-agent`](examples/pdpa-agent) | A complete eve agent for a Thai shop, set up with `eve add` | Your machine, or Vercel | `npm run dev` · [deploy your own](examples/pdpa-agent#deploy-to-vercel) |
 | [`apps/demo`](apps/demo) | The live demo, built with Next.js and [Mintel UI](https://mintel-ui.vercel.app) | Your browser | [eve-pdpa-extension.vercel.app](https://eve-pdpa-extension.vercel.app) |
 
@@ -135,7 +136,6 @@ No versions are promised, and the order may change.
 - **eve 1.x.**
 - **Masking eve's HTTP channel on the way out.**
 - **Policy files from disk** (`@eve-pdpa-extension/policy`): YAML and full validation. Node only, so it stays out of the zero-dependency core.
-- **An MCP server** (`@eve-pdpa-extension/mcp`) with `pdpa.scan` and `pdpa.redact` tools for AI agents.
 - **Name detection with an NER model** (`@eve-pdpa-extension/ner`), kept out of core because a model is hundreds of MB. No model is chosen yet; every candidate's licence has to be checked first.
 
 ## Repository layout
@@ -146,6 +146,7 @@ packages/cli/        @eve-pdpa-extension/cli    Node only
 packages/eve/        @eve-pdpa-extension/eve    eve adapter: channel · tool · model · outbound · hook
 packages/http/       @eve-pdpa-extension/http   gateway · not on npm · deployed with a Deploy to Vercel button
 packages/middleware/ @eve-pdpa-extension/middleware   Express · Hono · Next.js · not on npm yet (0.3)
+packages/mcp/        @eve-pdpa-extension/mcp    MCP server · pdpa_scan · pdpa_redact · stdio · not on npm yet
 apps/demo/           the live demo · Next.js + Mintel UI · a static export, hosted on Vercel
 examples/            pdpa-policy.json, an example policy · pdpa-agent/, a runnable eve agent
 bench/               chat templates and the accuracy harness · generated data stays out of git
