@@ -3884,9 +3884,6 @@ packages:
       '@yuku-toolchain/wasm':
         optional: true
 
-  zod@4.2.1:
-    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
-
   zod@4.6.7:
     resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
@@ -4327,7 +4324,7 @@ snapshots:
       eventsource-parser: 3.1.1
       jose: 6.2.18
       pkce-challenge: 5.0.2
-      zod: 4.2.1
+      zod: 4.6.7
 
   '@modelcontextprotocol/core@2.4.0':
     dependencies:
@@ -7039,8 +7036,6 @@ snapshots:
       '@yuku-toolchain/linux-x64': 0.28.1
       '@yuku-toolchain/win32-arm64': 0.28.1
       '@yuku-toolchain/win32-x64': 0.28.1
-
-  zod@4.2.1: {}
 
   zod@4.6.7: {}
 
