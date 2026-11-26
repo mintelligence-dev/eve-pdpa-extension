@@ -1,0 +1,65 @@
+{
+  "name": "@eve-pdpa-extension/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "An MCP server with pdpa_scan and pdpa_redact tools, so an AI agent can find and hide Thai personal data before text leaves it.",
+  "keywords": [
+    "pdpa",
+    "thai",
+    "pii",
+    "privacy",
+    "personal-data",
+    "redact",
+    "mcp",
+    "model-context-protocol"
+  ],
+  "bugs": {
+    "url": "https://github.com/mintelligence-dev/eve-pdpa-extension/issues"
+  },
+  "license": "MIT",
+  "author": "M Intelligence",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mintelligence-dev/eve-pdpa-extension.git",
+    "directory": "packages/mcp"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "bin": {
+    "eve-pdpa-mcp": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepack": "node ../../scripts/copy-legal.mjs",
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@eve-pdpa-extension/core": "workspace:^",
+    "@modelcontextprotocol/server": "2.4.0",
+    "zod": "^4.6.6"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "@types/node": "24.10.1",
+    "tsdown": "0.23.0",
+    "typescript": "5.9.3"
+  }
+}
