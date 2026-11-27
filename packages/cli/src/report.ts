@@ -137,17 +137,34 @@ body{font:15px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--fg);max
 h1{font-size:1.3rem;margin:0 0 .25rem}h2{font-size:1.05rem;margin:1.75rem 0 .5rem}
 .mut{color:var(--mut)}.warn{color:var(--warn)}
 table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:.35rem .6rem;border-bottom:1px solid var(--line)}
-td.n{text-align:right;font-variant-numeric:tabular-nums}.wrap{overflow-x:auto}`
+th.n,td.n{text-align:right;width:1%;white-space:nowrap;font-variant-numeric:tabular-nums}.wrap{overflow-x:auto}`
 
+/**
+ * A column whose every cell is a whole number is right-aligned, header
+ * included, and kept narrow so the number sits next to its label.
+ */
 function htmlTable(head: readonly string[], rows: readonly (readonly string[])[]): string {
-  const th = head.map((h) => `<th>${esc(h)}</th>`).join('')
+  const numeric = head.map(
+    (_, i) => rows.length > 0 && rows.every((r) => /^[\d,]+$/.test(r[i] ?? '')),
+  )
+  const cls = (i: number) => (numeric[i] === true ? ' class="n"' : '')
+  const th = head.map((h, i) => `<th${cls(i)}>${esc(h)}</th>`).join('')
   const body = rows
-    .map(
-      (r) =>
-        `<tr>${r.map((c, i) => `<td${/^[\d,]+$/.test(c) && i > 0 ? ' class="n"' : ''}>${esc(c)}</td>`).join('')}</tr>`,
-    )
+    .map((r) => `<tr>${r.map((c, i) => `<td${cls(i)}>${esc(c)}</td>`).join('')}</tr>`)
     .join('')
   return `<div class="wrap"><table><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></div>`
+}
+
+/** The Sender column only exists for a LINE OA export, which says who wrote each message. */
+function hitTable(hits: readonly Hit[], withSender: boolean): string {
+  const head = withSender ? ['Line', 'Id', 'Sender', 'Types'] : ['Line', 'Id', 'Types']
+  return htmlTable(
+    head,
+    hits.map((h) => {
+      const [line, id, sender, types] = hitRow(h) as [string, string, string, string]
+      return withSender ? [line, id, sender, types] : [line, id, types]
+    }),
+  )
 }
 
 const hitRow = (h: Hit): string[] => [
@@ -165,6 +182,7 @@ const hitRow = (h: Hit): string[] => [
  */
 export function formatHtml(r: ScanReport): string {
   const s: string[] = []
+  const withSender = r.senders !== undefined
   s.push(`<h1>eve-pdpa scan</h1><p class="mut">${esc(r.file)} · ${esc(r.format)}</p>`)
   s.push(
     `<p>${r.policy.source === 'default' ? 'No policy given — every entity reported, nothing rewritten' : 'Policy'} <span class="mut">(${esc(r.policy.hash)})</span></p>`,
@@ -216,7 +234,7 @@ export function formatHtml(r: ScanReport): string {
   }
   if (r.hits.length > 0) {
     s.push('<h2>Messages with personal data</h2>')
-    s.push(htmlTable(['Line', 'Id', 'Sender', 'Types'], r.hits.map(hitRow)))
+    s.push(hitTable(r.hits, withSender))
   }
   const weak = Object.entries(r.belowThreshold.entities)
   if (weak.length > 0) {
@@ -234,7 +252,7 @@ export function formatHtml(r: ScanReport): string {
         ]),
       ),
     )
-    s.push(htmlTable(['Line', 'Id', 'Sender', 'Types'], r.belowThreshold.hits.map(hitRow)))
+    s.push(hitTable(r.belowThreshold.hits, withSender))
   }
   if (r.unreadable.length > 0) {
     s.push('<h2>Unreadable lines — not scanned</h2>')

@@ -57,4 +57,37 @@ describe('scan --html', () => {
     expect(code).toBe(EXIT.USAGE)
     expect(stderr).toContain('cannot be used together')
   })
+
+  it('right-aligns a number column with its header, and only that column', async () => {
+    const { stdout } = await cli('scan', CHATS, '--html')
+    expect(stdout).toContain('<th class="n">Values</th>')
+    expect(stdout).toContain('<th class="n">Line</th>')
+    expect(stdout).not.toContain('<th class="n">Type</th>')
+    expect(stdout).not.toContain('<th class="n">Id</th>')
+  })
+
+  it('leaves out the Sender column when the file does not say who wrote each message', async () => {
+    const { stdout } = await cli('scan', CHATS, '--html')
+    expect(stdout).not.toContain('Sender')
+  })
+
+  it('shows the Sender column for a LINE OA export', async () => {
+    const lineOa = file(
+      [
+        'ชื่อบัญชี,ร้านตัวอย่าง',
+        "ไทม์โซน,'+07:00",
+        'วันดาวน์โหลด,2026/10/07 15:23',
+        'ประเภทผู้ส่ง,ชื่อผู้ส่ง,วันส่ง,เวลาส่ง,ข้อความ',
+        "User,'สมชาย ตัวอย่าง,2026/10/07,13:23:47,เบอร์ผม 091-888-7777 ครับ",
+        "Account,'แอดมินเอ,2026/10/07,13:24:47,ส่ง OTP ไปที่ 091-888-7777 แล้วครับ",
+      ].join('\r\n'),
+      '.csv',
+    )
+    const { stdout } = await cli('scan', lineOa, '--html')
+    expect(stdout).toContain('<th>Sender</th>')
+    expect(stdout).toContain('customer')
+    expect(stdout).toContain('shop')
+    expect(stdout).not.toContain('091-888-7777')
+    expect(stdout).not.toContain('สมชาย')
+  })
 })
