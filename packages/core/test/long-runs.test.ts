@@ -9,8 +9,10 @@ import { ENTITY_TYPES } from '../src/types.js'
 // took 5 to 14 seconds (security review of the MCP server, 26 Nov). Now each
 // run is read once.
 const LENGTH = 100_000
-// Generous for a slow CI machine; the quadratic version took 5,000 ms or more.
-const LIMIT_MS = 1_500
+// Generous: CI runs the suite under coverage, about ten times slower ("1 "
+// took 1,640 ms there, 170 ms without). The quadratic version took 4,900 to
+// 14,000 ms without coverage.
+const LIMIT_MS = 4_000
 
 const RUNS = [
   '1-2345-67890-12-',
