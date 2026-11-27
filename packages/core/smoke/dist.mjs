@@ -17,9 +17,18 @@ const FAKE_ID = '3100500123458'
 // A policy that tokenises refuses a call without one. D10.4.
 const SESSION = { sessionId: 'conv_a' }
 
+function guard_policy() {
+  return core.definePolicy({
+    entitySet: '0.1',
+    entities: { TH_NATIONAL_ID: { action: 'redact' } },
+  })
+}
+
 export async function run() {
   const required = [
     'createGuard',
+    'createBrowserGuard',
+    'createStreamGuard',
     'definePolicy',
     'parsePolicy',
     'normalise',
@@ -68,6 +77,32 @@ export async function run() {
   const out = guard.processSync(`เลขบัตรประชาชน ${FAKE_ID} สั่ง ๕ ชิ้น ราคา ๒๕๐ บาท ครับ`)
 
   if (out.text.includes(FAKE_ID)) throw new Error('value survived redaction')
+
+  // Stream guard: a value arriving one character at a time never reaches the output.
+  const sg = core.createStreamGuard(
+    core.createGuard({ policy: guard_policy(), onAudit: () => {} }),
+    { holdBack: 16 },
+  )
+  let streamed = ''
+  for (const ch of `ขอบคุณค่ะ เลขบัตรประชาชน ${FAKE_ID} ขอบคุณค่ะ ขอบคุณค่ะ`) streamed += await sg.push(ch)
+  streamed += await sg.end()
+  if (streamed.includes(FAKE_ID)) throw new Error('stream guard let a value through')
+  if (!streamed.startsWith('ขอบคุณค่ะ')) throw new Error('stream guard lost the text around it')
+
+  // Browser guard: works with a key-free action, refuses one that needs a secret.
+  const bg = core.createBrowserGuard({ policy: guard_policy(), onAudit: () => {} })
+  if (bg.processSync(`เลขบัตรประชาชน ${FAKE_ID}`).text.includes(FAKE_ID)) {
+    throw new Error('browser guard let a value through')
+  }
+  let refused = null
+  try {
+    core.createBrowserGuard({
+      policy: core.definePolicy({ entitySet: '0.1', entities: { EMAIL: { action: 'hash' } } }),
+    })
+  } catch (e) {
+    refused = e
+  }
+  if (refused?.code !== 'ERR_PDPA_INVALID_POLICY') throw new Error('browser guard accepted hash')
   // The customer wrote Thai numerals; they must get Thai numerals back. Only the
   // detected span is rewritten, and it is rewritten on the original text. The
   // control has to be digits no detector claims — an order quantity and a price.

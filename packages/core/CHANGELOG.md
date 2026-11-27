@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- `createStreamGuard` and `protectStream`: protect text that arrives in pieces, such as a model's reply. The end is held back (`holdBack`, default 128 characters) until a safe place to cut, and the pieces together equal one `process` on the whole text, checked by a seeded test at every chunk size. Costs latency; a `block` rule stops the stream but cannot recall what was sent; one audit event per piece. Not yet used by the eve adapter.
+- `createBrowserGuard`: `createGuard` for code in a user's browser. Takes no key, token store or random source, and refuses at construction a policy that uses `hash` or `tokenise`. A courtesy before a message leaves the device, not a control: the server still needs its own guard. Smoke-tested in Chromium.
+
 ### Fixed
 
 - A long run of digits and separators no longer takes seconds. Checking whether a card or national id number sat in a link (new in 0.2.0) read the whole run again for every number in it, and the link pattern read it once per position: 100,000 characters of `1-2345-67890-12-` took about 5 s, of `4111111111111111/` about 14 s. Each run is now read once, and the pattern only starts where a host name can: the same texts take under 50 ms, and what counts as a link is unchanged.

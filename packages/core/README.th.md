@@ -26,7 +26,7 @@
    ทั้งเลขไทยและเลขอารบิก
 2. **ปิดตาม policy** เลือกได้ 6 แบบต่อประเภท ดู [action ทั้ง 6](#action-ทั้ง-6)
 3. **บันทึก audit ทุกครั้งที่ตรวจ** โดย audit event **ไม่มีค่าจริงอยู่ข้างใน** ดู [audit](#audit)
-4. **ใช้ได้ทุกที่** ไม่มี dependency · ~80 KB minified (~29 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser
+4. **ใช้ได้ทุกที่** ไม่มี dependency · ~83 KB minified (~30 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browser
 
 ## หลักความปลอดภัย
 
@@ -259,6 +259,41 @@ await guard.process(text, { sessionId })   // ที่เก็บแบบ asy
   - `resolve` คืน `{ ok: false, reason: 'store_unavailable' }` และบันทึก audit เหมือนทุกครั้ง
   - token ในคำตอบขาออกกลายเป็น `[ข้อมูลที่ปิดไว้]` · audit บันทึกเป็น `unavailable`
   - ทุกครั้งเรียก `onError(error, { source: 'token_store' })` และนับใน `guard.stats.tokenStoreErrors` · **ให้ health check ดูค่านี้** ถ้าเพิ่มขึ้น แปลว่าที่เก็บมีปัญหาและข้อความกำลังถูก block
+
+## ในเบราว์เซอร์
+
+```ts
+import { createBrowserGuard, parsePolicy } from '@eve-pdpa-extension/core'
+
+const guard = createBrowserGuard({ policy: parsePolicy(policyJson), onAudit: () => {} })
+const { text } = await guard.process(input.value)   // ปิดก่อนข้อความออกจากเครื่อง
+```
+
+`createBrowserGuard` คือ `createGuard` สำหรับโค้ดที่รันในเบราว์เซอร์ของผู้ใช้ ไม่รับ `hmacKey` `tokenStore` หรือ `randomSource` และ**ปฏิเสธตั้งแต่สร้าง** policy ที่ใช้ `hash` หรือ `tokenise` เพราะใครถือหน้าเว็บก็อ่าน key หรือ token ได้ ส่วน `redact` `mask` `flag` `block` ใช้ได้เหมือนฝั่ง server
+
+มันเป็นความสะดวกของผู้ใช้ และเป็นด่านแรกก่อนข้อความออกจากเครื่อง **ไม่ใช่มาตรการควบคุม:** คนถือหน้าเว็บแก้หรือข้ามได้ ฝั่ง server จึงต้องรัน guard ของตัวเองเสมอ การตรวจเหมือนเดิม ข้อจำกัดจึงเหมือนเดิม และมี smoke test บน Chromium ทุกครั้งที่รัน `pnpm verify`
+
+## สตรีม
+
+```ts
+import { createGuard, protectStream } from '@eve-pdpa-extension/core'
+
+for await (const text of protectStream(modelStream, guard, { sessionId, boundary: 'outbound' })) {
+  res.write(text)
+}
+```
+
+`protectStream` รับ async iterable ของ string (คำตอบของโมเดลที่ทยอยมา) แล้วคืนข้อความที่ปิดแล้ว ส่วน `createStreamGuard(guard, options)` เหมือนกันแต่มี `push(chunk)` กับ `end()` ไว้ใช้เมื่อคุณคุม loop เอง
+
+หลักการ: กั๊กข้อความไว้จนห่างจากท้าย `holdBack` ตัวอักษร (ค่าเริ่มต้น 128) และอยู่ ณ จุดที่ไม่มีค่าคร่อมอยู่ แล้วจึงผ่าน guard และส่งต่อ ส่วนที่ส่งไปแล้วจะถูกเก็บไว้โดยแทนค่าด้วยอักขระยาวเท่าเดิม เพื่อให้คำบอกใบ้ก่อนจุดตัดยังนับ และ token ที่สตรีมตัดกลางจะไม่ถูกส่งออกเป็นท่อน
+
+| | |
+|---|---|
+| **ผลเท่ากัน** | ชิ้นที่ส่งออกรวมกันเท่ากับเรียก `guard.process` กับข้อความทั้งก้อน ไม่ว่าสตรีมถูกตัดตรงไหน สำหรับค่าที่สั้นกว่า `holdBack` มีเทสต์แบบ seed (ตั้งจำนวนด้วย `PDPA_N`) ตรวจที่ขนาดชิ้นตั้งแต่ 1 ตัวอักษร |
+| **ราคาคือความหน่วง** | ข้อความที่ใหม่กว่า `holdBack` ตัวอักษรจะไม่ถูกส่งจนกว่าสตรีมจะจบ `holdBack` น้อยลงเร็วขึ้น แต่ค่าที่ยาวกว่านั้นจะหลุดเป็นท่อน และหน่วงเป็นศูนย์ไม่ได้ เพราะตัวตรวจต้องเห็นสิ่งที่ตามหลังค่า |
+| **`block` เรียกคืนที่ส่งไปแล้วไม่ได้** | เมื่อ `block` ทำงานกลางสตรีม `stream.blocked` เป็น true และไม่ส่งเพิ่ม แต่ข้อความที่ส่งไปแล้วก็ส่งไปแล้ว ถ้าข้อความที่ถูก block ต้องไม่หลุดแม้บางส่วน ให้ใช้ `process` กับข้อความที่จบแล้ว |
+| **audit หนึ่งรายการต่อหนึ่งชิ้น** | แต่ละชิ้นคือการเรียก `guard.process` หนึ่งครั้ง และ `input.chars` นับบริบทด้วย |
+| **ยังไม่ต่อเข้า eve** | adapter ของ eve ยังไม่ใช้ตัวนี้ ช่องว่างของ `reasoning.appended` และ HTTP channel จึงยังเหมือนที่ README ของ eve บอก |
 
 ## error ที่ควรรู้
 

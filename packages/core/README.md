@@ -26,7 +26,7 @@
    — in Thai or Arabic digits.
 2. **Protects each one the way your policy says**, in 6 ways chosen per type. See [The 6 actions](#the-6-actions).
 3. **Audits every scan**, and an audit event **never contains the real value**. See [Audit](#audit).
-4. **Runs anywhere:** zero dependencies · ~80 KB minified (~29 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers.
+4. **Runs anywhere:** zero dependencies · ~83 KB minified (~30 KB gzip) · Node 18.18+ · Deno · Bun · Cloudflare Workers · browsers.
 
 ## Safeguards
 
@@ -259,6 +259,41 @@ await guard.process(text, { sessionId })   // an async store needs process, not 
   - `resolve` returns `{ ok: false, reason: 'store_unavailable' }` and is audited like any other attempt
   - A token in an outbound reply becomes `[ข้อมูลที่ปิดไว้]` · audit records it as `unavailable`
   - Each time, `onError(error, { source: 'token_store' })` is called and `guard.stats.tokenStoreErrors` goes up · **point your health check at this count** — if it rises, the store is failing and messages are being blocked
+
+## In the browser
+
+```ts
+import { createBrowserGuard, parsePolicy } from '@eve-pdpa-extension/core'
+
+const guard = createBrowserGuard({ policy: parsePolicy(policyJson), onAudit: () => {} })
+const { text } = await guard.process(input.value)   // hide it before it leaves the device
+```
+
+`createBrowserGuard` is `createGuard` for code a user's browser runs. It takes no `hmacKey`, `tokenStore` or `randomSource`, and it **refuses at construction** a policy that uses `hash` or `tokenise`, because anyone holding the page can read a key or a token. `redact`, `mask`, `flag` and `block` work as on the server.
+
+It is a courtesy to the user and a first line before a message leaves their device. **It is not a control:** whoever holds the page can edit it or skip it, so the server must run its own guard. Detection is the same, so the same limits apply. Checked by a smoke test in Chromium on every `pnpm verify`.
+
+## Streaming
+
+```ts
+import { createGuard, protectStream } from '@eve-pdpa-extension/core'
+
+for await (const text of protectStream(modelStream, guard, { sessionId, boundary: 'outbound' })) {
+  res.write(text)
+}
+```
+
+`protectStream` takes any async iterable of strings (a model's reply as it arrives) and yields protected text. `createStreamGuard(guard, options)` is the same with `push(chunk)` and `end()`, for when you hold the loop yourself.
+
+How it works: text is held back until it is `holdBack` characters (default 128) from the end, and at a place no value spans, then guarded and sent on. What was already sent is kept, with its values blanked to the same length, so a cue word just before the cut still counts. A token cut in half by the stream is never released in halves.
+
+| | |
+|---|---|
+| **Same answer** | The pieces together equal one `guard.process` on the whole text, wherever the stream is cut, for every value shorter than `holdBack`. A seeded test (`PDPA_N` sets the count) checks this at chunk sizes from 1 character up. |
+| **The cost is latency** | Nothing newer than `holdBack` characters is sent until the stream ends. A smaller `holdBack` is faster, and lets a value longer than it through in pieces. It cannot be zero-latency: the detectors need to see what comes after a value. |
+| **`block` cannot take back what was sent** | When a `block` rule fires mid-stream, `stream.blocked` turns true and nothing more is sent, but text already sent stays sent. If a blocked message must never leave in part, guard the finished text with `process`. |
+| **One audit event per piece** | Each piece is a `guard.process` call. `input.chars` counts the context too. |
+| **Not wired into eve yet** | The eve adapter does not use this, so its `reasoning.appended` and HTTP channel gaps stay as in its README. |
 
 ## Errors you should know
 

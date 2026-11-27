@@ -6,7 +6,7 @@ import { readCsv } from './readers/csv.js'
 import { InputError } from './readers/decode.js'
 import { readJsonl } from './readers/jsonl.js'
 import { LINE_OA_TEXT, lineOaLabel, looksLikeLineOa, readLineOa } from './readers/line-oa.js'
-import { formatHuman } from './report.js'
+import { formatHtml, formatHuman } from './report.js'
 import { type Format, type ReadItem, scan } from './scan.js'
 import { describePolicy, validatePolicy } from './validate.js'
 
@@ -36,6 +36,7 @@ Usage:
 scan options:
   --policy <file>       Also show what this policy would do with each value
   --json                Machine-readable report on stdout
+  --html                One-page HTML report on stdout (save it with > report.html)
   --format <fmt>        jsonl, csv, tsv or line-oa (default: from the file —
                         a LINE OA chat export is recognised by its first line)
   --text-field <name>   Field or column holding the message (default: text;
@@ -127,6 +128,8 @@ async function scanCommand(
   const [file, ...rest] = args
   if (file === undefined) return usageError(io, 'scan needs a file')
   if (rest.length > 0) return usageError(io, `scan takes one file, got ${args.length}`)
+  if (values.json === true && values.html === true)
+    return usageError(io, '--json and --html cannot be used together')
 
   const named = values.format ?? FORMATS[extname(file).toLowerCase()]
   if (!isFormat(named)) {
@@ -190,7 +193,13 @@ async function scanCommand(
     return EXIT.USAGE
   }
 
-  io.stdout(values.json === true ? `${JSON.stringify(report, null, 2)}\n` : formatHuman(report))
+  io.stdout(
+    values.json === true
+      ? `${JSON.stringify(report, null, 2)}\n`
+      : values.html === true
+        ? formatHtml(report)
+        : formatHuman(report),
+  )
 
   if (report.records.withFindings > 0) return EXIT.FOUND
   if (report.records.unreadable > 0) return EXIT.UNREADABLE
@@ -226,6 +235,7 @@ function parse(argv: readonly string[]) {
     options: {
       policy: { type: 'string' },
       json: { type: 'boolean' },
+      html: { type: 'boolean' },
       format: { type: 'string' },
       // Default depends on the format: see reader().
       'text-field': { type: 'string' },
