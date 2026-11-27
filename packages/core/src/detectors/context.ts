@@ -220,8 +220,17 @@ function keyWords(key: string): string[] {
 /** What a link is written with: RFC 3986's unreserved and reserved characters, and %. */
 const LINK_CHAR = /[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]/
 
-/** A scheme, a www., or a host name followed by a path. */
-const LINK = /:\/\/|^www\.|[A-Za-z0-9-]{2,}\.[A-Za-z]{2,}\//i
+/**
+ * A scheme, a www., or a host name followed by a path.
+ *
+ * The host name starts only where a run of host characters starts. Without
+ * the lookbehind the engine tried every position inside a long run and read it
+ * to its end each time, which is quadratic: 100,000 characters of
+ * `1-2345-67890-12-` took seconds (security review, 26 Nov). A match that
+ * starts inside a run always has one that starts at the run's start, so what
+ * matches is unchanged.
+ */
+const LINK = /:\/\/|^www\.|(?<![A-Za-z0-9-])[A-Za-z0-9-]{2,}\.[A-Za-z]{2,}\//i
 
 /**
  * Query keys that say the value is someone's card or id, so a number under
@@ -250,26 +259,46 @@ const PERSONAL_KEYS: ReadonlySet<string> = new Set([
 ])
 
 /**
- * True when the digits at `start`..`end` are part of a link — the same run of
- * link characters as a `://`, a leading `www.` or a host name with a path —
+ * Reads whether the digits at `start`..`end` are part of a link — the same run
+ * of link characters as a `://`, a leading `www.` or a host name with a path —
  * and not the value of a query key that names a card or an id. A post id in a
  * Facebook link passes Luhn or the id checksum one time in ten, and under a
  * policy that blocks cards it stopped the whole message (issue, 20 Nov).
+ *
+ * One reader per text, made in `detect`: it keeps the last run of link
+ * characters it walked and whether that run is a link, so the numbers inside
+ * one long run do not each walk it again. Walking it per number made a text of
+ * digits and dashes quadratic (security review, 26 Nov). It holds the text only
+ * as long as the detector holds the reader.
  */
-export function inLink(text: string, start: number, end: number): boolean {
-  let from = start
-  while (from > 0 && LINK_CHAR.test(text[from - 1] as string)) from--
-  let to = end
-  while (to < text.length && LINK_CHAR.test(text[to] as string)) to++
-  if (!LINK.test(text.slice(from, to))) return false
+export function linkReader(text: string): (start: number, end: number) => boolean {
+  let runFrom = -1
+  let runTo = -1
+  let runIsLink = false
 
-  if (text[start - 1] !== '=') return true
-  let keyFrom = start - 1
-  while (keyFrom > from && !'?&;#/='.includes(text[keyFrom - 1] as string)) keyFrom--
-  if (!'?&;'.includes(text[keyFrom - 1] ?? '')) return true
-  const key = text.slice(keyFrom, start - 1)
-  const words = keyWords(key)
-  return !(words.some((w) => PERSONAL_KEYS.has(w)) || PERSONAL_KEYS.has(words.join('')))
+  return (start, end) => {
+    if (start < runFrom || end > runTo) {
+      runFrom = start
+      while (runFrom > 0 && LINK_CHAR.test(text[runFrom - 1] as string)) runFrom--
+      runTo = end
+      while (runTo < text.length && LINK_CHAR.test(text[runTo] as string)) runTo++
+      runIsLink = LINK.test(text.slice(runFrom, runTo))
+    }
+    if (!runIsLink) return false
+
+    if (text[start - 1] !== '=') return true
+    let keyFrom = start - 1
+    while (keyFrom > runFrom && !'?&;#/='.includes(text[keyFrom - 1] as string)) keyFrom--
+    if (!'?&;'.includes(text[keyFrom - 1] ?? '')) return true
+    const key = text.slice(keyFrom, start - 1)
+    const words = keyWords(key)
+    return !(words.some((w) => PERSONAL_KEYS.has(w)) || PERSONAL_KEYS.has(words.join('')))
+  }
+}
+
+/** `linkReader` for a single number. A detector that asks for many makes one reader. */
+export function inLink(text: string, start: number, end: number): boolean {
+  return linkReader(text)(start, end)
 }
 
 /** What may open a list line before its value: a bullet, a number, spaces. */

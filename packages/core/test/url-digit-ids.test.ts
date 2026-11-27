@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inLink } from '../src/detectors/context.js'
+import { inLink, linkReader } from '../src/detectors/context.js'
 import { creditCardDetector } from '../src/detectors/credit-card.js'
 import { thaiNationalIdDetector } from '../src/detectors/thai-national-id.js'
 import { createGuard } from '../src/guard.js'
@@ -126,5 +126,30 @@ describe('inLink', () => {
     expect(at('โทร 123456789 ค่ะ', '123456789')).toBe(false)
     expect(at('12/05/2530', '2530')).toBe(false)
     expect(at('4111111111111111/12', '4111111111111111')).toBe(false)
+  })
+
+  it('a host found from the start of its run, wherever the number sits in it', () => {
+    expect(at('ab-cd.example.com/123456789', '123456789')).toBe(true)
+    expect(at('x1.co/123456789', '123456789')).toBe(true)
+    expect(at('a.bc.co/123456789', '123456789')).toBe(true)
+    expect(at('a.b.c.d/123456789', '123456789')).toBe(false)
+    expect(at('123456789-shop.co/x', '123456789')).toBe(true)
+    expect(at('123456789-a.c/x', '123456789')).toBe(false)
+  })
+
+  it('one reader answers as inLink does, in any order of asking', () => {
+    const text = [
+      'โทร 0812345678 ที่ https://a.co/p/2259969334286937?card=4111111111111111&x=1',
+      '1-2345-67890-12-3 www.b.com/1101700203451 12/05/2530 4111111111111111/12',
+      'shopee.co.th/item-9610000015570 ref=1101700203451 ?id=6549141818690#5',
+    ].join('\n')
+    const spans = [...text.matchAll(/\d+/g)].map((m) => [m.index, m.index + m[0].length] as const)
+    const expected = spans.map(([s, e]) => inLink(text, s, e))
+    expect(expected).toContain(true)
+    expect(expected).toContain(false)
+    const forward = linkReader(text)
+    expect(spans.map(([s, e]) => forward(s, e))).toEqual(expected)
+    const backward = linkReader(text)
+    expect([...spans].reverse().map(([s, e]) => backward(s, e))).toEqual([...expected].reverse())
   })
 })

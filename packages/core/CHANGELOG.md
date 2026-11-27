@@ -1,5 +1,11 @@
 # @eve-pdpa-extension/core
 
+## Unreleased
+
+### Fixed
+
+- A long run of digits and separators no longer takes seconds. Checking whether a card or national id number sat in a link (new in 0.2.0) read the whole run again for every number in it, and the link pattern read it once per position: 100,000 characters of `1-2345-67890-12-` took about 5 s, of `4111111111111111/` about 14 s. Each run is now read once, and the pattern only starts where a host name can: the same texts take under 50 ms, and what counts as a link is unchanged.
+
 ## 0.2.0
 
 ### License

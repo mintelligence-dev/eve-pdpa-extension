@@ -4,8 +4,8 @@ import {
   containsAny,
   containsWord,
   contextWindow,
-  inLink,
   keyedAsTime,
+  linkReader,
   ownWindow,
 } from './context.js'
 import { DIGIT_RUN, type Group, isBareDash, opensValue, splitRun } from './digit-run.js'
@@ -267,6 +267,7 @@ export const creditCardDetector: Detector = {
 
   detect(input: NormalisedText): Candidate[] {
     const found: Candidate[] = []
+    const inLink = linkReader(input.text)
 
     for (const m of input.text.matchAll(DIGIT_RUN)) {
       const groups = splitRun(m[0], m.index)
@@ -308,7 +309,7 @@ export const creditCardDetector: Detector = {
         // A value under a key that names a time, or a post id in a link, is not
         // a card, whatever it scored.
         if (keyedAsTime(input.text, start)) points = TIME_KEY
-        else if (inLink(input.text, start, end)) points = IN_LINK
+        else if (inLink(start, end)) points = IN_LINK
         found.push({ ...r.candidate, confidence: points / 100 })
       }
     }
