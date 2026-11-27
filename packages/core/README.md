@@ -307,16 +307,22 @@ All are `PdpaError`; check `error.code` · error messages never contain real val
 
 Measured strictly: a value not caught in full (for example 12 of 13 digits hidden) counts as **missed**, not half a point.
 
-Holdout set of 3,435 messages, not used to tune the detectors:
+Holdout set of 3,685 messages, not used to tune the detectors, at the default threshold 0.95 (engine 0.2.0):
 
-| Type | Values | Precision | Recall | Recall with `context` |
-|---|---|---|---|---|
-| Thai national ID | 25 | 100% | 100% | 100% |
-| Phone number | 165 | 99.4% | 96.4% | 100% |
-| Email | 65 | 100% | 100% | 100% |
-| Bank account | 50 | 100% | 80% | 100% |
-| Credit card | 15 | 100% | 100% | 100% |
-| LINE user ID | 5 | 100% | 100% | 100% |
+| Type | Values | Precision | Recall | Precision with `context` | Recall with `context` |
+|---|---|---|---|---|---|
+| Thai national ID | 25 | 100% | 100% | 100% | 100% |
+| Phone number | 180 | 99.4% | 96.7% | 94.7% | 100% |
+| Email | 75 | 100% | 100% | 100% | 100% |
+| Bank account | 50 | 100% | 80% | 100% | 100% |
+| Credit card | 15 | 100% | 100% | 100% | 100% |
+| LINE user ID | 5 | 100% | 100% | 100% | 100% |
+| Licence plate | 85 | 100% | 76.5% | 100% | 100% |
+| Date of birth | 40 | 100% | 87.5% | 100% | 100% |
+| Passport | 90 | 100% | 38.9% | 94.4% | 94.4% |
+
+- **Passport recall is low without `context` on purpose:** a passport number needs a cue word (see above), and many replies are only the number after the bot asked for it. With the question passed as `context`, recall is 94.4%.
+- **`context` costs some precision:** after "what's your phone number?" or "your passport number?", a 9-digit job or order number in the reply is read as the value asked for (15 of the 55 such numbers in this set).
 
 > **Read these numbers with care** — every message is synthetic, so they only measure the shapes we thought of.
 > Real data always has shapes nobody anticipated. **Every figure is an upper bound**, not what you will see in production,

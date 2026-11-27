@@ -165,7 +165,7 @@ L.push(
   `engine ${core.VERSION} · policy ${policy.hash} · threshold ${THRESHOLD} · detectors ${core.BUILTIN_DETECTORS.map((d) => d.id).join(', ')}`,
 )
 L.push(
-  `${rows.length} messages (${rows.filter((r) => r.boundary === 'inbound').length} inbound, ${rows.filter((r) => r.boundary === 'outbound').length} outbound) · ${total.gold} values of the six 0.1 entities`,
+  `${rows.length} messages (${rows.filter((r) => r.boundary === 'inbound').length} inbound, ${rows.filter((r) => r.boundary === 'outbound').length} outbound) · ${total.gold} values of the measured entities`,
 )
 L.push('')
 L.push(
