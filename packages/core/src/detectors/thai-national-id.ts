@@ -7,8 +7,8 @@ import {
   continuesList,
   cueDistance,
   cuesIn,
-  inLink,
   keyedAsTime,
+  linkReader,
   previousHasCue,
 } from './context.js'
 import { DIGIT_RUN, type Group, isBareDash, opensValue, sizesOf, splitRun } from './digit-run.js'
@@ -111,6 +111,7 @@ export const thaiNationalIdDetector: Detector = {
   detect(input: NormalisedText, ctx?: DetectContext): Candidate[] {
     const found: Candidate[] = []
     const asked = previousHasCue(input.text, ctx?.previous, ID_CUES)
+    const inLink = linkReader(input.text)
     // Where the last id that passed its checksum ends: the next line of a
     // list may be spaced loosely too (`continuesList`).
     let listed = -1
@@ -147,7 +148,7 @@ export const thaiNationalIdDetector: Detector = {
         let points = loosely ? LOOSE : valid ? CHECKSUM : SHAPE_ONLY
         if (
           points > NOT_AN_ID &&
-          (inLink(input.text, start, end) || namedAsSomethingElse(input.text, start, end))
+          (inLink(start, end) || namedAsSomethingElse(input.text, start, end))
         ) {
           points = NOT_AN_ID
         }
