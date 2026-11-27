@@ -55,7 +55,7 @@ customer sees xxx-xxx-7777  ◀────────────── check 
 ```
 
 1. **Clean up.** Thai and full-width digits become ordinary digits, and invisible characters hidden inside a number are removed. Positions are mapped back, so everything else stays exactly as the customer typed it.
-2. **Detect.** Nine types: national ID, phone, email, bank account, credit card, LINE user ID, license plate, date of birth and passport number. Each match has a confidence score. Checksums (mod-11, Luhn), patterns and cue words such as "เบอร์" or "บัญชี" decide it. No AI is involved and nothing goes over the network.
+2. **Detect.** Twelve types: national ID, phone, email, bank account, credit card, LINE user ID, license plate, date of birth, passport number, PromptPay ID, address and person name. Each match has a confidence score. Checksums (mod-11, Luhn), patterns and cue words such as "เบอร์" or "บัญชี" decide it. No AI is involved and nothing goes over the network.
 3. **Settle overlaps.** When two matches overlap they are hidden together as one span, so no value is ever left half covered.
 4. **Act per policy.** One JSON file says what happens to each type: `redact`, `mask`, `tokenise`, `hash`, `flag` or `block`.
 5. **Tokens.** A tool can swap a token back for the real value, but only for a purpose the policy allows, in the same chat, before it expires. A reply has its tokens shown masked to the customer.
@@ -121,7 +121,7 @@ It reports what personal data the file holds, per type and line, and never print
 
 ## Known limits
 
-- Names and addresses are not detected yet. See the [Roadmap](#roadmap).
+- Names and addresses are found only when something points to them: a name needs a title (นาย, นางสาว, a rank, Mr, Dr …), an introduction ("ผมชื่อ", "my name is"), a form label, or to be the answer to a question that asked for one · an address must hold three kinds of part (house number, soi, tambon, amphoe, province, postcode), or two with a word such as "ที่อยู่" or "address" · a bare name in the middle of a sentence, a nickname, and a place named with no labels are not found (that needs NER).
 - Bank accounts, phone numbers without a leading 0, license plates, dates of birth and passport numbers need a cue word such as "เลขบัญชี" or "วันเกิด", or the other side's question passed as `context`.
 - eve: only **eve 0.80.x** is supported; eve 1.x, which `npm install eve` gives today, is not yet. eve's HTTP channel is not masked on the way out.
 - Accuracy figures come from synthetic data, so they are an upper bound, not what you will see in production.
@@ -132,7 +132,6 @@ The full lists are under Known limitations in the [core](packages/core/README.md
 
 No versions are promised, and the order may change.
 
-- **Person names, addresses and PromptPay IDs.** The code is on the `feat/promptpay` branch, waiting for review.
 - **eve 1.x.**
 - **Masking eve's HTTP channel on the way out.**
 - **Policy files from disk** (`@eve-pdpa-extension/policy`): YAML and full validation. Node only, so it stays out of the zero-dependency core.

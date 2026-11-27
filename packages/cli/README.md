@@ -64,7 +64,7 @@ m7,สั่งเพิ่ม 2 ตัว, ส่งด่วน
 ```
 $ eve-pdpa scan chats.csv
 eve-pdpa scan  chats.csv
-policy   none given — every entity reported, nothing rewritten  (fnv1a64:96f96e3a7a3a212a)
+policy   none given — every entity reported, nothing rewritten  (fnv1a64:545936cbd8a59fb3)
 messages 6 scanned · 4 with personal data · 1 line unreadable
 
 found
@@ -161,7 +161,7 @@ In LINE OA Manager, download the chat history (needs a plan that includes this f
 ```
 $ eve-pdpa scan "3_20261001_20261007_สมชาย ตัวอย่าง.csv"
 eve-pdpa scan  3_20261001_20261007_….csv
-policy   none given — every entity reported, nothing rewritten  (fnv1a64:96f96e3a7a3a212a)
+policy   none given — every entity reported, nothing rewritten  (fnv1a64:545936cbd8a59fb3)
 messages 3 scanned · 2 with personal data
          from customers 1 of 2 · from the shop 1 of 1
 
@@ -193,6 +193,9 @@ pdpa-policy.json  valid  fnv1a64:ee142dc8b1111706
   LICENSE_PLATE   not in the policy → redact (onUnmapped)
   DATE_OF_BIRTH   not in the policy → redact (onUnmapped)
   PASSPORT        not in the policy → redact (onUnmapped)
+  PROMPTPAY       not in the policy → redact (onUnmapped)
+  ADDRESS         not in the policy → redact (onUnmapped)
+  PERSON_NAME     not in the policy → redact (onUnmapped)
 
 allowlist   2 exact · 1 pattern (values not shown)
 placeholders [เบอร์โทร]
@@ -228,7 +231,7 @@ esac
 
 ## Limitations
 
-- **Names and addresses are not detected yet** (planned for a later release)
+- Names and addresses are found only when something points to them: a name needs a title (นาย, นางสาว, a rank, Mr, Dr …), an introduction ("ผมชื่อ", "my name is"), a form label ("ชื่อ-นามสกุล"), or to be the answer to a question that asked for one · an address, in Thai or in English (Soi, Road, Moo, Subdistrict, District, Bangkok …), must hold three kinds of part (house number, soi, tambon, amphoe, province, postcode), or two with a word such as "ที่อยู่" or "address" · a bare name in the middle of a sentence, a nickname, and a place named with no labels are not found (that needs NER)
 - Every detector limitation of core applies here, such as bank accounts needing a cue word · see [Known limitations](https://www.npmjs.com/package/@eve-pdpa-extension/core#known-limitations)
 - One file at a time · does not read .zip
 - The LINE OA format comes from a Thai-language export seen in 2025 · if LINE changes it, the CLI stops and says it cannot find the column, rather than scanning the wrong one in silence

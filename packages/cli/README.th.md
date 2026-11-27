@@ -64,7 +64,7 @@ m7,สั่งเพิ่ม 2 ตัว, ส่งด่วน
 ```
 $ eve-pdpa scan chats.csv
 eve-pdpa scan  chats.csv
-policy   none given — every entity reported, nothing rewritten  (fnv1a64:96f96e3a7a3a212a)
+policy   none given — every entity reported, nothing rewritten  (fnv1a64:545936cbd8a59fb3)
 messages 6 scanned · 4 with personal data · 1 line unreadable
 
 found
@@ -161,7 +161,7 @@ CLI **หยุดแทนที่จะอ่านต่อแบบเพ�
 ```
 $ eve-pdpa scan "3_20261001_20261007_สมชาย ตัวอย่าง.csv"
 eve-pdpa scan  3_20261001_20261007_….csv
-policy   none given — every entity reported, nothing rewritten  (fnv1a64:96f96e3a7a3a212a)
+policy   none given — every entity reported, nothing rewritten  (fnv1a64:545936cbd8a59fb3)
 messages 3 scanned · 2 with personal data
          from customers 1 of 2 · from the shop 1 of 1
 
@@ -193,6 +193,9 @@ pdpa-policy.json  valid  fnv1a64:ee142dc8b1111706
   LICENSE_PLATE   not in the policy → redact (onUnmapped)
   DATE_OF_BIRTH   not in the policy → redact (onUnmapped)
   PASSPORT        not in the policy → redact (onUnmapped)
+  PROMPTPAY       not in the policy → redact (onUnmapped)
+  ADDRESS         not in the policy → redact (onUnmapped)
+  PERSON_NAME     not in the policy → redact (onUnmapped)
 
 allowlist   2 exact · 1 pattern (values not shown)
 placeholders [เบอร์โทร]
@@ -228,7 +231,7 @@ esac
 
 ## ข้อจำกัด
 
-- **ยังไม่จับชื่อคนและที่อยู่** (วางแผนไว้รุ่นถัดไป)
+- ชื่อคนและที่อยู่จับได้เฉพาะที่มีตัวบอก: ชื่อต้องมีคำนำหน้า (นาย นางสาว ดร. ยศ …) คำแนะนำตัว ("ผมชื่อ") ป้ายในฟอร์ม ("ชื่อ-นามสกุล") หรือเป็นคำตอบของคำถามที่ขอชื่อ · ที่อยู่ภาษาไทยหรือภาษาอังกฤษ (Soi, Road, Moo, Subdistrict, District, Bangkok …) ต้องมีส่วนประกอบอย่างน้อยสามชนิด (บ้านเลขที่ ซอย ตำบล อำเภอ จังหวัด รหัสไปรษณีย์) หรือสองชนิดกับคำว่า "ที่อยู่" / address · ชื่อลอย ๆ กลางประโยค ชื่อเล่น และชื่อสถานที่ที่ไม่มีป้ายยังไม่จับ (ต้องใช้ NER)
 - ข้อจำกัดของตัวตรวจทั้งหมดเหมือน core เช่น เลขบัญชีต้องมีคำบอกใบ้ · ดู [ข้อจำกัดที่รู้อยู่](https://www.npmjs.com/package/@eve-pdpa-extension/core#known-limitations)
 - สแกนทีละไฟล์ · ไม่อ่าน .zip
 - รูปแบบไฟล์ LINE OA ได้จาก export ภาษาไทยปี 2025 · ถ้า LINE เปลี่ยนรูปแบบ CLI จะหยุดพร้อมบอกว่าหาคอลัมน์ไม่เจอ ไม่สแกนผิดคอลัมน์เงียบ ๆ

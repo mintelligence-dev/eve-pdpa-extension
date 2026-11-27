@@ -56,6 +56,18 @@
           "$ref": "#/$defs/rule",
           "description": "A date of birth, e.g. 12/05/2530, 12 พ.ค. 2530 or 12 May 1987. Found when a birth cue such as วันเกิด or เกิด stands beside it; a date with nothing to say it is a birthday is not claimed."
         },
+        "PROMPTPAY": {
+          "$ref": "#/$defs/rule",
+          "description": "A PromptPay ID: a mobile number, a national or tax ID, or a 15-digit e-wallet ID, found beside พร้อมเพย์, PromptPay or e-wallet; or a whole PromptPay QR payload (000201…6304 and its CRC), which is found with no cue. A bare phone number or ID with no PromptPay word near it stays PHONE or TH_NATIONAL_ID."
+        },
+        "ADDRESS": {
+          "$ref": "#/$defs/rule",
+          "description": "A Thai postal address, read from its labels: บ้านเลขที่, หมู่, ซอย, ถนน, ตำบล/แขวง, อำเภอ/เขต, จังหวัด and a postcode. Three different kinds of part, or two with a cue such as ที่อยู่, are found at the default threshold; two kinds with no cue are reported at 0.8, under it. The stretch from the first part to the last is claimed, and the cue word itself is left readable."
+        },
+        "PERSON_NAME": {
+          "$ref": "#/$defs/rule",
+          "description": "A person's name, found when the sentence introduces it: a title (นาย, นาง, นางสาว, น.ส., ดร., Mr.), คุณ, an intro (ผมชื่อ, my name is), a label (ชื่อ, ชื่อ-นามสกุล, name:), or as the answer to a question that asked for one. A name with none of these is not found; no list of names ships with core."
+        },
         "LICENSE_PLATE": {
           "$ref": "#/$defs/rule",
           "description": "Thai vehicle plate, e.g. กข 1234 or 1กข 2345. Found when a cue word such as ทะเบียน stands beside it; a bare letters-and-digits run is not claimed."

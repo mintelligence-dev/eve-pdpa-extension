@@ -65,6 +65,12 @@ describe('no real value ever leaves the guard', () => {
       'DATE_OF_BIRTH',
       // Passport.
       'PASSPORT',
+      // PromptPay.
+      'PROMPTPAY',
+      // Address.
+      'ADDRESS',
+      // Person name.
+      'PERSON_NAME',
     ])
   })
 })

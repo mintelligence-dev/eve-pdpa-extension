@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { allowlistDigestForm } from '../src/allowlist.js'
 import { PdpaError } from '../src/errors.js'
 import { createGuard } from '../src/guard.js'
 import { definePolicy } from '../src/policy.js'
@@ -139,5 +140,38 @@ describe('policy', () => {
       allowlist: { exact: ['b', 'a'] },
     })
     expect(a.hash).toBe(b.hash)
+  })
+})
+
+describe('the 0.2 entities', () => {
+  const ADDRESS = '99/9 หมู่ 5 ต.บางจาก อ.พระโขนง จ.กรุงเทพมหานคร 10260'
+
+  it("lets the shop's own address and name through, and nobody else's", () => {
+    const { guard } = guardWith({ exact: [ADDRESS, 'นายสมชาย ใจดี'] })
+    const send = (text: string) => guard.processSync(text, { sessionId: 's' }).text
+    expect(send(`ส่งที่ ${ADDRESS} ค่ะ`)).toBe(`ส่งที่ ${ADDRESS} ค่ะ`)
+    expect(send('ผมนายสมชาย ใจดี ครับ')).toBe('ผมนายสมชาย ใจดี ครับ')
+    expect(send('ส่งที่ 11/1 หมู่ 2 ต.บางจาก อ.พระโขนง จ.กรุงเทพมหานคร 10260 ค่ะ')).not.toContain('11/1')
+    expect(send('ผมนายสมศักดิ์ มีสุข ครับ')).not.toContain('สมศักดิ์')
+  })
+
+  it('writes a name, an address and a QR payload as digests that tell them apart', () => {
+    // Read as numbers, every name was "0" and every address its digits alone.
+    expect(allowlistDigestForm('Somchai Jaidee')).not.toBe(allowlistDigestForm('Suda Rakthai'))
+    expect(allowlistDigestForm('Somchai  Jaidee')).toBe('somchai jaidee')
+    expect(allowlistDigestForm('somchai jaidee')).toBe('somchai jaidee')
+    expect(allowlistDigestForm(ADDRESS)).toBe(
+      allowlistDigestForm('99/9 หมู่ 5, ต.บางจาก, อ.พระโขนง, จ.กรุงเทพมหานคร 10260'),
+    )
+    expect(allowlistDigestForm(ADDRESS)).toContain('บางจาก')
+    expect(allowlistDigestForm('99 Soi Ari 1, Bangkok 10400')).toBe('99SoiAri1Bangkok10400')
+    const qr = '00020101021129370016A000000677010111011300668188877775303764540520.005802TH6304ABCD'
+    expect(allowlistDigestForm(qr)).toBe(qr)
+  })
+
+  it('leaves the numeric entries as they were', () => {
+    expect(allowlistDigestForm('02-123-4567')).toBe('021234567')
+    expect(allowlistDigestForm('+66 81 888 7777')).toBe('0818887777')
+    expect(allowlistDigestForm('Support@MyShop.co.th')).toBe('support@myshop.co.th')
   })
 })

@@ -53,6 +53,24 @@ export function canonicalValue(entity: EntityType, folded: string): string {
       // aa 1234567 and AA-1234567 are one number. Letters are half of it and stay.
       return folded.replace(/[^A-Za-z0-9]/g, '').toUpperCase()
 
+    // Person name.
+    case 'PERSON_NAME':
+      // One name however it was spaced. Case is folded: Somchai and SOMCHAI are one person.
+      return folded.replace(/\s+/g, ' ').trim().toLowerCase()
+
+    // Address.
+    case 'ADDRESS':
+      // Spacing and commas are how it was typed, not what it says.
+      return folded.replace(/[\s,]+/g, '')
+
+    // PromptPay.
+    case 'PROMPTPAY':
+      // A QR payload is kept as written: its CRC covers every character. A proxy
+      // is a phone number or an id, and reads as one: 081-888-7777 and
+      // +66 81 888 7777 are one.
+      if (folded.startsWith('000201')) return folded
+      return toNationalForm(folded.replace(SEPARATORS, ''))
+
     case 'PHONE':
       // +66 91 888 7777 and 091-888-7777 are one number.
       return toNationalForm(folded.replace(SEPARATORS, ''))
