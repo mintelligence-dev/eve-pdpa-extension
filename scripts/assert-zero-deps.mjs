@@ -121,7 +121,12 @@ try {
   // schema 2.0 and the link fixes for cards, ids and emails merged, only dist/
   // and its maps. Shipping the maps is what quadruples every comment; whether
   // to keep shipping them is the lead's call.
-  const MAX_UNPACKED = 1100 * 1024
+  //
+  // Raised to 1300 KB on 2026-11-27: 1,249,830 bytes with PROMPTPAY, ADDRESS and
+  // PERSON_NAME merged on top of the three above, only dist/ and its maps. The
+  // two maps are 400 KB each, against 135 KB for each bundle. Room is left for
+  // the stream guard, which is about 2 KB of code and so about 8 KB shipped.
+  const MAX_UNPACKED = 1300 * 1024
   if (meta.unpackedSize > MAX_UNPACKED) {
     note(`tarball: unpacked ${meta.unpackedSize} bytes exceeds the ${MAX_UNPACKED} byte tripwire`)
   }
