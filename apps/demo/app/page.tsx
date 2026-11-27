@@ -5,6 +5,7 @@ import * as React from 'react'
 import { StepAllowlist, StepAudit, StepHash } from '@/components/demo/steps-audit'
 import { StepActions, StepDetect, StepOverview } from '@/components/demo/steps-detect'
 import { StepPolicy, StepTokens } from '@/components/demo/steps-policy'
+import { StepBrowser, StepStream } from '@/components/demo/steps-release03'
 import { ThemeSwitch } from '@/components/demo/theme-switch'
 import { Button } from '@/components/ui/button'
 import { SegmentedControl } from '@/components/ui/segmented-control'
@@ -19,12 +20,14 @@ const STEPS = [
   { label: 'hash', Step: StepHash },
   { label: 'ข้อมูลร้าน', Step: StepAllowlist },
   { label: 'บันทึก', Step: StepAudit },
+  { label: 'ในเบราว์เซอร์', Step: StepBrowser },
+  { label: 'สตรีม', Step: StepStream },
 ]
 
 export default function Page() {
   const [current, setCurrent] = React.useState(0)
 
-  // #s1 … #s8, as the old page used, so links into a step keep working.
+  // #s1 … #s10, as the old page used, so links into a step keep working.
   React.useEffect(() => {
     const fromHash = () => {
       const m = /^#s(\d+)$/.exec(window.location.hash)
