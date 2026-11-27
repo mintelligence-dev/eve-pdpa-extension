@@ -15,7 +15,7 @@
   {
     "name": "code only (minified, raw bytes) — code budget",
     "path": ["packages/core/.size/index.js"],
-    "limit": "60 kB",
+    "limit": "82 kB",
     "gzip": false,
     "brotli": false
   },

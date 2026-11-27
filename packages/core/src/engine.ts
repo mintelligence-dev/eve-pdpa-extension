@@ -23,6 +23,14 @@ const MERGE_PRIORITY: readonly EntityType[] = [
   'LICENSE_PLATE',
   'DATE_OF_BIRTH',
   'PASSPORT',
+  // Claimed only beside its own cue. Last on purpose: where it covers the same
+  // characters as a phone or an id, the older entity keeps the name (D19), and a
+  // policy that wants PromptPay treated harder still gets it, because the stricter
+  // action speaks for a shared span (settle.ts), whatever the rank.
+  'PROMPTPAY',
+  // The longest and loosest claim: it wins a span on length, and this only breaks a tie.
+  'ADDRESS',
+  'PERSON_NAME',
 ]
 
 function priorityOf(entity: EntityType): number {

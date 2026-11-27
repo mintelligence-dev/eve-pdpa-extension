@@ -470,7 +470,7 @@ The function every layer uses underneath: masks a string or an AI SDK `UserConte
 - **Subagents have their own session state**: a tool in a subagent cannot resolve the parent's tokens
 - **eve's HTTP create route**: a create request with a message and `callback` or `operationId` is refused (`400 pdpa_unsupported`); create the session, then send
 - **Each text part is checked on its own**; file contents and file names are not checked (`files: 'block'` stops such messages)
-- **Names and addresses are not detected yet** (a core limitation)
+- Names and addresses are found only when something points to them: a name needs a title (นาย, นางสาว, a rank, Mr, Dr …), an introduction ("ผมชื่อ", "my name is"), a form label ("ชื่อ-นามสกุล"), or to be the answer to a question that asked for one · an address, in Thai or in English (Soi, Road, Moo, Subdistrict, District, Bangkok …), must hold three kinds of part (house number, soi, tambon, amphoe, province, postcode), or two with a word such as "ที่อยู่" or "address" · a bare name in the middle of a sentence, a nickname, and a place named with no labels are not found (that needs NER) (see the core README)
 - **Some Thai national IDs read as credit cards**: one that also passes the card checksum in an issuer's range is blocked under a policy that blocks cards
 - **eve's HTTP routes are recognised by method and path**: re-run the tests before moving to a new eve
 

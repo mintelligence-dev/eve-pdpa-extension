@@ -12,6 +12,9 @@ export const ENTITY_TYPES = [
   'LICENSE_PLATE',
   'DATE_OF_BIRTH',
   'PASSPORT',
+  'PROMPTPAY',
+  'ADDRESS',
+  'PERSON_NAME',
 ] as const
 export type EntityType = (typeof ENTITY_TYPES)[number]
 
